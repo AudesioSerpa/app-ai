@@ -1,0 +1,71 @@
+{
+  "app_name": "Facilita AI",
+  "tagline": "Sua central inteligente de utilidades e ferramentas para o dia a dia",
+  "theme": "dark",
+  "typography": {
+    "heading_font": "Outfit, sans-serif",
+    "body_font": "Plus Jakarta Sans, sans-serif",
+    "mono_font": "JetBrains Mono, monospace"
+  },
+  "colors": {
+    "primary": "#FF5722",
+    "primary_hover": "#F4511E",
+    "accent": "#00E676",
+    "background": "#0F0F11",
+    "surface": "#18181B",
+    "surface_elevated": "#27272A",
+    "border": "#2E2E36",
+    "text_primary": "#FAFAFA",
+    "text_secondary": "#A1A1AA",
+    "forbidden_accent": "#7351B7"
+  },
+  "visual_enhancers": {
+    "glassmorphism": "backdrop-blur-xl bg-black/60 border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.4)]",
+    "glow": "shadow-[0_0_30px_rgba(255,87,34,0.15)]",
+    "radius": "rounded-2xl"
+  },
+  "tools_specification": {
+    "active_mvp_tools": [
+      {"id": "whatsapp", "name": "Responder WhatsApp", "icon": "MessageCircle", "description": "Gere respostas inteligentes, educadas ou comerciais para mensagens."},
+      {"id": "improve_text", "name": "Melhorar Texto", "icon": "Sparkles", "description": "Reescreva textos com clareza, tom persuasivo ou formal."},
+      {"id": "correct_pt", "name": "Corrigir Português", "icon": "CheckCircle2", "description": "Elimine erros gramaticais e ortográficos instantaneamente."},
+      {"id": "summarize", "name": "Resumir Texto", "icon": "FileText", "description": "Transforme artigos longos em tópicos diretos e objetivos."},
+      {"id": "create_email", "name": "Criar E-mail", "icon": "Mail", "description": "Redija e-mails profissionais corporativos ou pessoais com perfeição."},
+      {"id": "create_caption", "name": "Criar Legenda", "icon": "Hash", "description": "Legendas magnéticas para Instagram, TikTok e redes sociais com hashtags."},
+      {"id": "youtube_titles", "name": "Gerador de Títulos YouTube", "icon": "Youtube", "description": "Títulos de alta conversão e cliques para seus vídeos."},
+      {"id": "qrcode", "name": "QR Code", "icon": "QrCode", "description": "Gere QR Codes personalizados para links, Pix e contatos."},
+      {"id": "password_gen", "name": "Gerador de Senhas", "icon": "KeyRound", "description": "Senhas ultra-seguras e criptografadas em um clique."},
+      {"id": "percentage_calc", "name": "Calculadora de Porcentagem", "icon": "Percent", "description": "Cálculos rápidos de descontos, acréscimos e margens."}
+    ],
+    "coming_soon_tools": [
+      {"id": "pdf_tools", "name": "Conversor de PDF", "icon": "FileStack", "description": "Junte, divida e assine PDFs em segundos."},
+      {"id": "speech_text", "name": "Áudio para Texto", "icon": "Mic", "description": "Transcreva reuniões e áudios do WhatsApp."},
+      {"id": "contract_ai", "name": "Analisador de Contratos", "icon": "FileSearch", "description": "Identifique cláusulas abusivas com IA."},
+      {"id": "finance_ai", "name": "Assistente Financeiro", "icon": "Wallet", "description": "Controle gastos e categorize despesas."}
+    ]
+  },
+  "features": {
+    "authentication": {
+      "methods": ["email_password", "google_oauth_emergent"],
+      "default_demo_admin": {
+        "email": "admin@facilita.ai",
+        "role": "admin"
+      }
+    },
+    "credits_system": {
+      "free_tier_daily_credits": 30,
+      "unlimited_premium_badge": "Plano Pro (Em breve)"
+    },
+    "storage": "localStorage with cloud sync simulation",
+    "pwa_support": true
+  },
+  "image_urls": {
+    "hero_abstract": "https://images.unsplash.com/photo-1604079628040-94301bb21b91?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDk1ODF8MHwxfHNlYXJjaHwxfHxicmF6aWxpYW4lMjBwcm9kdWN0aXZpdHklMjBhcHAlMjBhYnN0cmFjdCUyMGdyYWRpZW50JTIwd2FybSUyMGNlcmFtaWN8ZW58MHx8fHwxNzg3NDM0OTYwfDA&ixlib=rb-4.1.0&q=85",
+    "ai_ambient": "https://images.pexels.com/photos/30530402/pexels-photo-30530402.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940"
+  },
+  "universal_guidelines": {
+    "data_testid_required": true,
+    "mobile_first_bottom_nav": true,
+    "no_transparent_headers": true
+  }
+}
