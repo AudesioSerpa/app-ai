@@ -34,10 +34,10 @@ Criar um PWA mobile-first em pt-BR chamado **Facilita AI** — central de ferram
 - Favoritos sincronizados: hook usa localStorage + `/api/favorites` (GET/POST/DELETE) quando logado.
 - Histórico com fetch autenticado, agrupamento por dia, reabrir em modal, copiar e excluir.
 - QR Code corrigido (agora lê `fields.text`).
-- **Monetização (v1)**: sistema centralizado de plano (`isPremium()`); `AdBanner` só aparece para plano grátis com `ads_enabled=true`; `UsageBadge` mostra usos restantes; modal amigável quando limite bate; página `/premium` com comparação Grátis vs Premium e botão "Assinar Premium" que chama `/api/checkout/premium` (gateway real preparado, sem cobrança fictícia).
-- **Configuração no admin**: `/api/admin/settings` GET/PUT permite alterar limite grátis/premium, preço, e ligar/desligar banner/interstitial/ads.
-- **Rate limit por dia**: `/api/generate` retorna HTTP 402 quando usuário grátis passa do `free_daily_limit`. Ferramentas locais (QR/senha/%) nunca gastam cota.
-- **Assinatura**: apenas admin altera plano de usuário via `POST /api/admin/users/{id}/subscription` — não há upgrade self-service falso.
+- **Monetização**: sistema centralizado (`isPremium()` no back respeita `expires_at`); `AdBanner` só aparece para plano grátis com `ads_enabled=true`; `UsageBadge` mostra usos restantes; modal amigável quando limite bate; página `/premium` com comparação Grátis vs Premium.
+- **Painel administrativo visual em `/admin`** (protegido por role): sliders para limite grátis/premium e preço; switches para ads globais/banner/intersticial; busca de usuários por e-mail e botões para promover/rebaixar; 3 cards de stats. Sliders com debounce de 350ms.
+- **Mercado Pago Checkout Pro (BRL)**: `POST /api/checkout/premium` cria preferência real via SDK (`mercadopago==3.3.0`), retorna `init_point`; frontend redireciona ao MP; retorno em `/premium?payment_id=...` faz polling em `/api/payments/{id}` e ativa 30 dias de Premium (idempotente por `payment_id` via coleção `premium_grants`); webhook `POST /api/mercadopago/webhook` valida HMAC quando `MP_WEBHOOK_SECRET` está setado.
+- Rate limit por dia: `/api/generate` retorna HTTP 402 quando usuário grátis passa do `free_daily_limit`.
 - Placeholder de anúncio identificado + página de termos.
 
 ## Backlog priorizado

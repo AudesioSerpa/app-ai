@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { BrowserRouter, Routes, Route, Link, useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import { QRCodeSVG } from "qrcode.react";
-import { ArrowLeft, Check, ChevronRight, Copy, FileText, Heart, Home as HomeIcon, KeyRound, Mail, Menu, MessageCircle, MoreHorizontal, Percent, QrCode, Search, Share2, Sparkles, Star, Trash2, UserRound, WandSparkles, Youtube } from "lucide-react";
+import { ArrowLeft, Check, ChevronRight, Copy, FileText, Heart, Home as HomeIcon, KeyRound, Mail, Menu, MessageCircle, MoreHorizontal, Percent, QrCode, Search, Share2, Shield, Sparkles, Star, Trash2, UserRound, WandSparkles, Youtube } from "lucide-react";
 import "@/App.css";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
@@ -302,6 +302,7 @@ function Profile(){
       {!premium && <Link className="premium-strip" to="/premium" data-testid="premium-card"><span><Sparkles size={20}/></span><div><strong>Facilita AI Premium</strong><small>Mais usos, sem anúncios e recursos avançados</small></div><ChevronRight/></Link>}
       {premium && <Link className="premium-strip active" to="/premium" data-testid="premium-card-active"><span><Sparkles size={20}/></span><div><strong>Você é Premium</strong><small>Ver benefícios e gerenciar sua assinatura</small></div><ChevronRight/></Link>}
       <div className="settings-list">
+        {user?.role === "admin" && <Link to="/admin" data-testid="profile-admin-link"><Shield size={18}/> Painel administrativo<ChevronRight size={17}/></Link>}
         {user ? <button onClick={logout} data-testid="profile-logout-button"><UserRound size={18}/> Sair da conta<ChevronRight size={17}/></button>
               : <Link to="/login" data-testid="profile-login-link"><UserRound size={18}/> Entrar ou criar conta<ChevronRight size={17}/></Link>}
         <Link to="/termos" data-testid="terms-link"><FileText size={18}/> Termos e privacidade<ChevronRight size={17}/></Link>
@@ -314,24 +315,71 @@ function Profile(){
 function Premium(){
   const nav = useNavigate();
   const settings = useAppSettings();
-  const [checkoutMsg, setCheckoutMsg] = useState("");
+  const [status, setStatus] = useState({ tone: "", text: "" });
   const [loading, setLoading] = useState(false);
   const user = getUser();
   const premium = isPremium(user);
 
+  // Reconcilia retorno do checkout do Mercado Pago (payment_id em query)
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const paymentId = params.get("payment_id");
+    const backStatus = params.get("status");
+    if (!paymentId) return;
+
+    setStatus({ tone: "info", text: "Confirmando o pagamento com o Mercado Pago..." });
+    let attempts = 0;
+    const check = async () => {
+      attempts++;
+      try {
+        const r = await axios.get(`${API}/payments/${encodeURIComponent(paymentId)}`, { headers: authHeaders() });
+        if (r.data.status === "approved") {
+          setStatus({ tone: "success", text: "Pagamento aprovado! Seu Premium está ativo por 30 dias." });
+          // Recarrega dados do usuário para refletir plano premium
+          try {
+            const me = await axios.get(`${API}/auth/me`, { headers: authHeaders() });
+            localStorage.setItem("facilita_user", JSON.stringify(me.data));
+            setTimeout(() => window.location.reload(), 1200);
+          } catch { /* ignore */ }
+          return;
+        }
+        if (r.data.status === "rejected" || r.data.status === "cancelled") {
+          setStatus({ tone: "error", text: "O pagamento não foi aprovado. Tente novamente." });
+          return;
+        }
+        if (attempts < 6) setTimeout(check, 2000);
+        else setStatus({ tone: "info", text: "Ainda processando. Recarregue esta página em instantes." });
+      } catch {
+        if (attempts < 4) setTimeout(check, 2500);
+        else setStatus({ tone: "error", text: "Não conseguimos confirmar o pagamento agora. Recarregue em instantes." });
+      }
+    };
+    if (backStatus === "approved") setStatus({ tone: "success", text: "Pagamento recebido! Confirmando..." });
+    check();
+    // Limpa parâmetros da URL após primeira leitura para evitar re-check em recargas
+    const url = new URL(window.location.href);
+    ["payment_id","status","external_reference","merchant_order_id","preference_id","payment_type","collection_id","collection_status"].forEach(k=>url.searchParams.delete(k));
+    window.history.replaceState({}, "", url.toString());
+  }, []);
+
   const subscribe = async () => {
     if (!getToken()) { nav("/login"); return; }
     setLoading(true);
+    setStatus({ tone: "", text: "" });
     try {
       const r = await axios.post(`${API}/checkout/premium`, {}, { headers: authHeaders() });
-      setCheckoutMsg(r.data?.message || "Pagamento em preparação.");
+      if (r.data?.init_point) {
+        window.location.assign(r.data.init_point);
+        return;
+      }
+      setStatus({ tone: "error", text: "Não recebemos o link de checkout. Tente novamente." });
     } catch (e) {
-      setCheckoutMsg(e.response?.data?.detail || "Não foi possível iniciar a assinatura agora.");
+      setStatus({ tone: "error", text: e.response?.data?.detail || "Não foi possível iniciar o pagamento agora." });
     }
     setLoading(false);
   };
 
-  const price = settings?.premium_price_brl?.toFixed(2).replace(".", ",") ?? "19,90";
+  const price = settings?.premium_price_brl?.toFixed(2).replace(".", ",") ?? "9,90";
   const freeLimit = settings?.free_daily_limit ?? 10;
   const premiumLimit = settings?.premium_daily_limit ?? 500;
 
@@ -355,7 +403,7 @@ function Premium(){
           <button className="ghost-action" disabled data-testid="plan-free-button">Você está aqui</button>
         </div>
         <div className="plan-card featured" data-testid="plan-premium">
-          <div className="plan-head"><h2>Premium <Sparkles size={17}/></h2><span className="plan-price">R$ {price}<small>/mês</small></span></div>
+          <div className="plan-head"><h2>Premium <Sparkles size={17}/></h2><span className="plan-price">R$ {price}<small>/30 dias</small></span></div>
           <ul>
             <li><Check size={15}/> Sem anúncios em nenhum lugar</li>
             <li><Check size={15}/> {premiumLimit} usos de IA por dia</li>
@@ -363,11 +411,11 @@ function Premium(){
             <li><Check size={15}/> Acesso a recursos Premium futuros</li>
           </ul>
           {premium ? <button className="primary-action" disabled data-testid="premium-active-button">Assinatura ativa</button>
-                   : <button className="primary-action" onClick={subscribe} disabled={loading} data-testid="premium-subscribe-button"><Sparkles size={18}/> {loading?"Preparando...":"Assinar Premium"}</button>}
+                   : <button className="primary-action" onClick={subscribe} disabled={loading} data-testid="premium-subscribe-button"><Sparkles size={18}/> {loading?"Abrindo checkout...":"Assinar Premium"}</button>}
         </div>
       </div>
-      {checkoutMsg && <div className="checkout-note" data-testid="checkout-note">{checkoutMsg}</div>}
-      <p className="helper premium-fineprint">O pagamento será processado por um gateway externo assim que a integração for concluída. Nenhuma cobrança é feita neste momento.</p>
+      {status.text && <div className={`checkout-note ${status.tone}`} data-testid="checkout-note">{status.text}</div>}
+      <p className="helper premium-fineprint">Pagamento seguro processado pelo Mercado Pago (Pix, boleto ou cartão). Pagamento único que libera 30 dias de Premium.</p>
     </main>
     <BottomNav active="profile"/>
   </div>
@@ -375,5 +423,131 @@ function Premium(){
 function Empty({icon:Icon,text}){return <div className="empty-state" data-testid="empty-state"><span><Icon size={27}/></span><p>{text}</p><Link to="/ferramentas" className="outline-button" data-testid="empty-state-action">Explorar ferramentas</Link></div>}
 function Legal(){return <div className="app-shell"><header className="tool-header"><Link to="/perfil" data-testid="legal-back-button"><ArrowLeft size={20}/></Link><span>Privacidade</span></header><main className="page legal"><p className="eyebrow">FACILITA AI</p><h1>Termos e privacidade</h1><p>O Facilita AI foi criado para simplificar seu dia. Textos enviados às ferramentas de inteligência artificial podem ser processados por provedores externos para gerar o resultado solicitado.</p><h2>Uso responsável</h2><p>Não envie dados sensíveis, senhas ou informações pessoais que não sejam necessárias. O app registra apenas métricas de uso e histórico quando você escolhe estar conectado.</p><h2>Contato</h2><p>Fale com a equipe em contato@facilita.ai</p></main></div>}
 
-function App(){return <BrowserRouter><Routes><Route path="/" element={<Home/>}/><Route path="/ferramentas" element={<Tools/>}/><Route path="/ferramenta/:id" element={<ToolPage/>}/><Route path="/login" element={<Auth/>}/><Route path="/favoritos" element={<Favorites/>}/><Route path="/historico" element={<History/>}/><Route path="/perfil" element={<Profile/>}/><Route path="/premium" element={<Premium/>}/><Route path="/termos" element={<Legal/>}/></Routes></BrowserRouter>}
+function AdminSlider({ label, value, onChange, min, max, step = 1, suffix = "", testid }){
+  const [local, setLocal] = useState(value);
+  useEffect(() => { setLocal(value); }, [value]);
+  useEffect(() => {
+    if (local === value) return;
+    const t = setTimeout(() => onChange(local), 350);
+    return () => clearTimeout(t);
+  }, [local, onChange, value]);
+  return <label className="admin-slider">
+    <span className="admin-slider-top"><strong>{label}</strong><span className="admin-slider-value" data-testid={`${testid}-value`}>{local}{suffix}</span></span>
+    <input type="range" min={min} max={max} step={step} value={local} onChange={e=>setLocal(Number(e.target.value))} data-testid={testid}/>
+    <span className="admin-slider-range"><small>{min}{suffix}</small><small>{max}{suffix}</small></span>
+  </label>
+}
+function AdminSwitch({ label, hint, checked, onChange, testid }){
+  return <label className="admin-switch">
+    <div><strong>{label}</strong>{hint && <small>{hint}</small>}</div>
+    <span className={`switch ${checked?"on":""}`} onClick={()=>onChange(!checked)} data-testid={testid}><span className="switch-dot"/></span>
+  </label>
+}
+
+function Admin(){
+  const nav = useNavigate();
+  const user = getUser();
+  const [settings, setSettings] = useState(null);
+  const [stats, setStats] = useState(null);
+  const [users, setUsers] = useState([]);
+  const [search, setSearch] = useState("");
+  const [savedAt, setSavedAt] = useState(null);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (!user || user.role !== "admin") { nav("/"); return; }
+    Promise.all([
+      axios.get(`${API}/admin/settings`, { headers: authHeaders() }),
+      axios.get(`${API}/admin/stats`, { headers: authHeaders() }),
+      axios.get(`${API}/admin/users`, { headers: authHeaders() }),
+    ]).then(([s, st, u]) => { setSettings(s.data); setStats(st.data); setUsers(u.data); })
+     .catch(e => setError(e.response?.data?.detail || "Falha ao carregar painel"));
+  }, [nav, user]);
+
+  const saveSettings = async (patch) => {
+    setSaving(true); setError("");
+    try {
+      const r = await axios.put(`${API}/admin/settings`, patch, { headers: authHeaders() });
+      setSettings(r.data);
+      setSavedAt(new Date());
+    } catch (e) { setError(e.response?.data?.detail || "Não foi possível salvar."); }
+    setSaving(false);
+  };
+
+  const searchUsers = async (q) => {
+    setSearch(q);
+    try {
+      const r = await axios.get(`${API}/admin/users${q?`?search=${encodeURIComponent(q)}`:""}`, { headers: authHeaders() });
+      setUsers(r.data);
+    } catch { /* ignore */ }
+  };
+
+  const setPlan = async (u, plan) => {
+    try {
+      const r = await axios.post(`${API}/admin/users/${u.id}/subscription`, { plan }, { headers: authHeaders() });
+      setUsers(users.map(x => x.id === u.id ? r.data.user : x));
+    } catch (e) { setError(e.response?.data?.detail || "Falha ao alterar assinatura"); }
+  };
+
+  if (!settings) return <div className="app-shell"><header className="tool-header"><Link to="/perfil"><ArrowLeft size={20}/></Link><span>Painel administrativo</span><span/></header><main className="page"><p className="helper">{error||"Carregando painel..."}</p></main></div>;
+
+  return <div className="app-shell">
+    <header className="tool-header"><Link to="/perfil" data-testid="admin-back-button"><ArrowLeft size={20}/></Link><span>Painel administrativo</span><span/></header>
+    <main className="page admin-page">
+      <section className="page-intro compact"><p className="eyebrow">FACILITA AI · ADMIN</p><h1>Configure seu<br/><em>Facilita AI.</em></h1></section>
+
+      {stats && <div className="admin-stats">
+        <div className="admin-stat" data-testid="admin-stat-users"><small>Usuários</small><strong>{stats.users}</strong></div>
+        <div className="admin-stat" data-testid="admin-stat-gens"><small>Gerações totais</small><strong>{stats.generations}</strong></div>
+        <div className="admin-stat" data-testid="admin-stat-tools"><small>Ferramentas ativas</small><strong>{stats.tools?.length||0}</strong></div>
+      </div>}
+
+      <section className="admin-card">
+        <div className="admin-card-head"><h2>Limites de IA</h2><small>Aplicado imediatamente para todos os usuários.</small></div>
+        <AdminSlider testid="admin-slider-free-limit" label="Usos diários no plano Grátis" value={settings.free_daily_limit} min={0} max={100} onChange={v=>saveSettings({free_daily_limit:v})} suffix=" usos"/>
+        <AdminSlider testid="admin-slider-premium-limit" label="Usos diários no plano Premium" value={settings.premium_daily_limit} min={10} max={2000} step={10} onChange={v=>saveSettings({premium_daily_limit:v})} suffix=" usos"/>
+      </section>
+
+      <section className="admin-card">
+        <div className="admin-card-head"><h2>Preço do Premium</h2><small>Valor cobrado para 30 dias de acesso.</small></div>
+        <AdminSlider testid="admin-slider-price" label="Preço em BRL" value={settings.premium_price_brl} min={4.9} max={99.9} step={0.1} onChange={v=>saveSettings({premium_price_brl:Number(v.toFixed(2))})} suffix=" R$"/>
+      </section>
+
+      <section className="admin-card">
+        <div className="admin-card-head"><h2>Publicidade</h2><small>Todos os anúncios são desligados automaticamente para assinantes Premium.</small></div>
+        <AdminSwitch testid="admin-switch-ads" label="Publicidade global" hint="Desativa todos os formatos com um clique" checked={settings.ads_enabled} onChange={v=>saveSettings({ads_enabled:v})}/>
+        <AdminSwitch testid="admin-switch-banner" label="Banners" hint="Faixas discretas no topo/rodapé" checked={settings.banner_enabled} onChange={v=>saveSettings({banner_enabled:v})}/>
+        <AdminSwitch testid="admin-switch-interstitial" label="Intersticiais" hint="Anúncios em transições, sem interromper resultado" checked={settings.interstitial_enabled} onChange={v=>saveSettings({interstitial_enabled:v})}/>
+      </section>
+
+      <section className="admin-card">
+        <div className="admin-card-head"><h2>Assinantes</h2><small>Promova ou rebaixe manualmente. Busque por e-mail.</small></div>
+        <label className="searchbox admin-search"><Search size={18}/><input value={search} onChange={e=>searchUsers(e.target.value)} placeholder="Buscar por e-mail" data-testid="admin-user-search"/></label>
+        <div className="admin-user-list">
+          {users.map(u => {
+            const uPremium = u?.subscription?.plan === "premium" && (!u.subscription.expires_at || new Date(u.subscription.expires_at) > new Date());
+            return <div className="admin-user" key={u.id} data-testid={`admin-user-${u.id}`}>
+              <div><strong>{u.name || u.email}</strong><small>{u.email} · {u.role}{uPremium?" · PREMIUM":""}</small></div>
+              <div className="admin-user-actions">
+                {uPremium
+                  ? <button className="ghost-action" onClick={()=>setPlan(u,"free")} data-testid={`admin-user-downgrade-${u.id}`}>Remover Premium</button>
+                  : <button className="primary-action tiny" onClick={()=>setPlan(u,"premium")} data-testid={`admin-user-upgrade-${u.id}`}><Sparkles size={14}/> Tornar Premium</button>}
+              </div>
+            </div>;
+          })}
+          {users.length === 0 && <p className="helper">Nenhum usuário encontrado.</p>}
+        </div>
+      </section>
+
+      <div className="admin-footer">
+        {error && <span className="admin-error" data-testid="admin-error">{error}</span>}
+        {saving && <span className="admin-saving">Salvando...</span>}
+        {savedAt && !saving && <span className="admin-saved" data-testid="admin-saved">Alterações salvas • {savedAt.toLocaleTimeString("pt-BR").slice(0,5)}</span>}
+      </div>
+    </main>
+  </div>
+}
+
+function App(){return <BrowserRouter><Routes><Route path="/" element={<Home/>}/><Route path="/ferramentas" element={<Tools/>}/><Route path="/ferramenta/:id" element={<ToolPage/>}/><Route path="/login" element={<Auth/>}/><Route path="/favoritos" element={<Favorites/>}/><Route path="/historico" element={<History/>}/><Route path="/perfil" element={<Profile/>}/><Route path="/premium" element={<Premium/>}/><Route path="/admin" element={<Admin/>}/><Route path="/termos" element={<Legal/>}/></Routes></BrowserRouter>}
 export default App;

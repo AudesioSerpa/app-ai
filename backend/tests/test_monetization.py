@@ -95,12 +95,13 @@ def test_usage_authenticated(test_user):
 
 # ---------- Checkout ----------
 
-def test_checkout_returns_not_configured(test_user):
-    r = requests.post(f"{BASE_URL}/api/checkout/premium", headers=test_user["headers"], timeout=20)
-    assert r.status_code == 200
+def test_checkout_returns_preference(test_user):
+    # Iteration 4: real MP checkout now returns preference_id + init_point
+    r = requests.post(f"{BASE_URL}/api/checkout/premium", headers=test_user["headers"], timeout=30)
+    assert r.status_code == 200, r.text
     d = r.json()
-    assert d["configured"] is False
-    assert "message" in d
+    assert d.get("preference_id")
+    assert "mercadopago" in (d.get("init_point") or "")
 
 
 # ---------- Admin subscription control ----------

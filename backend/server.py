@@ -1,4 +1,4 @@
-from fastapi import FastAPI, APIRouter, HTTPException, Depends, Header
+from fastapi import FastAPI, APIRouter, HTTPException, Depends, Header, Request
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -8,12 +8,16 @@ from pathlib import Path
 from pydantic import BaseModel, Field, ConfigDict
 from typing import List, Optional, Dict, Any
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 import bcrypt
 import jwt
 import secrets
 import string
 import re
+import time
+import hmac
+import hashlib
+import mercadopago
 from emergentintegrations.llm.chat import LlmChat, UserMessage, TextDelta
 
 
@@ -24,6 +28,17 @@ load_dotenv(ROOT_DIR / '.env')
 mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
+
+# Mercado Pago
+MP_ACCESS_TOKEN = os.environ.get("MP_ACCESS_TOKEN", "")
+MP_WEBHOOK_SECRET = os.environ.get("MP_WEBHOOK_SECRET", "")
+PUBLIC_BASE_URL = os.environ.get("PUBLIC_BASE_URL", "").rstrip("/")
+PREMIUM_PRICE_BRL = float(os.environ.get("PREMIUM_PRICE_BRL", "9.90"))
+mp_sdk = mercadopago.SDK(MP_ACCESS_TOKEN) if MP_ACCESS_TOKEN else None
+
+# Logging (needs to exist before route handlers reference it)
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
 
 # Create the main app without a prefix
 app = FastAPI()
@@ -77,7 +92,13 @@ async def get_settings():
 def is_premium(user):
     if not user: return False
     sub = user.get("subscription") or {}
-    return sub.get("plan") == "premium"
+    if sub.get("plan") != "premium": return False
+    exp = sub.get("expires_at")
+    if not exp: return True  # sem expiração (concedido manualmente pelo admin)
+    try:
+        return datetime.fromisoformat(exp) > datetime.now(timezone.utc)
+    except Exception:
+        return False
 
 def today_iso_prefix():
     return datetime.now(timezone.utc).strftime("%Y-%m-%d")
@@ -258,9 +279,129 @@ async def set_subscription(user_id: str, input: SubscriptionInput, user=Depends(
 
 @api_router.post("/checkout/premium")
 async def checkout_premium(user=Depends(required_user)):
-    # Architecture ready — real gateway (Stripe/Mercado Pago/etc) to be wired later.
-    settings = await get_settings()
-    return {"configured": False, "price_brl": settings["premium_price_brl"], "message": "Pagamento será conectado em breve. Configure o gateway no painel administrativo."}
+    if not mp_sdk:
+        raise HTTPException(503, "Pagamento não configurado. Adicione MP_ACCESS_TOKEN no painel administrativo.")
+    intent_id = f"premium-{user['id']}-{int(time.time_ns())}"[:64]
+    base = PUBLIC_BASE_URL or ""
+    preference = {
+        "items": [{
+            "id": "premium-30d",
+            "title": "Facilita AI Premium — 30 dias",
+            "description": "Acesso Premium por 30 dias (sem anúncios + IA ampliada)",
+            "quantity": 1,
+            "currency_id": "BRL",
+            "unit_price": float(PREMIUM_PRICE_BRL),
+        }],
+        "external_reference": intent_id,
+        "metadata": {"user_id": str(user["id"]), "product": "premium_30d"},
+        "back_urls": {
+            "success": f"{base}/premium",
+            "failure": f"{base}/premium",
+            "pending": f"{base}/premium",
+        },
+        "auto_return": "approved",
+        "notification_url": f"{base}/api/mercadopago/webhook",
+        "statement_descriptor": "FACILITA AI",
+    }
+    try:
+        result = mp_sdk.preference().create(preference)
+        pref = result.get("response") or {}
+        if not pref.get("id"): raise Exception(str(result))
+    except Exception as e:
+        logger.exception("Falha ao criar preferência MP")
+        raise HTTPException(502, "Não foi possível iniciar o pagamento. Tente novamente.")
+    await db.payment_intents.insert_one({
+        "id": intent_id,
+        "user_id": user["id"],
+        "preference_id": pref["id"],
+        "payment_id": None,
+        "status": "created",
+        "amount": float(PREMIUM_PRICE_BRL),
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    })
+    return {"preference_id": pref["id"], "init_point": pref.get("init_point"), "external_reference": intent_id}
+
+
+async def activate_premium_30_days(user_id: str, payment_id: str):
+    # Idempotente: se este payment_id já ativou, não estende novamente
+    existing = await db.premium_grants.find_one({"payment_id": payment_id})
+    if existing: return
+    expires = (datetime.now(timezone.utc) + timedelta(days=30)).isoformat()
+    await db.users.update_one({"id": user_id}, {"$set": {"subscription": {"plan": "premium", "expires_at": expires, "activated_by": "mercadopago", "payment_id": payment_id, "updated_at": datetime.now(timezone.utc).isoformat()}}})
+    await db.premium_grants.insert_one({"payment_id": payment_id, "user_id": user_id, "expires_at": expires, "created_at": datetime.now(timezone.utc).isoformat()})
+
+
+def valid_mp_signature(signature: Optional[str], request_id: Optional[str], payment_id: Optional[str]) -> bool:
+    if not MP_WEBHOOK_SECRET: return True  # em ambiente sem secret configurado, aceita (uso apenas em teste sandbox)
+    if not signature or not request_id or not payment_id: return False
+    parts = dict(p.split("=", 1) for p in signature.split(",") if "=" in p)
+    ts, received = parts.get("ts"), parts.get("v1")
+    if not ts or not received: return False
+    try:
+        if abs(time.time() - int(ts)/1000) > 5*60: return False
+    except ValueError:
+        return False
+    manifest = f"id:{payment_id};request-id:{request_id};ts:{ts};"
+    expected = hmac.new(MP_WEBHOOK_SECRET.encode(), manifest.encode(), hashlib.sha256).hexdigest()
+    return hmac.compare_digest(expected, received)
+
+
+@api_router.post("/mercadopago/webhook")
+async def mercadopago_webhook(request: Request):
+    if not mp_sdk: return {"received": False}
+    body = {}
+    try: body = await request.json()
+    except Exception: pass
+    query = dict(request.query_params)
+    payment_id = query.get("data.id") or str((body.get("data") or {}).get("id") or "")
+    event_type = query.get("type") or body.get("type")
+    if event_type and event_type != "payment": return {"received": True}
+    if not payment_id: return {"received": True}
+    if not valid_mp_signature(request.headers.get("x-signature"), request.headers.get("x-request-id"), payment_id):
+        raise HTTPException(401, "assinatura inválida")
+    try:
+        result = mp_sdk.payment().get(payment_id)
+        payment = result.get("response") or {}
+    except Exception:
+        logger.exception("Falha ao consultar pagamento MP")
+        return {"received": True}
+    reference = payment.get("external_reference")
+    intent = await db.payment_intents.find_one({"id": reference})
+    if not intent: return {"received": True}
+    status = payment.get("status")
+    await db.payment_intents.update_one({"id": reference}, {"$set": {"payment_id": str(payment.get("id")), "status": status}})
+    if status == "approved":
+        await activate_premium_30_days(intent["user_id"], str(payment["id"]))
+    return {"received": True}
+
+
+@api_router.get("/payments/{payment_id}")
+async def payment_status(payment_id: str, user=Depends(required_user)):
+    if not mp_sdk: raise HTTPException(503, "Pagamento não configurado")
+    # Consulta MP e reconcilia
+    try:
+        result = mp_sdk.payment().get(payment_id)
+        payment = result.get("response") or {}
+    except Exception:
+        raise HTTPException(502, "Falha ao consultar pagamento")
+    reference = payment.get("external_reference")
+    intent = await db.payment_intents.find_one({"id": reference, "user_id": user["id"]})
+    if not intent: raise HTTPException(404, "Pagamento não encontrado")
+    status = payment.get("status")
+    await db.payment_intents.update_one({"id": reference}, {"$set": {"payment_id": str(payment.get("id")), "status": status}})
+    if status == "approved":
+        await activate_premium_30_days(user["id"], str(payment["id"]))
+    return {"id": str(payment.get("id")), "status": status, "status_detail": payment.get("status_detail")}
+
+
+@api_router.get("/admin/users")
+async def admin_users(search: Optional[str] = None, user=Depends(required_user)):
+    if user.get("role") != "admin": raise HTTPException(403, "Acesso restrito")
+    q = {}
+    if search:
+        q = {"email": {"$regex": re.escape(search), "$options": "i"}}
+    users = await db.users.find(q, {"_id": 0, "password": 0}).sort("created_at", -1).to_list(50)
+    return users
 
 @api_router.post("/status", response_model=StatusCheck)
 async def create_status_check(input: StatusCheckCreate):
@@ -298,11 +439,7 @@ app.add_middleware(
 )
 
 # Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
-logger = logging.getLogger(__name__)
+# (logger is defined near the top so route handlers can reference it safely.)
 
 @app.on_event("shutdown")
 async def shutdown_db_client():

@@ -1,0 +1,37 @@
+{
+  "summary": "Iteration 4 tested: Admin panel + Mercado Pago sandbox integration. Backend: 28/28 pytest cases pass (12 new for admin/MP + 16 regression). Frontend: /admin renders with 3 stat cards, sliders trigger PUT /api/admin/settings and show admin-saved indicator, switches persist (verified via GET /api/settings), user search finds admin, upgrade/downgrade updates PREMIUM badge, logged-out and non-admin users are redirected from /admin, profile-admin-link hidden for non-admins. Premium: subscribe button opens real MP checkout URL (verified navigation to mercadopago.com.br/checkout/v1/redirect?pref_id=...), invalid payment_id in query does not crash and shows checkout-note, premium user sees premium-active-button disabled with ads hidden on Home. Admin left as FREE plan.",
+  "backend_issues": { "critical": [], "minor": [] },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_admin_mp.py",
+    "/app/backend/tests/test_monetization.py",
+    "/app/backend/tests/test_facilita_api.py",
+    "/app/test_reports/pytest/iteration_4.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "backend/server.py logger used inside checkout_premium / mercadopago_webhook / payment_status is defined at module bottom (line ~442). It works because Python resolves it at call time, but it's a fragile ordering; move logging.basicConfig + logger = getLogger before route handlers.",
+    "/api/mercadopago/webhook currently ALWAYS accepts requests when MP_WEBHOOK_SECRET is empty (documented as sandbox-only). Before production, MP_WEBHOOK_SECRET must be set; consider failing fast on startup if PUBLIC_BASE_URL is unset (webhook + back_urls would be malformed).",
+    "activate_premium_30_days is idempotent via premium_grants, but re-activation for the SAME user with a new payment_id resets expires_at to now+30 (does not stack). If stacking is desired, extend from max(current_expires_at, now).",
+    "Frontend Premium page polls /api/payments/{id} on any payment_id in the query string, even 'INVALID'. Current UX shows 'Pagamento recebido! Confirmando...' briefly (when status=approved was in URL) before switching to error — consider only showing 'Confirming' AFTER the first successful poll returns approved.",
+    "Admin panel writes on every slider input event; consider a small debounce (300ms) to avoid saving 40+ updates while dragging.",
+    "getUser()/isPremium() still read localStorage synchronously; admin plan changes for the CURRENT user only reflect after a re-login (the flow re-logs the user for tests to see PREMIUM state)."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_admin_mp.py",
+    "/app/backend/tests/test_monetization.py",
+    "/app/test_reports/iteration_4.json",
+    "/app/test_reports/pytest/iteration_4.xml"
+  ],
+  "success_rate": { "backend": "100% (28/28)", "frontend": "100% (all admin + MP + regression flows)" },
+  "test_credentials": "admin@facilita.ai / Facilita@123 (from /app/memory/test_credentials.md). Transient test users created via /api/auth/register.",
+  "seed_data_creation": "Created transient uitest_admin_*, uitest_prem_*, test_mp_* users. free_daily_limit was toggled and restored to 10 at end. banner_enabled toggled and reverted. Admin left as FREE.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Mercado Pago is in SANDBOX (MP_ACCESS_TOKEN=APP_USR test token). Real MP preferences are created against api.mercadopago.com; init_point returns https://www.mercadopago.com.br/checkout/v1/redirect?pref_id=... Webhook HMAC validation is DISABLED because MP_WEBHOOK_SECRET is empty; the endpoint accepts any body and short-circuits when body has no payment_id or non-payment type. GET /api/payments/{fictitious_id} returns 502 for unknown IDs (MP call raises). Admin search filters by email substring case-insensitive. Premium check uses expires_at date compare — manually inserting past expires_at flips is_premium to false. To test premium bypass end-to-end: admin -> POST /api/admin/users/{id}/subscription {plan:premium} then RE-LOGIN the user to refresh localStorage.",
+  "rca of the issue": "N/A"
+}
