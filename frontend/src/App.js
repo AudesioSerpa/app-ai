@@ -317,48 +317,52 @@ function Premium(){
   const settings = useAppSettings();
   const [status, setStatus] = useState({ tone: "", text: "" });
   const [loading, setLoading] = useState(false);
+  const [subscription, setSubscription] = useState(null);
   const user = getUser();
-  const premium = isPremium(user);
+  const premium = isPremium(user) || subscription?.is_premium;
 
-  // Reconcilia retorno do checkout do Mercado Pago (payment_id em query)
+  // Carrega estado da assinatura (para mostrar botão cancelar / próxima cobrança)
+  useEffect(() => {
+    if (!getToken()) return;
+    axios.get(`${API}/subscription`, { headers: authHeaders() }).then(r => setSubscription(r.data)).catch(() => {});
+  }, []);
+
+  // Reconcilia retorno do checkout de assinatura do Mercado Pago
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const paymentId = params.get("payment_id");
-    const backStatus = params.get("status");
-    if (!paymentId) return;
+    const preapprovalId = params.get("preapproval_id");
+    if (!preapprovalId) return;
 
-    setStatus({ tone: "info", text: "Confirmando o pagamento com o Mercado Pago..." });
+    setStatus({ tone: "info", text: "Confirmando sua assinatura no Mercado Pago..." });
     let attempts = 0;
     const check = async () => {
       attempts++;
       try {
-        const r = await axios.get(`${API}/payments/${encodeURIComponent(paymentId)}`, { headers: authHeaders() });
-        if (r.data.status === "approved") {
-          setStatus({ tone: "success", text: "Pagamento aprovado! Seu Premium está ativo por 30 dias." });
-          // Recarrega dados do usuário para refletir plano premium
+        const r = await axios.get(`${API}/subscription`, { headers: authHeaders() });
+        setSubscription(r.data);
+        if (r.data.preapproval_status === "authorized") {
+          setStatus({ tone: "success", text: "Assinatura ativada! Seu Premium está liberado e renova todo mês." });
           try {
             const me = await axios.get(`${API}/auth/me`, { headers: authHeaders() });
             localStorage.setItem("facilita_user", JSON.stringify(me.data));
-            setTimeout(() => window.location.reload(), 1200);
+            setTimeout(() => window.location.reload(), 1300);
           } catch { /* ignore */ }
           return;
         }
-        if (r.data.status === "rejected" || r.data.status === "cancelled") {
-          setStatus({ tone: "error", text: "O pagamento não foi aprovado. Tente novamente." });
+        if (r.data.preapproval_status === "cancelled" || r.data.preapproval_status === "canceled") {
+          setStatus({ tone: "error", text: "A assinatura não foi autorizada. Tente novamente." });
           return;
         }
-        if (attempts < 6) setTimeout(check, 2000);
-        else setStatus({ tone: "info", text: "Ainda processando. Recarregue esta página em instantes." });
+        if (attempts < 6) setTimeout(check, 2500);
+        else setStatus({ tone: "info", text: "Ainda processando com o Mercado Pago. Recarregue em instantes." });
       } catch {
         if (attempts < 4) setTimeout(check, 2500);
-        else setStatus({ tone: "error", text: "Não conseguimos confirmar o pagamento agora. Recarregue em instantes." });
+        else setStatus({ tone: "error", text: "Não conseguimos confirmar sua assinatura agora. Recarregue em instantes." });
       }
     };
-    if (backStatus === "approved") setStatus({ tone: "success", text: "Pagamento recebido! Confirmando..." });
     check();
-    // Limpa parâmetros da URL após primeira leitura para evitar re-check em recargas
     const url = new URL(window.location.href);
-    ["payment_id","status","external_reference","merchant_order_id","preference_id","payment_type","collection_id","collection_status"].forEach(k=>url.searchParams.delete(k));
+    ["preapproval_id","payment_id","status","external_reference","merchant_order_id","preference_id","payment_type","collection_id","collection_status"].forEach(k=>url.searchParams.delete(k));
     window.history.replaceState({}, "", url.toString());
   }, []);
 
@@ -374,7 +378,25 @@ function Premium(){
       }
       setStatus({ tone: "error", text: "Não recebemos o link de checkout. Tente novamente." });
     } catch (e) {
-      setStatus({ tone: "error", text: e.response?.data?.detail || "Não foi possível iniciar o pagamento agora." });
+      setStatus({ tone: "error", text: e.response?.data?.detail || "Não foi possível iniciar a assinatura agora." });
+    }
+    setLoading(false);
+  };
+
+  const cancel = async () => {
+    if (!window.confirm("Tem certeza que deseja cancelar sua assinatura? Você mantém o Premium até o fim do ciclo atual.")) return;
+    setLoading(true); setStatus({ tone: "", text: "" });
+    try {
+      const r = await axios.post(`${API}/subscription/cancel`, {}, { headers: authHeaders() });
+      setStatus({ tone: "success", text: r.data.message || "Assinatura cancelada." });
+      const sub = await axios.get(`${API}/subscription`, { headers: authHeaders() });
+      setSubscription(sub.data);
+      try {
+        const me = await axios.get(`${API}/auth/me`, { headers: authHeaders() });
+        localStorage.setItem("facilita_user", JSON.stringify(me.data));
+      } catch { /* ignore */ }
+    } catch (e) {
+      setStatus({ tone: "error", text: e.response?.data?.detail || "Não foi possível cancelar agora." });
     }
     setLoading(false);
   };
@@ -403,19 +425,25 @@ function Premium(){
           <button className="ghost-action" disabled data-testid="plan-free-button">Você está aqui</button>
         </div>
         <div className="plan-card featured" data-testid="plan-premium">
-          <div className="plan-head"><h2>Premium <Sparkles size={17}/></h2><span className="plan-price">R$ {price}<small>/30 dias</small></span></div>
+          <div className="plan-head"><h2>Premium <Sparkles size={17}/></h2><span className="plan-price">R$ {price}<small>/mês</small></span></div>
           <ul>
             <li><Check size={15}/> Sem anúncios em nenhum lugar</li>
             <li><Check size={15}/> {premiumLimit} usos de IA por dia</li>
             <li><Check size={15}/> Histórico ampliado</li>
-            <li><Check size={15}/> Acesso a recursos Premium futuros</li>
+            <li><Check size={15}/> Cancele quando quiser, sem multa</li>
           </ul>
-          {premium ? <button className="primary-action" disabled data-testid="premium-active-button">Assinatura ativa</button>
-                   : <button className="primary-action" onClick={subscribe} disabled={loading} data-testid="premium-subscribe-button"><Sparkles size={18}/> {loading?"Abrindo checkout...":"Assinar Premium"}</button>}
+          {premium
+            ? <>
+                {subscription?.next_payment_date && subscription.preapproval_status === "authorized" && <p className="next-charge" data-testid="next-charge">Próxima cobrança: {new Date(subscription.next_payment_date).toLocaleDateString("pt-BR")}</p>}
+                {subscription?.preapproval_status === "authorized"
+                  ? <button className="ghost-action" onClick={cancel} disabled={loading} data-testid="premium-cancel-button">{loading?"Processando...":"Cancelar assinatura"}</button>
+                  : <button className="primary-action" disabled data-testid="premium-active-button">Assinatura ativa</button>}
+              </>
+            : <button className="primary-action" onClick={subscribe} disabled={loading} data-testid="premium-subscribe-button"><Sparkles size={18}/> {loading?"Abrindo checkout...":"Assinar Premium"}</button>}
         </div>
       </div>
       {status.text && <div className={`checkout-note ${status.tone}`} data-testid="checkout-note">{status.text}</div>}
-      <p className="helper premium-fineprint">Pagamento seguro processado pelo Mercado Pago (Pix, boleto ou cartão). Pagamento único que libera 30 dias de Premium.</p>
+      <p className="helper premium-fineprint">Assinatura mensal recorrente processada com segurança pelo Mercado Pago. Você pode cancelar quando quiser pelo próprio app.</p>
     </main>
     <BottomNav active="profile"/>
   </div>
@@ -510,7 +538,7 @@ function Admin(){
       </section>
 
       <section className="admin-card">
-        <div className="admin-card-head"><h2>Preço do Premium</h2><small>Valor cobrado para 30 dias de acesso.</small></div>
+        <div className="admin-card-head"><h2>Preço do Premium</h2><small>Valor cobrado mensalmente (assinatura recorrente via Mercado Pago).</small></div>
         <AdminSlider testid="admin-slider-price" label="Preço em BRL" value={settings.premium_price_brl} min={4.9} max={99.9} step={0.1} onChange={v=>saveSettings({premium_price_brl:Number(v.toFixed(2))})} suffix=" R$"/>
       </section>
 

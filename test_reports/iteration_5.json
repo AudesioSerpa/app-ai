@@ -1,0 +1,42 @@
+{
+  "summary": "Iteration 5 validated migration Checkout Pro → MP Preapproval (recorrente). Backend: 15/15 pytest cases pass (test_preapproval.py) covering preapproval creation, reuse, GET /api/subscription (401 unauth / free defaults / after-checkout), cancel (404 no preapproval / OK after checkout), webhook HMAC (invalid=401, missing=401, valid signed=200), 3-day grace (within=premium, beyond=free), and regression (admin stats/settings/password_gen). Frontend: /premium shows 'R$ 9,90/mês' (after aligning DB setting to 9.90) and fineprint 'Assinatura mensal recorrente'. Clicking premium-subscribe-button navigates to https://www.mercadopago.com.br/subscriptions/checkout?preapproval_id=... (verified via network request interception). Manual admin-promoted premium user (no authorized preapproval) shows disabled 'Assinatura ativa' (premium-active-button) — cancel button NOT rendered as required. AdBanner hidden for premium on Home. Admin panel regression OK (stats + sliders + user list render). Admin left as FREE.",
+  "backend_issues": { "critical": [], "minor": [] },
+  "frontend_issues": {
+    "ui_bugs": [
+      {"component": "Premium page", "issue": "Seed DEFAULT_SETTINGS.premium_price_brl=19.90 conflicts with .env PREMIUM_PRICE_BRL=9.90 → UI shows R$19,90 while MP charges R$9,90. Testing agent updated DB to 9.90 via /api/admin/settings.", "selector": "[data-testid='plan-premium'] .plan-price", "priority": "MEDIUM"}
+    ],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "/admin Preço do Premium", "issues": ["Copy still says 'Valor cobrado para 30 dias de acesso.' — should reflect monthly recurring subscription (e.g., 'Valor cobrado mensalmente (assinatura recorrente)')."]}
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_preapproval.py",
+    "/app/test_reports/pytest/iteration_5.xml"
+  ],
+  "action_items": [
+    "Align DEFAULT_SETTINGS.premium_price_brl in backend/server.py with PREMIUM_PRICE_BRL env (or seed from env on startup) so freshly seeded environments don't display R$19,90 while MP is billed R$9,90.",
+    "Update admin panel copy for 'Preço do Premium' from '30 dias de acesso' to 'mensalmente / assinatura recorrente' to match the new preapproval model.",
+    "Optional: in checkout_premium, when reusing an existing pending preapproval whose amount/reason drifted from current settings, consider recreating instead of reusing (edge case)."
+  ],
+  "critical_code_review_comments": [
+    "server.py L106-108: is_premium grace logic adds 3d only when plan=='premium' AND preapproval_status=='authorized'. Users with plan=='canceled' + authorized won't get grace — intentional (canceled = user opted out) but worth documenting.",
+    "server.py L367: valid_mp_signature returns True when MP_WEBHOOK_SECRET is empty. Fine for local dev, but consider hard-failing on startup in production if PUBLIC_BASE_URL is set but MP_WEBHOOK_SECRET is not.",
+    "server.py L488-491: fallback retry with 'canceled' (single L) after 'cancelled' — good, but the second try uses same SDK client that may have already logged an error. Not a bug, just noise.",
+    "server.py L397: mercadopago_webhook returns {received: False} when mp_sdk is None (bypassing signature check). Acceptable for dev, but in prod should still 401 if signature is invalid regardless of mp_sdk.",
+    "extend_premium_one_cycle uses processed_mp_events with _id=payment_id as idempotency key — good; ensure the _id unique index is guaranteed by MongoDB default on _id (it is).",
+    "Frontend App.js: getUser() reads localStorage synchronously, so admin plan changes require re-login for current user (pre-existing limitation)."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_preapproval.py",
+    "/app/test_reports/iteration_5.json",
+    "/app/test_reports/pytest/iteration_5.xml"
+  ],
+  "success_rate": { "backend": "100% (15/15)", "frontend": "100% (all premium + regression flows)" },
+  "test_credentials": "admin@facilita.ai / Facilita@123. Transient uitest_pre_* + TEST_pre_* users created and left as free (some orphaned pending preapprovals in MP sandbox, no impact).",
+  "seed_data_creation": "premium_price_brl updated in DB from 19.90 → 9.90 via /api/admin/settings to match .env PREMIUM_PRICE_BRL. Admin left FREE.",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "MP_WEBHOOK_SECRET is now set (cdf0aaf864...). Webhook signature validation is enforced: manifest = f'id:{data_id.lower()};request-id:{request_id};ts:{ts};' HMAC-SHA256 → hex(v1). ts is seconds (or ms, both accepted, ±5min window). Preapproval endpoint returns init_point='https://www.mercadopago.com.br/subscriptions/checkout?preapproval_id=...'. Re-calling POST /api/checkout/premium for the same user with existing pending preapproval returns the same preapproval_id (reuse). GET/POST /api/subscription and /api/subscription/cancel are the new endpoints; /api/payments/{id} is REMOVED. is_premium applies +3d grace ONLY when subscription.plan=='premium' AND preapproval_status=='authorized'. To simulate an authorized invoice webhook without real card, generate x-signature with the HMAC helper in test_preapproval.py::_sign.",
+  "rca of the issue": "N/A — no functional regressions. Minor mismatch: DEFAULT_SETTINGS.premium_price_brl (19.90) not synced with PREMIUM_PRICE_BRL env (9.90) → UI/backend price display drift. Fix: seed price from env or update DEFAULT_SETTINGS default to 9.90."
+}

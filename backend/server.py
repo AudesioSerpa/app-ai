@@ -17,6 +17,7 @@ import re
 import time
 import hmac
 import hashlib
+import httpx
 import mercadopago
 from emergentintegrations.llm.chat import LlmChat, UserMessage, TextDelta
 
@@ -76,7 +77,7 @@ DEFAULT_SETTINGS = {
     "id": "app_settings",
     "free_daily_limit": 10,
     "premium_daily_limit": 500,
-    "premium_price_brl": 19.90,
+    "premium_price_brl": float(os.environ.get("PREMIUM_PRICE_BRL", "9.90")),
     "ads_enabled": True,
     "banner_enabled": True,
     "interstitial_enabled": False,
@@ -92,13 +93,19 @@ async def get_settings():
 def is_premium(user):
     if not user: return False
     sub = user.get("subscription") or {}
-    if sub.get("plan") != "premium": return False
+    if sub.get("plan") not in {"premium", "canceled"}: return False
     exp = sub.get("expires_at")
-    if not exp: return True  # sem expiração (concedido manualmente pelo admin)
+    if not exp:
+        return sub.get("plan") == "premium"  # concessão manual sem expiração
     try:
-        return datetime.fromisoformat(exp) > datetime.now(timezone.utc)
+        expires = datetime.fromisoformat(exp)
     except Exception:
         return False
+    now = datetime.now(timezone.utc)
+    # Tolerância de 3 dias: se o MP ainda está autorizado a tentar cobrar, mantém acesso
+    if sub.get("preapproval_status") == "authorized" and sub.get("plan") == "premium":
+        expires = expires + timedelta(days=3)
+    return expires > now
 
 def today_iso_prefix():
     return datetime.now(timezone.utc).strftime("%Y-%m-%d")
@@ -279,71 +286,112 @@ async def set_subscription(user_id: str, input: SubscriptionInput, user=Depends(
 
 @api_router.post("/checkout/premium")
 async def checkout_premium(user=Depends(required_user)):
+    """Cria uma assinatura recorrente mensal (Mercado Pago Preapproval)."""
     if not mp_sdk:
         raise HTTPException(503, "Pagamento não configurado. Adicione MP_ACCESS_TOKEN no painel administrativo.")
-    intent_id = f"premium-{user['id']}-{int(time.time_ns())}"[:64]
     base = PUBLIC_BASE_URL or ""
-    preference = {
-        "items": [{
-            "id": "premium-30d",
-            "title": "Facilita AI Premium — 30 dias",
-            "description": "Acesso Premium por 30 dias (sem anúncios + IA ampliada)",
-            "quantity": 1,
+    # Se o usuário já tem uma assinatura em andamento, reaproveita
+    existing = user.get("subscription") or {}
+    existing_id = existing.get("preapproval_id")
+    if existing_id and existing.get("preapproval_status") in {"pending", "authorized"}:
+        try:
+            current = mp_sdk.preapproval().get(existing_id)
+            if current.get("status", 500) < 300:
+                data = current.get("response") or {}
+                if data.get("status") in {"pending", "authorized"} and data.get("init_point"):
+                    return {"preapproval_id": data["id"], "init_point": data["init_point"], "reused": True}
+        except Exception:
+            logger.exception("Falha ao consultar preapproval existente")
+
+    body = {
+        "reason": "Facilita AI Premium",
+        "external_reference": str(user["id"]),
+        "payer_email": user["email"],
+        "back_url": f"{base}/premium",
+        "auto_recurring": {
+            "frequency": 1,
+            "frequency_type": "months",
+            "transaction_amount": float(PREMIUM_PRICE_BRL),
             "currency_id": "BRL",
-            "unit_price": float(PREMIUM_PRICE_BRL),
-        }],
-        "external_reference": intent_id,
-        "metadata": {"user_id": str(user["id"]), "product": "premium_30d"},
-        "back_urls": {
-            "success": f"{base}/premium",
-            "failure": f"{base}/premium",
-            "pending": f"{base}/premium",
         },
-        "auto_return": "approved",
-        "notification_url": f"{base}/api/mercadopago/webhook",
-        "statement_descriptor": "FACILITA AI",
+        "status": "pending",
     }
     try:
-        result = mp_sdk.preference().create(preference)
+        result = mp_sdk.preapproval().create(body)
         pref = result.get("response") or {}
         if not pref.get("id"): raise Exception(str(result))
-    except Exception as e:
-        logger.exception("Falha ao criar preferência MP")
-        raise HTTPException(502, "Não foi possível iniciar o pagamento. Tente novamente.")
-    await db.payment_intents.insert_one({
-        "id": intent_id,
-        "user_id": user["id"],
-        "preference_id": pref["id"],
-        "payment_id": None,
-        "status": "created",
-        "amount": float(PREMIUM_PRICE_BRL),
-        "created_at": datetime.now(timezone.utc).isoformat(),
-    })
-    return {"preference_id": pref["id"], "init_point": pref.get("init_point"), "external_reference": intent_id}
+    except Exception:
+        logger.exception("Falha ao criar preapproval MP")
+        raise HTTPException(502, "Não foi possível iniciar a assinatura. Tente novamente.")
+
+    await db.users.update_one({"id": user["id"]}, {"$set": {
+        "subscription": {**(existing if existing else {}),
+            "preapproval_id": pref["id"],
+            "preapproval_status": pref.get("status", "pending"),
+            "activated_by": "mercadopago_recurring",
+            "updated_at": datetime.now(timezone.utc).isoformat(),
+        }
+    }})
+    return {"preapproval_id": pref["id"], "init_point": pref.get("init_point")}
 
 
-async def activate_premium_30_days(user_id: str, payment_id: str):
-    # Idempotente: se este payment_id já ativou, não estende novamente
-    existing = await db.premium_grants.find_one({"payment_id": payment_id})
-    if existing: return
-    expires = (datetime.now(timezone.utc) + timedelta(days=30)).isoformat()
-    await db.users.update_one({"id": user_id}, {"$set": {"subscription": {"plan": "premium", "expires_at": expires, "activated_by": "mercadopago", "payment_id": payment_id, "updated_at": datetime.now(timezone.utc).isoformat()}}})
-    await db.premium_grants.insert_one({"payment_id": payment_id, "user_id": user_id, "expires_at": expires, "created_at": datetime.now(timezone.utc).isoformat()})
+async def extend_premium_one_cycle(user_id: str, preapproval_id: str, payment_id: str):
+    """Estende Premium em +30 dias a partir do maior entre agora e expires_at atual. Idempotente."""
+    event_key = f"authorized_payment:{payment_id}"
+    try:
+        await db.processed_mp_events.insert_one({"_id": event_key, "user_id": user_id, "processed_at": datetime.now(timezone.utc).isoformat()})
+    except Exception:  # DuplicateKeyError → já processado
+        return False
+    user = await db.users.find_one({"id": user_id}) or {}
+    sub = user.get("subscription") or {}
+    now = datetime.now(timezone.utc)
+    base = now
+    try:
+        if sub.get("expires_at"):
+            base = max(datetime.fromisoformat(sub["expires_at"]), now)
+    except Exception:
+        pass
+    new_expires = (base + timedelta(days=30)).isoformat()
+    await db.users.update_one({"id": user_id}, {"$set": {"subscription": {
+        "plan": "premium",
+        "expires_at": new_expires,
+        "activated_by": "mercadopago_recurring",
+        "preapproval_id": preapproval_id,
+        "preapproval_status": "authorized",
+        "last_payment_id": str(payment_id),
+        "updated_at": datetime.now(timezone.utc).isoformat(),
+    }}})
+    return True
 
 
-def valid_mp_signature(signature: Optional[str], request_id: Optional[str], payment_id: Optional[str]) -> bool:
-    if not MP_WEBHOOK_SECRET: return True  # em ambiente sem secret configurado, aceita (uso apenas em teste sandbox)
-    if not signature or not request_id or not payment_id: return False
-    parts = dict(p.split("=", 1) for p in signature.split(",") if "=" in p)
+def valid_mp_signature(headers: Dict[str, str], data_id: Optional[str]) -> bool:
+    if not MP_WEBHOOK_SECRET: return True  # sandbox / secret não configurado
+    signature = headers.get("x-signature") or headers.get("X-Signature")
+    request_id = headers.get("x-request-id") or headers.get("X-Request-Id")
+    if not signature or not request_id or not data_id: return False
+    parts = dict(p.strip().split("=", 1) for p in signature.split(",") if "=" in p)
     ts, received = parts.get("ts"), parts.get("v1")
     if not ts or not received: return False
     try:
-        if abs(time.time() - int(ts)/1000) > 5*60: return False
+        # ts vem em milissegundos ou segundos; tenta ambos
+        ts_int = int(ts)
+        seconds = ts_int / 1000 if ts_int > 10_000_000_000 else ts_int
+        if abs(time.time() - seconds) > 5*60: return False
     except ValueError:
         return False
-    manifest = f"id:{payment_id};request-id:{request_id};ts:{ts};"
+    manifest = f"id:{data_id.lower()};request-id:{request_id};ts:{ts};"
     expected = hmac.new(MP_WEBHOOK_SECRET.encode(), manifest.encode(), hashlib.sha256).hexdigest()
     return hmac.compare_digest(expected, received)
+
+
+async def _fetch_authorized_payment(auth_pay_id: str):
+    async with httpx.AsyncClient(timeout=10) as client:
+        r = await client.get(
+            f"https://api.mercadopago.com/authorized_payments/{auth_pay_id}",
+            headers={"Authorization": f"Bearer {MP_ACCESS_TOKEN}"},
+        )
+    if r.status_code >= 300: return None
+    return r.json()
 
 
 @api_router.post("/mercadopago/webhook")
@@ -353,45 +401,102 @@ async def mercadopago_webhook(request: Request):
     try: body = await request.json()
     except Exception: pass
     query = dict(request.query_params)
-    payment_id = query.get("data.id") or str((body.get("data") or {}).get("id") or "")
-    event_type = query.get("type") or body.get("type")
-    if event_type and event_type != "payment": return {"received": True}
-    if not payment_id: return {"received": True}
-    if not valid_mp_signature(request.headers.get("x-signature"), request.headers.get("x-request-id"), payment_id):
+    data_id = query.get("data.id") or str((body.get("data") or {}).get("id") or "")
+    event_type = query.get("type") or body.get("type") or body.get("topic")
+    if not data_id: return {"received": True}
+    if not valid_mp_signature(dict(request.headers), data_id):
         raise HTTPException(401, "assinatura inválida")
+
     try:
-        result = mp_sdk.payment().get(payment_id)
-        payment = result.get("response") or {}
+        if event_type == "subscription_preapproval":
+            r = mp_sdk.preapproval().get(data_id)
+            pre = r.get("response") or {}
+            user_id = pre.get("external_reference")
+            status = pre.get("status")
+            if user_id:
+                await db.users.update_one(
+                    {"id": user_id, "subscription.preapproval_id": data_id},
+                    {"$set": {"subscription.preapproval_status": status, "subscription.updated_at": datetime.now(timezone.utc).isoformat()}},
+                )
+                # Se cancelado, marca plano como canceled (mantém expires_at até vencer naturalmente)
+                if status == "canceled":
+                    await db.users.update_one({"id": user_id}, {"$set": {"subscription.plan": "canceled"}})
+        elif event_type == "subscription_authorized_payment":
+            invoice = await _fetch_authorized_payment(data_id)
+            if invoice:
+                payment = invoice.get("payment") or {}
+                preapproval_id = str(invoice.get("preapproval_id") or "")
+                pre_status = invoice.get("payment_type_id")  # not needed here
+                # Busca usuário via preapproval_id
+                target = await db.users.find_one({"subscription.preapproval_id": preapproval_id})
+                if target and payment.get("status") == "approved":
+                    await extend_premium_one_cycle(target["id"], preapproval_id, str(payment.get("id") or invoice.get("id")))
+                elif target:
+                    # Cobrança falhou/pendente: apenas registra tentativa (tolerância cobre)
+                    await db.billing_events.update_one(
+                        {"_id": f"invoice:{invoice.get('id')}"},
+                        {"$set": {"invoice": invoice, "status": payment.get("status") or "pending", "user_id": target["id"], "updated_at": datetime.now(timezone.utc).isoformat()}},
+                        upsert=True,
+                    )
+        # ignore other event types
+    except HTTPException: raise
     except Exception:
-        logger.exception("Falha ao consultar pagamento MP")
-        return {"received": True}
-    reference = payment.get("external_reference")
-    intent = await db.payment_intents.find_one({"id": reference})
-    if not intent: return {"received": True}
-    status = payment.get("status")
-    await db.payment_intents.update_one({"id": reference}, {"$set": {"payment_id": str(payment.get("id")), "status": status}})
-    if status == "approved":
-        await activate_premium_30_days(intent["user_id"], str(payment["id"]))
+        logger.exception("Erro no webhook MP")
     return {"received": True}
 
 
-@api_router.get("/payments/{payment_id}")
-async def payment_status(payment_id: str, user=Depends(required_user)):
-    if not mp_sdk: raise HTTPException(503, "Pagamento não configurado")
-    # Consulta MP e reconcilia
+@api_router.get("/subscription")
+async def my_subscription(user=Depends(required_user)):
+    """Retorna o status atual da assinatura do usuário. Reconcilia com MP se possível."""
+    sub = user.get("subscription") or {}
+    pre_id = sub.get("preapproval_id")
+    if pre_id and mp_sdk:
+        try:
+            r = mp_sdk.preapproval().get(pre_id)
+            data = r.get("response") or {}
+            status = data.get("status")
+            if status and status != sub.get("preapproval_status"):
+                await db.users.update_one({"id": user["id"]}, {"$set": {"subscription.preapproval_status": status, "subscription.next_payment_date": data.get("next_payment_date")}})
+                sub["preapproval_status"] = status
+                sub["next_payment_date"] = data.get("next_payment_date")
+        except Exception:
+            logger.exception("Falha ao reconciliar assinatura MP")
+    return {
+        "plan": sub.get("plan", "free"),
+        "expires_at": sub.get("expires_at"),
+        "preapproval_id": pre_id,
+        "preapproval_status": sub.get("preapproval_status"),
+        "next_payment_date": sub.get("next_payment_date"),
+        "is_premium": is_premium({**user, "subscription": sub}),
+    }
+
+
+@api_router.post("/subscription/cancel")
+async def cancel_subscription(user=Depends(required_user)):
+    """Cancela a assinatura recorrente do usuário no Mercado Pago."""
+    sub = user.get("subscription") or {}
+    pre_id = sub.get("preapproval_id")
+    if not pre_id: raise HTTPException(404, "Você não possui uma assinatura ativa para cancelar.")
+    if not mp_sdk: raise HTTPException(503, "Pagamento não configurado.")
     try:
-        result = mp_sdk.payment().get(payment_id)
-        payment = result.get("response") or {}
+        r = mp_sdk.preapproval().update(pre_id, {"status": "cancelled"})
     except Exception:
-        raise HTTPException(502, "Falha ao consultar pagamento")
-    reference = payment.get("external_reference")
-    intent = await db.payment_intents.find_one({"id": reference, "user_id": user["id"]})
-    if not intent: raise HTTPException(404, "Pagamento não encontrado")
-    status = payment.get("status")
-    await db.payment_intents.update_one({"id": reference}, {"$set": {"payment_id": str(payment.get("id")), "status": status}})
-    if status == "approved":
-        await activate_premium_30_days(user["id"], str(payment["id"]))
-    return {"id": str(payment.get("id")), "status": status, "status_detail": payment.get("status_detail")}
+        logger.exception("Falha ao cancelar preapproval")
+        raise HTTPException(502, "Não foi possível cancelar agora. Tente novamente.")
+    if r.get("status", 500) >= 300:
+        # Fallback: alguns endpoints antigos aceitam grafias diferentes
+        try:
+            r = mp_sdk.preapproval().update(pre_id, {"status": "canceled"})
+        except Exception:
+            r = {"status": 502}
+    if r.get("status", 500) >= 300:
+        raise HTTPException(502, "Não foi possível cancelar agora.")
+    await db.users.update_one({"id": user["id"]}, {"$set": {
+        "subscription.plan": "canceled",
+        "subscription.preapproval_status": "cancelled",
+        "subscription.updated_at": datetime.now(timezone.utc).isoformat(),
+    }})
+    return {"ok": True, "message": "Assinatura cancelada. Seu Premium fica ativo até o fim do ciclo pago."}
 
 
 @api_router.get("/admin/users")
