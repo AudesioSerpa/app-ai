@@ -1,0 +1,28 @@
+{
+  "summary": "Iteration 6 validated the two new features: (1) Grace Period (3d) fields on GET /api/me/usage and /api/subscription (in_grace_period, grace_days_left) + GraceBanner UI on Home/Profile/Premium; (2) GET /api/subscription/invoices (auth-required, graceful empty handling) + Profile invoice list/empty UI. Backend: 10/10 pytest passed (test_grace_invoices.py) covering free defaults, grace within 1 day (=2 days_left), out-of-grace at 4 days, non-authorized preapproval, invoices 401 unauth, empty for no preapproval, and array shape after checkout. Frontend: admin manually promoted to premium+authorized+expires_at=yesterday via Mongo — grace-banner appears on all 3 screens with expected copy 'Não conseguimos cobrar seu cartão' and href='/premium'; profile shows invoice-empty (MP returns nothing for fake preapproval, graceful); new free user does NOT see banner and sees invoice-empty. Admin reset back to FREE at end.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {"ui_bugs": [], "integration_issues": [], "design_issues": []},
+  "test_report_links": [
+    "/app/backend/tests/test_grace_invoices.py",
+    "/app/test_reports/pytest/iteration_6.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "server.py compute_grace: grace_days_left uses ceil-like formula; may return 3 exactly at expiry moment (edge). Acceptable given +3d tolerance. Consistent with is_premium boundary.",
+    "server.py list_invoices swallows all exceptions returning invoices:[]. Good for MP sandbox 400/404. Consider logging severity=warning instead of exception to avoid noisy logs for expected 404s on unauthorized preapprovals.",
+    "App.js Profile calls /subscription/invoices on mount without dependency on user premium status — extra call for free users but returns [] fast; not a bug. Could gate on usage?.is_premium || usage?.in_grace_period to save a request.",
+    "App.js GraceBanner on /premium uses subscription object (in_grace_period, grace_days_left) — depends on Premium page fetching /api/subscription, which it does; consistent behavior across screens verified."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_grace_invoices.py",
+    "/app/test_reports/pytest/iteration_6.xml",
+    "/app/test_reports/iteration_6.json"
+  ],
+  "success_rate": {"backend": "100% (10/10)", "frontend": "100% (all grace + invoices flows verified)"},
+  "test_credentials": "admin@facilita.ai / Facilita@123. Transient TEST_gr_* and TEST_ui_* users created, left as free (no impact).",
+  "seed_data_creation": "Temporarily set admin subscription={plan:'premium', preapproval_status:'authorized', expires_at=yesterday, preapproval_id:'fake-grace'} to simulate grace period, then reset admin to free at end of test run.",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "New endpoints: GET /api/subscription/invoices → {invoices:[{id, amount, currency, status, date, period_start}]}. GET /api/me/usage and /api/subscription both include in_grace_period (bool) and grace_days_left (int). GraceBanner UI (data-testid='grace-banner') renders on Home, /perfil and /premium when in_grace_period=true. Profile shows data-testid='invoice-list' or 'invoice-empty' based on backend response. To simulate grace, update mongo users.subscription.expires_at to past date with plan='premium' and preapproval_status='authorized'.",
+  "rca of the issue": "N/A — no issues found. Both features work as spec'd."
+}

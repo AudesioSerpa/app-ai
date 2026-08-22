@@ -66,6 +66,19 @@ function UsageBadge({ usage, onUpgrade }){
     <span>{usage.remaining} de {usage.limit} usos de IA hoje</span>
   </button>
 }
+
+function GraceBanner({ usage }){
+  if (!usage?.in_grace_period) return null;
+  const days = usage.grace_days_left || 3;
+  return <Link to="/premium" className="grace-banner" data-testid="grace-banner">
+    <span className="grace-icon">⚠</span>
+    <div className="grace-copy">
+      <strong>Não conseguimos cobrar seu cartão</strong>
+      <small>Seu Premium continua ativo por mais {days} {days===1?"dia":"dias"}. Atualize seu cartão para não perder o acesso.</small>
+    </div>
+    <ChevronRight size={18}/>
+  </Link>
+}
 function BottomNav({active="home"}){return <nav className="bottom-nav" data-testid="bottom-navigation">
   <Link className={active==="home"?"active":""} to="/" data-testid="nav-home"><HomeIcon size={19}/><span>Início</span></Link>
   <Link className={active==="tools"?"active":""} to="/ferramentas" data-testid="nav-tools"><Menu size={19}/><span>Ferramentas</span></Link>
@@ -112,6 +125,7 @@ function Home(){
   const nav = useNavigate();
   const filtered=tools.filter(t=>`${t.name} ${t.desc}`.toLowerCase().includes(query.toLowerCase()));
   return <div className="app-shell"><header className="topbar"><Logo/><Link to="/perfil" className="profile-dot" data-testid="header-profile-button"><UserRound size={18}/></Link></header><main className="page home-page">
+  <GraceBanner usage={usage}/>
   <section className="welcome"><p className="eyebrow">BOM TE VER POR AQUI <span>✦</span></p><h1>O que você precisa<br/><em>resolver</em> hoje?</h1><p className="tagline">Sua IA para resolver o dia a dia.</p><label className="searchbox"><Search size={19}/><input data-testid="home-search-input" placeholder="O que você precisa fazer?" value={query} onChange={e=>setQuery(e.target.value)}/><kbd>⌘ K</kbd></label>
     <div className="usage-row"><UsageBadge usage={usage} onUpgrade={()=>nav("/premium")}/></div>
   </section>
@@ -292,15 +306,42 @@ function History(){
 function Profile(){
   const user = getUser();
   const [usage] = useUsage();
-  const premium = isPremium(user);
+  const premium = isPremium(user) || usage?.is_premium;
+  const [invoices, setInvoices] = useState(null);
   const logout = () => { localStorage.removeItem("facilita_token"); localStorage.removeItem("facilita_user"); localStorage.removeItem("facilita_favorites"); window.location.href = "/"; };
+
+  useEffect(() => {
+    if (!getToken()) return;
+    axios.get(`${API}/subscription/invoices`, { headers: authHeaders() }).then(r => setInvoices(r.data.invoices || [])).catch(() => setInvoices([]));
+  }, []);
+
+  const fmtDate = (iso) => { try { return new Date(iso).toLocaleDateString("pt-BR"); } catch { return "-"; } };
+  const fmtBRL = (v) => `R$ ${Number(v||0).toFixed(2).replace(".", ",")}`;
+  const statusLabel = (s) => ({approved:"Pago", rejected:"Recusado", pending:"Aguardando", in_process:"Aguardando", cancelled:"Cancelado", refunded:"Reembolsado"}[s] || s);
+
   return <div className="app-shell">
     <header className="topbar"><Logo/><span className="page-label">Perfil</span></header>
     <main className="page">
+      <GraceBanner usage={usage}/>
       <section className="profile-card"><span className="avatar"><UserRound size={25}/></span><div><p className="eyebrow">SEU PERFIL {premium && <span className="plan-tag" data-testid="plan-tag-premium">PREMIUM</span>}</p><h2>{user?.name||"Visitante"}</h2><p>{user?.email||"Use sem cadastro ou entre para sincronizar"}</p></div></section>
       {usage && <div className="usage-summary" data-testid="profile-usage-summary"><span>Usos de IA hoje</span><strong>{usage.used} / {usage.limit}</strong><small>{premium ? "Plano Premium" : "Plano Grátis"}</small></div>}
       {!premium && <Link className="premium-strip" to="/premium" data-testid="premium-card"><span><Sparkles size={20}/></span><div><strong>Facilita AI Premium</strong><small>Mais usos, sem anúncios e recursos avançados</small></div><ChevronRight/></Link>}
       {premium && <Link className="premium-strip active" to="/premium" data-testid="premium-card-active"><span><Sparkles size={20}/></span><div><strong>Você é Premium</strong><small>Ver benefícios e gerenciar sua assinatura</small></div><ChevronRight/></Link>}
+
+      {user && invoices !== null && invoices.length > 0 && <section className="section">
+        <div className="section-title"><h2>Faturas</h2><small>últimas cobranças</small></div>
+        <div className="invoice-list" data-testid="invoice-list">
+          {invoices.map(inv => <div key={inv.id} className="invoice-row" data-testid={`invoice-${inv.id}`}>
+            <div className="invoice-main">
+              <strong>{fmtBRL(inv.amount)}</strong>
+              <small>{fmtDate(inv.date)}</small>
+            </div>
+            <span className={`invoice-status ${inv.status}`} data-testid={`invoice-status-${inv.id}`}>{statusLabel(inv.status)}</span>
+          </div>)}
+        </div>
+      </section>}
+      {user && invoices !== null && invoices.length === 0 && <p className="helper" data-testid="invoice-empty">Nenhuma cobrança registrada ainda.</p>}
+
       <div className="settings-list">
         {user?.role === "admin" && <Link to="/admin" data-testid="profile-admin-link"><Shield size={18}/> Painel administrativo<ChevronRight size={17}/></Link>}
         {user ? <button onClick={logout} data-testid="profile-logout-button"><UserRound size={18}/> Sair da conta<ChevronRight size={17}/></button>
@@ -408,6 +449,7 @@ function Premium(){
   return <div className="app-shell">
     <header className="tool-header"><Link to="/perfil" data-testid="premium-back-button"><ArrowLeft size={20}/></Link><span>Facilita AI Premium</span><span/></header>
     <main className="page premium-page">
+      <GraceBanner usage={{in_grace_period: subscription?.in_grace_period, grace_days_left: subscription?.grace_days_left}}/>
       <section className="premium-hero">
         <p className="eyebrow">FACILITA AI PREMIUM</p>
         <h1>Menos limites,<br/><em>zero anúncios.</em></h1>

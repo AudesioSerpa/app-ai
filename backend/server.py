@@ -107,6 +107,26 @@ def is_premium(user):
         expires = expires + timedelta(days=3)
     return expires > now
 
+def compute_grace(user):
+    """Retorna {in_grace_period, grace_days_left} indicando se o usuário está no período de tolerância de 3 dias."""
+    if not user: return {"in_grace_period": False, "grace_days_left": 0}
+    sub = user.get("subscription") or {}
+    if sub.get("plan") != "premium" or sub.get("preapproval_status") != "authorized":
+        return {"in_grace_period": False, "grace_days_left": 0}
+    exp = sub.get("expires_at")
+    if not exp: return {"in_grace_period": False, "grace_days_left": 0}
+    try:
+        expires = datetime.fromisoformat(exp)
+    except Exception:
+        return {"in_grace_period": False, "grace_days_left": 0}
+    now = datetime.now(timezone.utc)
+    if now < expires: return {"in_grace_period": False, "grace_days_left": 0}
+    grace_end = expires + timedelta(days=3)
+    if now < grace_end:
+        secs = (grace_end - now).total_seconds()
+        return {"in_grace_period": True, "grace_days_left": max(1, int(secs // 86400) + (1 if secs % 86400 else 0))}
+    return {"in_grace_period": False, "grace_days_left": 0}
+
 def today_iso_prefix():
     return datetime.now(timezone.utc).strftime("%Y-%m-%d")
 
@@ -273,7 +293,8 @@ async def me_usage(user=Depends(current_user)):
     limit = settings["premium_daily_limit"] if premium else settings["free_daily_limit"]
     user_id = user["id"] if user else "guest"
     used = await count_today_ai_usage(user_id)
-    return {"used": used, "limit": limit, "remaining": max(0, limit - used), "is_premium": premium, "plan": "premium" if premium else "free"}
+    grace = compute_grace(user)
+    return {"used": used, "limit": limit, "remaining": max(0, limit - used), "is_premium": premium, "plan": "premium" if premium else "free", **grace}
 
 @api_router.post("/admin/users/{user_id}/subscription")
 async def set_subscription(user_id: str, input: SubscriptionInput, user=Depends(required_user)):
@@ -468,7 +489,43 @@ async def my_subscription(user=Depends(required_user)):
         "preapproval_status": sub.get("preapproval_status"),
         "next_payment_date": sub.get("next_payment_date"),
         "is_premium": is_premium({**user, "subscription": sub}),
+        **compute_grace({**user, "subscription": sub}),
     }
+
+
+@api_router.get("/subscription/invoices")
+async def list_invoices(user=Depends(required_user)):
+    """Retorna o histórico de cobranças (authorized_payments) do usuário no Mercado Pago."""
+    sub = user.get("subscription") or {}
+    pre_id = sub.get("preapproval_id")
+    if not pre_id or not MP_ACCESS_TOKEN:
+        return {"invoices": []}
+    try:
+        async with httpx.AsyncClient(timeout=10) as client:
+            r = await client.get(
+                "https://api.mercadopago.com/authorized_payments/search",
+                params={"preapproval_id": pre_id, "limit": 20, "sort": "date_created:desc"},
+                headers={"Authorization": f"Bearer {MP_ACCESS_TOKEN}"},
+            )
+        if r.status_code >= 300:
+            return {"invoices": []}
+        data = r.json()
+        results = data.get("results", [])
+    except Exception:
+        logger.exception("Falha ao listar faturas MP")
+        return {"invoices": []}
+    invoices = []
+    for inv in results:
+        payment = inv.get("payment") or {}
+        invoices.append({
+            "id": str(inv.get("id")),
+            "amount": inv.get("transaction_amount") or (payment.get("transaction_amount") or 0),
+            "currency": inv.get("currency_id") or "BRL",
+            "status": payment.get("status") or inv.get("status") or "pending",
+            "date": inv.get("date_created") or payment.get("date_approved") or payment.get("date_created"),
+            "period_start": inv.get("debit_date"),
+        })
+    return {"invoices": invoices}
 
 
 @api_router.post("/subscription/cancel")
