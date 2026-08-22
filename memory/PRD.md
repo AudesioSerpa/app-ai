@@ -34,7 +34,10 @@ Criar um PWA mobile-first em pt-BR chamado **Facilita AI** — central de ferram
 - Favoritos sincronizados: hook usa localStorage + `/api/favorites` (GET/POST/DELETE) quando logado.
 - Histórico com fetch autenticado, agrupamento por dia, reabrir em modal, copiar e excluir.
 - QR Code corrigido (agora lê `fields.text`).
-- Painel admin básico via `/api/admin/stats` (usuários, gerações, top ferramentas).
+- **Monetização (v1)**: sistema centralizado de plano (`isPremium()`); `AdBanner` só aparece para plano grátis com `ads_enabled=true`; `UsageBadge` mostra usos restantes; modal amigável quando limite bate; página `/premium` com comparação Grátis vs Premium e botão "Assinar Premium" que chama `/api/checkout/premium` (gateway real preparado, sem cobrança fictícia).
+- **Configuração no admin**: `/api/admin/settings` GET/PUT permite alterar limite grátis/premium, preço, e ligar/desligar banner/interstitial/ads.
+- **Rate limit por dia**: `/api/generate` retorna HTTP 402 quando usuário grátis passa do `free_daily_limit`. Ferramentas locais (QR/senha/%) nunca gastam cota.
+- **Assinatura**: apenas admin altera plano de usuário via `POST /api/admin/users/{id}/subscription` — não há upgrade self-service falso.
 - Placeholder de anúncio identificado + página de termos.
 
 ## Backlog priorizado

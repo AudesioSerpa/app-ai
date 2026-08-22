@@ -1,0 +1,33 @@
+{
+  "summary": "Iteration 3: monetization system E2E verified. All 16 backend tests pass (10 new + 6 regression). All frontend flows pass: /premium page with plan-free/plan-premium cards and R$ price, subscribe -> checkout-note; UsageBadge on Home for free user navigating to /premium; ad-banner-placeholder shown for free user and hidden for premium (Home + tool page); limit-reached-modal appears with limit-upgrade-button when free_daily_limit=0; Profile shows plan-tag-premium & premium-card-active after upgrade; regression QR preview + history intact.",
+  "backend_issues": { "critical": [], "minor": [] },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_monetization.py",
+    "/app/backend/tests/test_facilita_api.py",
+    "/app/test_reports/pytest/pytest_results.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "isPremium()/getUser() read from localStorage synchronously inside render; a plan change requires a full reload for AdBanner to disappear in another tab. useUsage in AdBanner would be more reactive.",
+    "useUsage refresh is not called on window focus or route change; usage badge on Home may stall until user reloads.",
+    "/api/checkout/premium is documented as intentionally not configured (returns 200 with configured:false). Consider clearer status code convention if a real gateway is later attached.",
+    "Rate-limit error message on /api/generate for premium user hitting cap says 'Limite diário atingido' — fine, but consider adding a separate premium upgrade hint or contact-support message."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_monetization.py",
+    "/app/test_reports/iteration_3.json",
+    "/app/test_reports/pytest/pytest_results.xml"
+  ],
+  "success_rate": { "backend": "100% (16/16)", "frontend": "100% (all monetization + regression checks)" },
+  "test_credentials": "admin@facilita.ai / Facilita@123 (per /app/memory/test_credentials.md). Ephemeral test users registered via API during tests.",
+  "seed_data_creation": "Created transient test users (test_mon_*, test_rl_*, uitest_*) via /api/auth/register. free_daily_limit was toggled to 3/1/0 during tests and restored to 10 at the end (verified via /api/settings). Admin user was NOT modified.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Monetization endpoints & UI fully validated. Rate limit path: set free_daily_limit=0 via PUT /api/admin/settings then any AI tool returns 402 -> UI shows [data-testid=limit-reached-modal]. Premium bypass path: POST /api/admin/users/{id}/subscription with {plan:premium} then re-login user to refresh localStorage user object. Non-AI tools (password_gen, percentage_calc, qrcode) are NOT rate limited. Google OAuth still an intentional mock. Test users accumulate in DB — cleanup optional.",
+  "rca of the issue": "N/A – no issues found."
+}

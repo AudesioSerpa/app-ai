@@ -46,6 +46,50 @@ class GenerateInput(BaseModel):
 class FavoriteInput(BaseModel):
     tool_id: str
 
+class SettingsInput(BaseModel):
+    free_daily_limit: Optional[int] = Field(default=None, ge=0, le=1000)
+    premium_daily_limit: Optional[int] = Field(default=None, ge=0, le=100000)
+    premium_price_brl: Optional[float] = Field(default=None, ge=0)
+    ads_enabled: Optional[bool] = None
+    banner_enabled: Optional[bool] = None
+    interstitial_enabled: Optional[bool] = None
+
+class SubscriptionInput(BaseModel):
+    plan: str  # "free" | "premium"
+
+DEFAULT_SETTINGS = {
+    "id": "app_settings",
+    "free_daily_limit": 10,
+    "premium_daily_limit": 500,
+    "premium_price_brl": 19.90,
+    "ads_enabled": True,
+    "banner_enabled": True,
+    "interstitial_enabled": False,
+}
+
+async def get_settings():
+    s = await db.settings.find_one({"id": "app_settings"}, {"_id": 0})
+    if not s:
+        await db.settings.insert_one(DEFAULT_SETTINGS.copy())
+        return DEFAULT_SETTINGS.copy()
+    return {**DEFAULT_SETTINGS, **s}
+
+def is_premium(user):
+    if not user: return False
+    sub = user.get("subscription") or {}
+    return sub.get("plan") == "premium"
+
+def today_iso_prefix():
+    return datetime.now(timezone.utc).strftime("%Y-%m-%d")
+
+async def count_today_ai_usage(user_id: str) -> int:
+    prefix = today_iso_prefix()
+    return await db.usage.count_documents({
+        "user_id": user_id,
+        "tool": {"$in": list(AI_TOOLS)},
+        "created_at": {"$regex": f"^{prefix}"},
+    })
+
 def token_for(user):
     return jwt.encode({"sub": user["id"], "email": user["email"], "role": user.get("role", "user")}, JWT_SECRET, algorithm="HS256")
 
@@ -91,15 +135,15 @@ async def register(input: AuthInput):
     email = input.email.strip().lower()
     if not re.match(r"^[^@\s]+@[^@\s]+\.[^@\s]+$", email): raise HTTPException(400, "Informe um e-mail válido")
     if await db.users.find_one({"email": email}): raise HTTPException(409, "Este e-mail já está cadastrado")
-    user = {"id": str(uuid.uuid4()), "email": email, "name": input.name.strip() or email.split("@")[0], "password": bcrypt.hashpw(input.password.encode(), bcrypt.gensalt()).decode(), "role": "user", "created_at": datetime.now(timezone.utc).isoformat()}
+    user = {"id": str(uuid.uuid4()), "email": email, "name": input.name.strip() or email.split("@")[0], "password": bcrypt.hashpw(input.password.encode(), bcrypt.gensalt()).decode(), "role": "user", "subscription": {"plan": "free"}, "created_at": datetime.now(timezone.utc).isoformat()}
     await db.users.insert_one(user.copy())
-    return {"token": token_for(user), "user": {k: user[k] for k in ("id", "email", "name", "role")}}
+    return {"token": token_for(user), "user": {k: user[k] for k in ("id", "email", "name", "role", "subscription")}}
 
 @api_router.post("/auth/login")
 async def login(input: AuthInput):
     user = await db.users.find_one({"email": input.email.strip().lower()})
     if not user or not bcrypt.checkpw(input.password.encode(), user.get("password", "").encode()): raise HTTPException(401, "E-mail ou senha incorretos")
-    safe = {k: user[k] for k in ("id", "email", "name", "role")}
+    safe = {k: user.get(k) for k in ("id", "email", "name", "role", "subscription")}
     return {"token": token_for(user), "user": safe}
 
 @api_router.get("/auth/me")
@@ -134,8 +178,14 @@ async def ai_generate(tool, payload):
 async def generate(input: GenerateInput, user=Depends(current_user)):
     if input.tool not in AI_TOOLS and input.tool not in {"qrcode", "password_gen", "percentage_calc"}: raise HTTPException(400, "Ferramenta inválida")
     if input.tool in AI_TOOLS:
+        settings = await get_settings()
+        user_id = user["id"] if user else "guest"
+        limit = settings["premium_daily_limit"] if is_premium(user) else settings["free_daily_limit"]
+        used = await count_today_ai_usage(user_id)
+        if used >= limit:
+            raise HTTPException(402, "Você atingiu o limite gratuito de IA de hoje. Assine o Premium para continuar." if not is_premium(user) else "Limite diário atingido.")
         text = await ai_generate(input.tool, input.payload)
-        record = {"id": str(uuid.uuid4()), "tool": input.tool, "user_id": user["id"] if user else "guest", "prompt": input.payload, "result": text, "created_at": datetime.now(timezone.utc).isoformat()}
+        record = {"id": str(uuid.uuid4()), "tool": input.tool, "user_id": user_id, "prompt": input.payload, "result": text, "created_at": datetime.now(timezone.utc).isoformat()}
         await db.usage.insert_one(record)
     elif input.tool == "password_gen":
         p=input.payload; chars=(string.ascii_letters if p.get("letters", True) else "")+(string.digits if p.get("numbers", True) else "")+(string.punctuation if p.get("symbols", True) else "")
@@ -169,6 +219,48 @@ async def remove_history(item_id: str, user=Depends(required_user)):
 async def admin_stats(user=Depends(required_user)):
     if user.get("role") != "admin": raise HTTPException(403, "Acesso restrito")
     return {"users": await db.users.count_documents({}), "generations": await db.usage.count_documents({}), "tools": await db.usage.aggregate([{"$group":{"_id":"$tool","count":{"$sum":1}}}]).to_list(20)}
+
+@api_router.get("/settings")
+async def public_settings():
+    s = await get_settings()
+    return {k: s[k] for k in ("free_daily_limit","premium_daily_limit","premium_price_brl","ads_enabled","banner_enabled","interstitial_enabled")}
+
+@api_router.get("/admin/settings")
+async def admin_get_settings(user=Depends(required_user)):
+    if user.get("role") != "admin": raise HTTPException(403, "Acesso restrito")
+    return await get_settings()
+
+@api_router.put("/admin/settings")
+async def admin_update_settings(input: SettingsInput, user=Depends(required_user)):
+    if user.get("role") != "admin": raise HTTPException(403, "Acesso restrito")
+    updates = {k: v for k, v in input.model_dump().items() if v is not None}
+    if updates:
+        await db.settings.update_one({"id": "app_settings"}, {"$set": updates}, upsert=True)
+    return await get_settings()
+
+@api_router.get("/me/usage")
+async def me_usage(user=Depends(current_user)):
+    settings = await get_settings()
+    premium = is_premium(user)
+    limit = settings["premium_daily_limit"] if premium else settings["free_daily_limit"]
+    user_id = user["id"] if user else "guest"
+    used = await count_today_ai_usage(user_id)
+    return {"used": used, "limit": limit, "remaining": max(0, limit - used), "is_premium": premium, "plan": "premium" if premium else "free"}
+
+@api_router.post("/admin/users/{user_id}/subscription")
+async def set_subscription(user_id: str, input: SubscriptionInput, user=Depends(required_user)):
+    if user.get("role") != "admin": raise HTTPException(403, "Acesso restrito")
+    if input.plan not in {"free", "premium"}: raise HTTPException(400, "Plano inválido")
+    await db.users.update_one({"id": user_id}, {"$set": {"subscription": {"plan": input.plan, "updated_at": datetime.now(timezone.utc).isoformat()}}})
+    fresh = await db.users.find_one({"id": user_id}, {"_id": 0, "password": 0})
+    if not fresh: raise HTTPException(404, "Usuário não encontrado")
+    return {"user": fresh}
+
+@api_router.post("/checkout/premium")
+async def checkout_premium(user=Depends(required_user)):
+    # Architecture ready — real gateway (Stripe/Mercado Pago/etc) to be wired later.
+    settings = await get_settings()
+    return {"configured": False, "price_brl": settings["premium_price_brl"], "message": "Pagamento será conectado em breve. Configure o gateway no painel administrativo."}
 
 @api_router.post("/status", response_model=StatusCheck)
 async def create_status_check(input: StatusCheckCreate):

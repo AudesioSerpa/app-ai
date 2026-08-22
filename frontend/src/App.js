@@ -22,11 +22,50 @@ const toolMap = Object.fromEntries(tools.map(t=>[t.id,t]));
 const soon = [{name:"Transcrever áudio", icon:MessageCircle},{name:"Traduzir",icon:WandSparkles},{name:"Calculadora de desconto",icon:Percent},{name:"Criar currículo",icon:FileText}];
 const slug = value => value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9]+/g, "-").replace(/^-|-$/g, "").toLowerCase();
 const getToken = () => localStorage.getItem("facilita_token");
+const getUser = () => { try { return JSON.parse(localStorage.getItem("facilita_user") || "null"); } catch { return null; } };
 const authHeaders = () => { const t = getToken(); return t ? { Authorization: `Bearer ${t}` } : {}; };
+const isPremium = (u = getUser()) => u?.subscription?.plan === "premium";
 
 function HashIcon(props){return <span className="hash-icon" {...props}>#</span>}
 function Logo(){return <Link to="/" className="brand" data-testid="brand-home"><span className="brand-mark"><Sparkles size={17}/></span><span>facilita<span>ai</span></span></Link>}
-function AdBanner(){return <div className="ad-banner" data-testid="development-ad-placeholder"><span>ESPAÇO PUBLICITÁRIO</span><small>anúncios aparecem aqui no plano gratuito</small></div>}
+
+function useAppSettings(){
+  const [settings, setSettings] = useState(null);
+  useEffect(() => {
+    axios.get(`${API}/settings`).then(r => setSettings(r.data)).catch(() => setSettings({ads_enabled:true, banner_enabled:true, interstitial_enabled:false}));
+  }, []);
+  return settings;
+}
+
+function useUsage(){
+  const [usage, setUsage] = useState(null);
+  const refresh = useCallback(() => {
+    axios.get(`${API}/me/usage`, { headers: authHeaders() }).then(r => setUsage(r.data)).catch(() => setUsage(null));
+  }, []);
+  useEffect(() => { refresh(); }, [refresh]);
+  return [usage, refresh];
+}
+
+function AdBanner({ variant = "banner" }){
+  const settings = useAppSettings();
+  if (isPremium()) return null;
+  if (!settings?.ads_enabled) return null;
+  if (variant === "banner" && !settings.banner_enabled) return null;
+  return <div className="ad-banner" data-testid={`ad-${variant}-placeholder`}>
+    <span>ESPAÇO PUBLICITÁRIO</span>
+    <small>anúncios aparecem no plano gratuito · <Link to="/premium" className="ad-upgrade" data-testid="ad-upgrade-link">remover</Link></small>
+  </div>
+}
+
+function UsageBadge({ usage, onUpgrade }){
+  if (!usage) return null;
+  if (usage.is_premium) return <span className="usage-badge premium" data-testid="usage-badge-premium"><Sparkles size={13}/> Premium ativo</span>;
+  const low = usage.remaining <= Math.max(1, Math.floor(usage.limit * 0.2));
+  return <button type="button" className={`usage-badge ${low?"low":""}`} onClick={onUpgrade} data-testid="usage-badge">
+    <Sparkles size={13}/>
+    <span>{usage.remaining} de {usage.limit} usos de IA hoje</span>
+  </button>
+}
 function BottomNav({active="home"}){return <nav className="bottom-nav" data-testid="bottom-navigation">
   <Link className={active==="home"?"active":""} to="/" data-testid="nav-home"><HomeIcon size={19}/><span>Início</span></Link>
   <Link className={active==="tools"?"active":""} to="/ferramentas" data-testid="nav-tools"><Menu size={19}/><span>Ferramentas</span></Link>
@@ -66,12 +105,21 @@ function useFavorites(){
   return [favorites, toggle];
 }
 
-function Home(){const [query,setQuery]=useState(""); const [favorites,toggle]=useFavorites(); const filtered=tools.filter(t=>`${t.name} ${t.desc}`.toLowerCase().includes(query.toLowerCase())); return <div className="app-shell"><header className="topbar"><Logo/><Link to="/perfil" className="profile-dot" data-testid="header-profile-button"><UserRound size={18}/></Link></header><main className="page home-page">
-  <section className="welcome"><p className="eyebrow">BOM TE VER POR AQUI <span>✦</span></p><h1>O que você precisa<br/><em>resolver</em> hoje?</h1><p className="tagline">Sua IA para resolver o dia a dia.</p><label className="searchbox"><Search size={19}/><input data-testid="home-search-input" placeholder="O que você precisa fazer?" value={query} onChange={e=>setQuery(e.target.value)}/><kbd>⌘ K</kbd></label></section>
+function Home(){
+  const [query,setQuery]=useState("");
+  const [favorites,toggle]=useFavorites();
+  const [usage] = useUsage();
+  const nav = useNavigate();
+  const filtered=tools.filter(t=>`${t.name} ${t.desc}`.toLowerCase().includes(query.toLowerCase()));
+  return <div className="app-shell"><header className="topbar"><Logo/><Link to="/perfil" className="profile-dot" data-testid="header-profile-button"><UserRound size={18}/></Link></header><main className="page home-page">
+  <section className="welcome"><p className="eyebrow">BOM TE VER POR AQUI <span>✦</span></p><h1>O que você precisa<br/><em>resolver</em> hoje?</h1><p className="tagline">Sua IA para resolver o dia a dia.</p><label className="searchbox"><Search size={19}/><input data-testid="home-search-input" placeholder="O que você precisa fazer?" value={query} onChange={e=>setQuery(e.target.value)}/><kbd>⌘ K</kbd></label>
+    <div className="usage-row"><UsageBadge usage={usage} onUpgrade={()=>nav("/premium")}/></div>
+  </section>
   {favorites.length>0 && !query && <section className="section"><SectionTitle title="Meus favoritos"/><div className="tool-list">{tools.filter(t=>favorites.includes(t.id)).map(t=><ToolCard key={t.id} tool={t} favorite onFavorite={()=>toggle(t.id)}/>)}</div></section>}
   <AdBanner/><section className="section"><SectionTitle title={query?"Resultados":"Mais usadas"} action={query?null:<Link to="/ferramentas" data-testid="see-all-tools">Ver todas</Link>}/><div className="tool-list">{filtered.slice(0,query?20:4).map(t=><ToolCard key={t.id} tool={t} favorite={favorites.includes(t.id)} onFavorite={()=>toggle(t.id)}/>)}</div></section>
   {!query && <><ToolGroup title="Texto e trabalho" items={tools.filter(t=>t.group==="Texto e trabalho")} favorites={favorites} toggle={toggle}/><ToolGroup title="Redes sociais" items={tools.filter(t=>t.group==="Redes sociais")} favorites={favorites} toggle={toggle}/><ToolGroup title="Utilidades" items={tools.filter(t=>t.group==="Utilidades")} favorites={favorites} toggle={toggle}/><section className="section"><SectionTitle title="Em breve"/><div className="soon-grid">{soon.map((x,i)=>{const Icon=x.icon;return <div className="soon-item" key={x.name} data-testid={`coming-soon-${i}`}><Icon size={18}/><span>{x.name}</span><small>Em breve</small></div>})}</div></section></>}
-  </main><BottomNav/></div>}
+  </main><BottomNav/></div>
+}
 
 function SectionTitle({title,action}){return <div className="section-title"><h2>{title}</h2>{action}</div>}
 function ToolGroup({title,items,favorites,toggle}){return <section className="section"><SectionTitle title={title}/><div className="tool-list">{items.map(t=><ToolCard key={t.id} tool={t} favorite={favorites.includes(t.id)} onFavorite={()=>toggle(t.id)}/>)}</div></section>}
@@ -84,18 +132,24 @@ function ToolPage(){
   const [result,setResult]=useState("");
   const [loading,setLoading]=useState(false);
   const [copied,setCopied]=useState(false);
+  const [limitReached, setLimitReached] = useState(false);
+  const [usage, refreshUsage] = useUsage();
+  const nav = useNavigate();
   const [fields,setFields]=useState({message:"",text:"",topic:"",tone:"😊 Amigável",mode:"Resumo normal",style:"Profissional",platform:"Instagram",emoji:"Com emojis",value:"500",percentage:"20",length:16,letters:true,numbers:true,symbols:true});
   const update=(key,value)=>setFields(f=>({...f,[key]:value}));
   const inputField = id==="whatsapp" ? "message" : (id==="create_email"||id==="create_caption"||id==="youtube_titles") ? "topic" : "text";
   const inputValue = fields[inputField];
+  const isAi = ["whatsapp","improve_text","correct_pt","summarize","create_email","create_caption","youtube_titles"].includes(id);
 
   const generate = async () => {
     setLoading(true); setCopied(false);
     try {
       const res = await axios.post(`${API}/generate`, { tool: id, payload: fields }, { headers: authHeaders() });
       setResult(res.data.result);
+      if (isAi) refreshUsage();
     } catch (e) {
-      setResult(e.response?.data?.detail || "Não foi possível concluir agora.");
+      if (e.response?.status === 402) { setLimitReached(true); }
+      else setResult(e.response?.data?.detail || "Não foi possível concluir agora.");
     }
     setLoading(false);
   };
@@ -108,6 +162,7 @@ function ToolPage(){
     <header className="tool-header"><Link to="/" data-testid="tool-back-button"><ArrowLeft size={20}/></Link><span>Facilita AI</span><button data-testid="tool-more-button"><MoreHorizontal size={21}/></button></header>
     <main className="page tool-page">
       <div className={`tool-hero ${tool.color}`}><span className="tool-icon"><tool.icon size={25}/></span><div><p className="eyebrow">FERRAMENTA FACILITA</p><h1>{tool.name}</h1><p>{tool.desc}</p></div></div>
+      {isAi && <div className="usage-row"><UsageBadge usage={usage} onUpgrade={()=>nav("/premium")}/></div>}
       <div className="form-section">
         {showTextarea && <>
           <label className="field-label">{formText}</label>
@@ -130,6 +185,17 @@ function ToolPage(){
       {id==="percentage_calc" && !result && <p className="helper">Exemplo: quanto é 20% de R$ 500?</p>}
       <AdBanner/>
     </main>
+    {limitReached && <div className="modal-overlay" onClick={()=>setLimitReached(false)} data-testid="limit-reached-modal">
+      <div className="modal-card limit-modal" onClick={e=>e.stopPropagation()}>
+        <div className="limit-icon"><Sparkles size={24}/></div>
+        <h3>Você chegou ao limite gratuito de hoje ✨</h3>
+        <p>No plano grátis você tem {usage?.limit ?? 10} usos de IA por dia. Volte amanhã ou assine o Premium para continuar agora mesmo.</p>
+        <div className="limit-actions">
+          <button className="primary-action" onClick={()=>{setLimitReached(false); nav("/premium");}} data-testid="limit-upgrade-button"><Sparkles size={18}/> Ver Premium</button>
+          <button className="ghost-action" onClick={()=>setLimitReached(false)} data-testid="limit-dismiss-button">Agora não</button>
+        </div>
+      </div>
+    </div>}
     <BottomNav active="tools"/>
   </div>
 }
@@ -223,9 +289,91 @@ function History(){
   </div>
 }
 
-function Profile(){const user=JSON.parse(localStorage.getItem("facilita_user")||"null"); const logout=()=>{localStorage.removeItem("facilita_token");localStorage.removeItem("facilita_user");localStorage.removeItem("facilita_favorites");window.location.href="/";}; return <div className="app-shell"><header className="topbar"><Logo/><span className="page-label">Perfil</span></header><main className="page"><section className="profile-card"><span className="avatar"><UserRound size={25}/></span><div><p className="eyebrow">SEU PERFIL</p><h2>{user?.name||"Visitante"}</h2><p>{user?.email||"Use sem cadastro ou entre para sincronizar"}</p></div></section><Link className="premium-strip" to="/perfil" data-testid="premium-card"><span><Sparkles size={20}/></span><div><strong>Facilita AI Premium</strong><small>Mais usos, sem anúncios e ferramentas avançadas</small></div><ChevronRight/></Link><div className="settings-list">{user?<button onClick={logout} data-testid="profile-logout-button"><UserRound size={18}/> Sair da conta<ChevronRight size={17}/></button>:<Link to="/login" data-testid="profile-login-link"><UserRound size={18}/> Entrar ou criar conta<ChevronRight size={17}/></Link>}<Link to="/termos" data-testid="terms-link"><FileText size={18}/> Termos e privacidade<ChevronRight size={17}/></Link></div></main><BottomNav active="profile"/></div>}
+function Profile(){
+  const user = getUser();
+  const [usage] = useUsage();
+  const premium = isPremium(user);
+  const logout = () => { localStorage.removeItem("facilita_token"); localStorage.removeItem("facilita_user"); localStorage.removeItem("facilita_favorites"); window.location.href = "/"; };
+  return <div className="app-shell">
+    <header className="topbar"><Logo/><span className="page-label">Perfil</span></header>
+    <main className="page">
+      <section className="profile-card"><span className="avatar"><UserRound size={25}/></span><div><p className="eyebrow">SEU PERFIL {premium && <span className="plan-tag" data-testid="plan-tag-premium">PREMIUM</span>}</p><h2>{user?.name||"Visitante"}</h2><p>{user?.email||"Use sem cadastro ou entre para sincronizar"}</p></div></section>
+      {usage && <div className="usage-summary" data-testid="profile-usage-summary"><span>Usos de IA hoje</span><strong>{usage.used} / {usage.limit}</strong><small>{premium ? "Plano Premium" : "Plano Grátis"}</small></div>}
+      {!premium && <Link className="premium-strip" to="/premium" data-testid="premium-card"><span><Sparkles size={20}/></span><div><strong>Facilita AI Premium</strong><small>Mais usos, sem anúncios e recursos avançados</small></div><ChevronRight/></Link>}
+      {premium && <Link className="premium-strip active" to="/premium" data-testid="premium-card-active"><span><Sparkles size={20}/></span><div><strong>Você é Premium</strong><small>Ver benefícios e gerenciar sua assinatura</small></div><ChevronRight/></Link>}
+      <div className="settings-list">
+        {user ? <button onClick={logout} data-testid="profile-logout-button"><UserRound size={18}/> Sair da conta<ChevronRight size={17}/></button>
+              : <Link to="/login" data-testid="profile-login-link"><UserRound size={18}/> Entrar ou criar conta<ChevronRight size={17}/></Link>}
+        <Link to="/termos" data-testid="terms-link"><FileText size={18}/> Termos e privacidade<ChevronRight size={17}/></Link>
+      </div>
+    </main>
+    <BottomNav active="profile"/>
+  </div>
+}
+
+function Premium(){
+  const nav = useNavigate();
+  const settings = useAppSettings();
+  const [checkoutMsg, setCheckoutMsg] = useState("");
+  const [loading, setLoading] = useState(false);
+  const user = getUser();
+  const premium = isPremium(user);
+
+  const subscribe = async () => {
+    if (!getToken()) { nav("/login"); return; }
+    setLoading(true);
+    try {
+      const r = await axios.post(`${API}/checkout/premium`, {}, { headers: authHeaders() });
+      setCheckoutMsg(r.data?.message || "Pagamento em preparação.");
+    } catch (e) {
+      setCheckoutMsg(e.response?.data?.detail || "Não foi possível iniciar a assinatura agora.");
+    }
+    setLoading(false);
+  };
+
+  const price = settings?.premium_price_brl?.toFixed(2).replace(".", ",") ?? "19,90";
+  const freeLimit = settings?.free_daily_limit ?? 10;
+  const premiumLimit = settings?.premium_daily_limit ?? 500;
+
+  return <div className="app-shell">
+    <header className="tool-header"><Link to="/perfil" data-testid="premium-back-button"><ArrowLeft size={20}/></Link><span>Facilita AI Premium</span><span/></header>
+    <main className="page premium-page">
+      <section className="premium-hero">
+        <p className="eyebrow">FACILITA AI PREMIUM</p>
+        <h1>Menos limites,<br/><em>zero anúncios.</em></h1>
+        <p className="tagline">A mesma simplicidade do Facilita, agora sem interrupções e com muito mais IA.</p>
+      </section>
+      <div className="plan-compare">
+        <div className="plan-card" data-testid="plan-free">
+          <div className="plan-head"><h2>Grátis</h2><span className="plan-price">R$ 0<small>/mês</small></span></div>
+          <ul>
+            <li><Check size={15}/> Ferramentas locais ilimitadas</li>
+            <li><Check size={15}/> {freeLimit} usos de IA por dia</li>
+            <li className="muted"><Check size={15}/> Com anúncios discretos</li>
+            <li className="muted"><Check size={15}/> Histórico básico</li>
+          </ul>
+          <button className="ghost-action" disabled data-testid="plan-free-button">Você está aqui</button>
+        </div>
+        <div className="plan-card featured" data-testid="plan-premium">
+          <div className="plan-head"><h2>Premium <Sparkles size={17}/></h2><span className="plan-price">R$ {price}<small>/mês</small></span></div>
+          <ul>
+            <li><Check size={15}/> Sem anúncios em nenhum lugar</li>
+            <li><Check size={15}/> {premiumLimit} usos de IA por dia</li>
+            <li><Check size={15}/> Histórico ampliado</li>
+            <li><Check size={15}/> Acesso a recursos Premium futuros</li>
+          </ul>
+          {premium ? <button className="primary-action" disabled data-testid="premium-active-button">Assinatura ativa</button>
+                   : <button className="primary-action" onClick={subscribe} disabled={loading} data-testid="premium-subscribe-button"><Sparkles size={18}/> {loading?"Preparando...":"Assinar Premium"}</button>}
+        </div>
+      </div>
+      {checkoutMsg && <div className="checkout-note" data-testid="checkout-note">{checkoutMsg}</div>}
+      <p className="helper premium-fineprint">O pagamento será processado por um gateway externo assim que a integração for concluída. Nenhuma cobrança é feita neste momento.</p>
+    </main>
+    <BottomNav active="profile"/>
+  </div>
+}
 function Empty({icon:Icon,text}){return <div className="empty-state" data-testid="empty-state"><span><Icon size={27}/></span><p>{text}</p><Link to="/ferramentas" className="outline-button" data-testid="empty-state-action">Explorar ferramentas</Link></div>}
 function Legal(){return <div className="app-shell"><header className="tool-header"><Link to="/perfil" data-testid="legal-back-button"><ArrowLeft size={20}/></Link><span>Privacidade</span></header><main className="page legal"><p className="eyebrow">FACILITA AI</p><h1>Termos e privacidade</h1><p>O Facilita AI foi criado para simplificar seu dia. Textos enviados às ferramentas de inteligência artificial podem ser processados por provedores externos para gerar o resultado solicitado.</p><h2>Uso responsável</h2><p>Não envie dados sensíveis, senhas ou informações pessoais que não sejam necessárias. O app registra apenas métricas de uso e histórico quando você escolhe estar conectado.</p><h2>Contato</h2><p>Fale com a equipe em contato@facilita.ai</p></main></div>}
 
-function App(){return <BrowserRouter><Routes><Route path="/" element={<Home/>}/><Route path="/ferramentas" element={<Tools/>}/><Route path="/ferramenta/:id" element={<ToolPage/>}/><Route path="/login" element={<Auth/>}/><Route path="/favoritos" element={<Favorites/>}/><Route path="/historico" element={<History/>}/><Route path="/perfil" element={<Profile/>}/><Route path="/termos" element={<Legal/>}/></Routes></BrowserRouter>}
+function App(){return <BrowserRouter><Routes><Route path="/" element={<Home/>}/><Route path="/ferramentas" element={<Tools/>}/><Route path="/ferramenta/:id" element={<ToolPage/>}/><Route path="/login" element={<Auth/>}/><Route path="/favoritos" element={<Favorites/>}/><Route path="/historico" element={<History/>}/><Route path="/perfil" element={<Profile/>}/><Route path="/premium" element={<Premium/>}/><Route path="/termos" element={<Legal/>}/></Routes></BrowserRouter>}
 export default App;
