@@ -40,6 +40,7 @@ function useAppSettings(){
 function useUsage(){
   const [usage, setUsage] = useState(null);
   const refresh = useCallback(() => {
+    if (!getToken()) { setUsage(null); return; }
     axios.get(`${API}/me/usage`, { headers: authHeaders() }).then(r => setUsage(r.data)).catch(() => setUsage(null));
   }, []);
   useEffect(() => { refresh(); }, [refresh]);
@@ -60,10 +61,15 @@ function AdBanner({ variant = "banner" }){
 function UsageBadge({ usage, onUpgrade }){
   if (!usage) return null;
   if (usage.is_premium) return <span className="usage-badge premium" data-testid="usage-badge-premium"><Sparkles size={13}/> Premium ativo</span>;
-  const low = usage.remaining <= Math.max(1, Math.floor(usage.limit * 0.2));
-  return <button type="button" className={`usage-badge ${low?"low":""}`} onClick={onUpgrade} data-testid="usage-badge">
+  const { remaining, limit } = usage;
+  let text;
+  if (remaining >= limit) text = `Você tem ${limit} ${limit===1?"uso":"usos"} grátis hoje`;
+  else if (remaining <= 0) text = `Você usou seus ${limit} acessos gratuitos de hoje`;
+  else text = `${remaining} ${remaining===1?"uso restante":"usos restantes"} hoje`;
+  const low = remaining <= Math.max(1, Math.floor(limit * 0.34));
+  return <button type="button" className={`usage-badge ${low?"low":""} ${remaining<=0?"empty":""}`} onClick={onUpgrade} data-testid="usage-badge">
     <Sparkles size={13}/>
-    <span>{usage.remaining} de {usage.limit} usos de IA hoje</span>
+    <span>{text}</span>
   </button>
 }
 
@@ -147,6 +153,7 @@ function ToolPage(){
   const [loading,setLoading]=useState(false);
   const [copied,setCopied]=useState(false);
   const [limitReached, setLimitReached] = useState(false);
+  const [authRequired, setAuthRequired] = useState(false);
   const [usage, refreshUsage] = useUsage();
   const nav = useNavigate();
   const [fields,setFields]=useState({message:"",text:"",topic:"",tone:"😊 Amigável",mode:"Resumo normal",style:"Profissional",platform:"Instagram",emoji:"Com emojis",value:"500",percentage:"20",length:16,letters:true,numbers:true,symbols:true});
@@ -156,13 +163,16 @@ function ToolPage(){
   const isAi = ["whatsapp","improve_text","correct_pt","summarize","create_email","create_caption","youtube_titles"].includes(id);
 
   const generate = async () => {
+    // Todas as ferramentas exigem cadastro/login antes do uso.
+    if (!getToken()) { setAuthRequired(true); return; }
     setLoading(true); setCopied(false);
     try {
       const res = await axios.post(`${API}/generate`, { tool: id, payload: fields }, { headers: authHeaders() });
       setResult(res.data.result);
       if (isAi) refreshUsage();
     } catch (e) {
-      if (e.response?.status === 402) { setLimitReached(true); }
+      if (e.response?.status === 401) { setAuthRequired(true); }
+      else if (e.response?.status === 402) { setLimitReached(true); }
       else setResult(e.response?.data?.detail || "Não foi possível concluir agora.");
     }
     setLoading(false);
@@ -203,10 +213,21 @@ function ToolPage(){
       <div className="modal-card limit-modal" onClick={e=>e.stopPropagation()}>
         <div className="limit-icon"><Sparkles size={24}/></div>
         <h3>Você chegou ao limite gratuito de hoje ✨</h3>
-        <p>No plano grátis você tem {usage?.limit ?? 10} usos de IA por dia. Volte amanhã ou assine o Premium para continuar agora mesmo.</p>
+        <p>Você usou seus {usage?.limit ?? 3} acessos gratuitos de hoje. Volte amanhã ou assine o Premium para continuar agora mesmo.</p>
         <div className="limit-actions">
-          <button className="primary-action" onClick={()=>{setLimitReached(false); nav("/premium");}} data-testid="limit-upgrade-button"><Sparkles size={18}/> Ver Premium</button>
+          <button className="primary-action" onClick={()=>{setLimitReached(false); nav("/premium");}} data-testid="limit-upgrade-button"><Sparkles size={18}/> Assinar Premium</button>
           <button className="ghost-action" onClick={()=>setLimitReached(false)} data-testid="limit-dismiss-button">Agora não</button>
+        </div>
+      </div>
+    </div>}
+    {authRequired && <div className="modal-overlay" onClick={()=>setAuthRequired(false)} data-testid="auth-required-modal">
+      <div className="modal-card limit-modal" onClick={e=>e.stopPropagation()}>
+        <div className="limit-icon"><UserRound size={24}/></div>
+        <h3>Crie sua conta grátis para usar o Facilita AI</h3>
+        <p>Com uma conta você guarda seu histórico, favoritos e recebe 3 usos de IA por dia sem pagar nada.</p>
+        <div className="limit-actions">
+          <button className="primary-action" onClick={()=>nav("/login?mode=register")} data-testid="auth-required-register-button"><Sparkles size={18}/> Criar conta grátis</button>
+          <button className="ghost-action" onClick={()=>nav("/login")} data-testid="auth-required-login-button">Entrar</button>
         </div>
       </div>
     </div>}
@@ -214,7 +235,25 @@ function ToolPage(){
   </div>
 }
 
-function Auth(){const [mode,setMode]=useState("login");const [email,setEmail]=useState("admin@facilita.ai");const [password,setPassword]=useState("Facilita@123");const [message,setMessage]=useState("");const nav=useNavigate();const submit=async e=>{e.preventDefault();try{const r=await axios.post(`${API}/auth/${mode}`,{email,password,name:""});localStorage.setItem("facilita_token",r.data.token);localStorage.setItem("facilita_user",JSON.stringify(r.data.user));nav("/")}catch(err){setMessage(err.response?.data?.detail||"Confira seus dados")}};return <div className="auth-page"><div className="auth-brand"><Logo/></div><main className="auth-box"><p className="eyebrow">FACILITA AI</p><h1>{mode==="login"?"Bem-vindo de volta.":"Crie sua conta."}</h1><p>{mode==="login"?"Entre para guardar seus resultados e favoritos.":"Comece a resolver seu dia em poucos cliques."}</p><form onSubmit={submit}><label>E-mail<input data-testid="auth-email-input" type="email" value={email} onChange={e=>setEmail(e.target.value)} required/></label><label>Senha<input data-testid="auth-password-input" type="password" value={password} onChange={e=>setPassword(e.target.value)} required/></label>{message&&<div className="error-message" data-testid="auth-error-message">{message}</div>}<button className="primary-action" data-testid="auth-submit-button">{mode==="login"?"Entrar":"Criar conta"}</button></form><button className="google-button" data-testid="google-login-button" onClick={()=>setMessage("Login Google será conectado no painel administrativo.")}>Continuar com Google</button><button className="switch-auth" onClick={()=>setMode(mode==="login"?"register":"login")} data-testid="auth-mode-switch">{mode==="login"?"Ainda não tenho conta":"Já tenho uma conta"}</button></main></div>}
+function Auth(){
+  const initial = typeof window !== "undefined" && new URLSearchParams(window.location.search).get("mode") === "register" ? "register" : "login";
+  const [mode,setMode]=useState(initial);
+  const [email,setEmail]=useState(initial==="register"?"":"admin@facilita.ai");
+  const [password,setPassword]=useState(initial==="register"?"":"Facilita@123");
+  const [name,setName]=useState("");
+  const [message,setMessage]=useState("");
+  const nav=useNavigate();
+  const submit=async e=>{
+    e.preventDefault();
+    try{
+      const r=await axios.post(`${API}/auth/${mode}`,{email,password,name});
+      localStorage.setItem("facilita_token",r.data.token);
+      localStorage.setItem("facilita_user",JSON.stringify(r.data.user));
+      nav("/");
+    }catch(err){setMessage(err.response?.data?.detail||"Confira seus dados")}
+  };
+  return <div className="auth-page"><div className="auth-brand"><Logo/></div><main className="auth-box"><p className="eyebrow">FACILITA AI</p><h1>{mode==="login"?"Bem-vindo de volta.":"Crie sua conta grátis."}</h1><p>{mode==="login"?"Entre para guardar seus resultados e favoritos.":"Comece a resolver seu dia em poucos cliques."}</p><form onSubmit={submit}>{mode==="register" && <label>Nome<input data-testid="auth-name-input" value={name} onChange={e=>setName(e.target.value)}/></label>}<label>E-mail<input data-testid="auth-email-input" type="email" value={email} onChange={e=>setEmail(e.target.value)} required/></label><label>Senha<input data-testid="auth-password-input" type="password" value={password} onChange={e=>setPassword(e.target.value)} required minLength={6}/></label>{message&&<div className="error-message" data-testid="auth-error-message">{message}</div>}<button className="primary-action" data-testid="auth-submit-button">{mode==="login"?"Entrar":"Criar conta grátis"}</button></form><button className="google-button" data-testid="google-login-button" onClick={()=>setMessage("Login Google será conectado no painel administrativo.")}>Continuar com Google</button><button className="switch-auth" onClick={()=>setMode(mode==="login"?"register":"login")} data-testid="auth-mode-switch">{mode==="login"?"Ainda não tenho conta":"Já tenho uma conta"}</button></main></div>
+}
 
 function Favorites(){
   const [favorites, toggle] = useFavorites();

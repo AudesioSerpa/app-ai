@@ -75,7 +75,7 @@ class SubscriptionInput(BaseModel):
 
 DEFAULT_SETTINGS = {
     "id": "app_settings",
-    "free_daily_limit": 10,
+    "free_daily_limit": 3,
     "premium_daily_limit": 500,
     "premium_price_brl": float(os.environ.get("PREMIUM_PRICE_BRL", "9.90")),
     "ads_enabled": True,
@@ -160,6 +160,10 @@ async def seed_admin():
     existing = await db.users.find_one({"email": "admin@facilita.ai"})
     if not existing:
         await db.users.insert_one({"id": str(uuid.uuid4()), "email": "admin@facilita.ai", "name": "Admin Facilita", "password": bcrypt.hashpw(b"Facilita@123", bcrypt.gensalt()).decode(), "role": "admin", "created_at": datetime.now(timezone.utc).isoformat()})
+    # Migração: se o limite grátis ainda é o antigo padrão de 10, atualiza para 3
+    doc = await db.settings.find_one({"id": "app_settings"})
+    if doc and doc.get("free_daily_limit") == 10:
+        await db.settings.update_one({"id": "app_settings"}, {"$set": {"free_daily_limit": 3}})
 
 
 # Define Models
@@ -223,11 +227,11 @@ async def ai_generate(tool, payload):
     return "".join(chunks).strip()
 
 @api_router.post("/generate")
-async def generate(input: GenerateInput, user=Depends(current_user)):
+async def generate(input: GenerateInput, user=Depends(required_user)):
     if input.tool not in AI_TOOLS and input.tool not in {"qrcode", "password_gen", "percentage_calc"}: raise HTTPException(400, "Ferramenta inválida")
     if input.tool in AI_TOOLS:
         settings = await get_settings()
-        user_id = user["id"] if user else "guest"
+        user_id = user["id"]
         limit = settings["premium_daily_limit"] if is_premium(user) else settings["free_daily_limit"]
         used = await count_today_ai_usage(user_id)
         if used >= limit:

@@ -1,0 +1,29 @@
+{
+  "summary": "Iteration 7 validated the auth+limit changes end-to-end. Backend: 18/18 pytest passed in test_auth_and_limits.py — GET /api/settings returns free_daily_limit=3 (migration from 10 applied at startup); POST /api/generate now requires Bearer token for ALL tools (qrcode, password_gen, percentage_calc + 7 AI tools) returning 401 'Faça login para continuar'; new user hits 402 exactly after 3 AI calls; local tools (qrcode/password_gen/percentage_calc) DO NOT consume AI quota (verified 3x each then still 3 AI calls succeed, 4th → 402); rate limit persists across new login tokens (per user_id, not per session); admin promotion to premium unlocks limit=500 and >3 AI calls succeed. Frontend (mobile 390x844): guest on / does NOT see UsageBadge; guest on /ferramenta/qrcode → auth-required-modal with correct title 'Crie sua conta grátis para usar o Facilita AI' and both testids (register/login buttons); /login?mode=register opens Auth in register mode (submit button 'Criar conta grátis'); UsageBadge copy sequences validated (3→2→1→0): 'Você tem 3 usos grátis hoje' → '2 usos restantes hoje' → '1 uso restante hoje' → 'Você usou seus 3 acessos gratuitos de hoje'; 4th call opens limit-reached-modal; logout+relogin (same user) still shows exhausted badge and still 402 → rate limit persistence per user_id confirmed at UI layer.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {"ui_bugs": [], "integration_issues": [], "design_issues": []},
+  "test_report_links": [
+    "/app/backend/tests/test_auth_and_limits.py",
+    "/app/test_reports/pytest/iteration_7.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "server.py generate(): elif branch for password_gen/percentage_calc computes 'text' but does NOT persist any usage record. This is correct per spec (local tools don't consume quota), but nothing is logged either — history endpoint won't include local tool usage. Acceptable per current requirements.",
+    "server.py /me/usage: when user is None, user_id='guest' is used to count usage, but since /generate now requires auth, no guest records can be inserted anymore. The 'guest' branch is effectively dead code and always returns used=0. Consider removing the guest fallback (return null/401 or just used=0 without querying) for clarity.",
+    "App.js UsageBadge threshold: 'remaining >= limit' identifies the fresh state; if an admin lowered free_daily_limit dynamically after some usage, this could false-positive (e.g., limit was 5, used 2, admin sets limit=3 → remaining=1, still shows '2 usos restantes hoje'). Edge case, low priority.",
+    "App.js Auth: initial mode read from window.location.search only runs once at mount; switching between /login and /login?mode=register via router link would not reset mode. Not currently used in flows tested.",
+    "server.py startup migration only runs when previous value equals exactly 10; if admin previously customized (e.g., 7), it stays. Acceptable."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_auth_and_limits.py",
+    "/app/test_reports/pytest/iteration_7.xml",
+    "/app/test_reports/iteration_7.json"
+  ],
+  "success_rate": {"backend": "100% (18/18)", "frontend": "100% (all guest+auth+badge+persist flows verified)"},
+  "test_credentials": "admin@facilita.ai / Facilita@123 (left as FREE after tests via teardown_module). TEST_it7_* and TEST_ui2_* users created; all remain FREE with quota exhausted for today — no data cleanup impact.",
+  "seed_data_creation": "Multiple TEST_ prefixed users registered inline; one promoted to premium then teardown restored admin to free.",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Backend AI rate limit is per user_id + date prefix on db.usage (regex YYYY-MM-DD). Local tools (qrcode/password_gen/percentage_calc) do NOT insert usage records. free_daily_limit default=3, migration 10→3 runs on every startup if current value==10. All /api/generate calls require Bearer token (401 otherwise). Frontend gates with getToken() before axios.post and also catches 401 to reopen auth-required-modal. UsageBadge (data-testid='usage-badge') has 3 states: initial ('N usos grátis hoje'), consumed ('N usos restantes hoje' / singular '1 uso restante hoje'), empty ('Você usou seus N acessos gratuitos de hoje'). auth-required-modal testids: auth-required-modal, auth-required-register-button, auth-required-login-button.",
+  "rca of the issue": "N/A — all specified behaviors work as designed."
+}
