@@ -19,6 +19,7 @@ import hmac
 import hashlib
 import httpx
 import mercadopago
+from zoneinfo import ZoneInfo
 from emergentintegrations.llm.chat import LlmChat, UserMessage, TextDelta
 
 
@@ -130,12 +131,21 @@ def compute_grace(user):
 def today_iso_prefix():
     return datetime.now(timezone.utc).strftime("%Y-%m-%d")
 
+BRT_TZ = ZoneInfo("America/Sao_Paulo")
+
+def brt_day_bounds_utc():
+    """Retorna (início, fim) do dia atual no fuso America/Sao_Paulo em ISO UTC."""
+    now_brt = datetime.now(BRT_TZ)
+    start_brt = now_brt.replace(hour=0, minute=0, second=0, microsecond=0)
+    end_brt = start_brt + timedelta(days=1)
+    return start_brt.astimezone(timezone.utc).isoformat(), end_brt.astimezone(timezone.utc).isoformat()
+
 async def count_today_ai_usage(user_id: str) -> int:
-    prefix = today_iso_prefix()
+    start, end = brt_day_bounds_utc()
     return await db.usage.count_documents({
         "user_id": user_id,
         "tool": {"$in": list(AI_TOOLS)},
-        "created_at": {"$regex": f"^{prefix}"},
+        "created_at": {"$gte": start, "$lt": end},
     })
 
 def token_for(user):
@@ -295,8 +305,10 @@ async def me_usage(user=Depends(current_user)):
     settings = await get_settings()
     premium = is_premium(user)
     limit = settings["premium_daily_limit"] if premium else settings["free_daily_limit"]
-    user_id = user["id"] if user else "guest"
-    used = await count_today_ai_usage(user_id)
+    if not user:
+        # /api/generate exige login, então visitantes nunca acumulam uso — retorno 0/limit direto
+        return {"used": 0, "limit": limit, "remaining": limit, "is_premium": False, "plan": "free", "in_grace_period": False, "grace_days_left": 0}
+    used = await count_today_ai_usage(user["id"])
     grace = compute_grace(user)
     return {"used": used, "limit": limit, "remaining": max(0, limit - used), "is_premium": premium, "plan": "premium" if premium else "free", **grace}
 

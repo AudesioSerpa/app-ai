@@ -1,0 +1,41 @@
+{
+  "summary": "Iteration 8 validated BRT (America/Sao_Paulo) daily reset for AI usage + Welcome modal on Home for logged-out visitors. Backend: 5/5 new pytest in test_brt_reset.py passed. brt_day_bounds_utc() returns a 24h UTC window aligned to BRT midnight (verified BRT-UTC = 3h offset). At test time BRT day (08-22) differed from UTC day (08-23) — perfect scenario. Verified: (a) records inserted 1min BEFORE BRT-today-start don't count (used=0), (b) records inserted 1min AFTER BRT-today-start count (used=3, 4th generate → 402), (c) 3 real AI generations → then updated created_at to BRT yesterday via DB → /me/usage returns used=0 remaining=3, and a fresh 4th generation succeeds (reset simulation), (d) records created today via /generate continue counting normally (no regression). Regression: iteration_7 test suite 17/18 pass; the 1 failure (test_no_guest_usage_in_db) is stale data from previous iterations (a leftover db.usage record with user_id='guest'), NOT caused by BRT change — pre-existing dead-code branch in /me/usage. Frontend (mobile 390x844): welcome-modal appears ~900ms after / load for guest, title 'Bem-vindo ao Facilita AI ✨', all 3 testids present. Dismiss button closes modal + sets localStorage.facilita_welcome_dismissed='1' and does NOT reappear on reload. Overlay click also dismisses+persists. Register button navigates to /login?mode=register and Auth opens in register mode (h1 'Crie sua conta grátis.', submit 'Criar conta grátis'). Login button navigates to /login (h1 'Bem-vindo de volta.'). When localStorage.facilita_token is set, modal is suppressed on /.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {"endpoint": "/api/me/usage", "issue": "Guest branch (user_id='guest') is dead code (auth is now required on /generate) but still queries DB and can pick up historical guest usage records left in DB, causing test_no_guest_usage_in_db to flake if any legacy record exists. Consider returning used=0 without querying when user is None."}
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_brt_reset.py",
+    "/app/backend/tests/test_auth_and_limits.py",
+    "/app/test_reports/pytest/iteration_8.xml"
+  ],
+  "action_items": [
+    "(Optional) Short-circuit /api/me/usage when user is None to avoid querying legacy 'guest' usage records."
+  ],
+  "critical_code_review_comments": [
+    "brt_day_bounds_utc() implementation is correct and standard — start-of-day in BRT converted to UTC, +24h. No DST concerns for Brazil (abolished 2019).",
+    "count_today_ai_usage switched from regex prefix on ISO strings to $gte/$lt range on ISO strings. Because created_at values are stored via datetime.now(timezone.utc).isoformat() (uniform '+00:00'), lexicographic comparison equals chronological comparison — correct. But it would break if any record ever stored a different offset (e.g., '-03:00') — worth documenting invariant.",
+    "Welcome modal useEffect runs once on Home mount (empty deps). If a user logs in from the modal itself, they navigate away so the token check on next mount is fine. No re-check inside Home. Acceptable.",
+    "Overlay click dismisses via onClick={dismissWelcome} on the .modal-overlay (stopPropagation on inner card). Works as spec.",
+    "Auth mode is read from window.location.search at mount only — matches iteration_7 note. Direct link with ?mode=register works, so welcome-register-button flow is fine."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_brt_reset.py",
+    "/app/test_reports/pytest/iteration_8.xml",
+    "/app/test_reports/iteration_8.json"
+  ],
+  "success_rate": {"backend": "100% (5/5 new BRT tests) + 17/18 regression (pre-existing minor issue)", "frontend": "100% (all welcome-modal flows verified: appear, 3 buttons, dismiss+persist, overlay-dismiss+persist, register→/login?mode=register, login→/login, logged-user hidden)"},
+  "test_credentials": "admin@facilita.ai / Facilita@123 unchanged. TEST_brt_* test users are cleaned up in teardown_module (both users and their usage records).",
+  "seed_data_creation": "TEST_brt_* users created and deleted in teardown_module.",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "BRT reset uses brt_day_bounds_utc() with ZoneInfo('America/Sao_Paulo'). Storage of created_at continues as UTC ISO ('+00:00'), and query uses $gte/$lt range against the BRT-day-bounds converted to UTC ISO. At UTC 03:00 daily the BRT midnight rollover happens. Frontend welcome-modal: data-testid='welcome-modal' (overlay), 'welcome-register-button', 'welcome-login-button', 'welcome-dismiss-button'. localStorage flag: facilita_welcome_dismissed='1'. Modal suppressed when facilita_token present. Test file: /app/backend/tests/test_brt_reset.py uses pymongo direct DB access for time-manipulation.",
+  "rca of the issue": "N/A — all specified behaviors work as designed. Only pre-existing minor code-quality note about /me/usage guest branch."
+}

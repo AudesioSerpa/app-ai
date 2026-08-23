@@ -129,7 +129,22 @@ function Home(){
   const [favorites,toggle]=useFavorites();
   const [usage] = useUsage();
   const nav = useNavigate();
+  const [welcomeOpen, setWelcomeOpen] = useState(false);
   const filtered=tools.filter(t=>`${t.name} ${t.desc}`.toLowerCase().includes(query.toLowerCase()));
+
+  // Modal de boas-vindas com CTA de cadastro para visitantes deslogados
+  useEffect(() => {
+    if (getToken()) return;
+    if (localStorage.getItem("facilita_welcome_dismissed") === "1") return;
+    const t = setTimeout(() => setWelcomeOpen(true), 900);
+    return () => clearTimeout(t);
+  }, []);
+
+  const dismissWelcome = () => {
+    localStorage.setItem("facilita_welcome_dismissed", "1");
+    setWelcomeOpen(false);
+  };
+
   return <div className="app-shell"><header className="topbar"><Logo/><Link to="/perfil" className="profile-dot" data-testid="header-profile-button"><UserRound size={18}/></Link></header><main className="page home-page">
   <GraceBanner usage={usage}/>
   <section className="welcome"><p className="eyebrow">BOM TE VER POR AQUI <span>✦</span></p><h1>O que você precisa<br/><em>resolver</em> hoje?</h1><p className="tagline">Sua IA para resolver o dia a dia.</p><label className="searchbox"><Search size={19}/><input data-testid="home-search-input" placeholder="O que você precisa fazer?" value={query} onChange={e=>setQuery(e.target.value)}/><kbd>⌘ K</kbd></label>
@@ -138,7 +153,20 @@ function Home(){
   {favorites.length>0 && !query && <section className="section"><SectionTitle title="Meus favoritos"/><div className="tool-list">{tools.filter(t=>favorites.includes(t.id)).map(t=><ToolCard key={t.id} tool={t} favorite onFavorite={()=>toggle(t.id)}/>)}</div></section>}
   <AdBanner/><section className="section"><SectionTitle title={query?"Resultados":"Mais usadas"} action={query?null:<Link to="/ferramentas" data-testid="see-all-tools">Ver todas</Link>}/><div className="tool-list">{filtered.slice(0,query?20:4).map(t=><ToolCard key={t.id} tool={t} favorite={favorites.includes(t.id)} onFavorite={()=>toggle(t.id)}/>)}</div></section>
   {!query && <><ToolGroup title="Texto e trabalho" items={tools.filter(t=>t.group==="Texto e trabalho")} favorites={favorites} toggle={toggle}/><ToolGroup title="Redes sociais" items={tools.filter(t=>t.group==="Redes sociais")} favorites={favorites} toggle={toggle}/><ToolGroup title="Utilidades" items={tools.filter(t=>t.group==="Utilidades")} favorites={favorites} toggle={toggle}/><section className="section"><SectionTitle title="Em breve"/><div className="soon-grid">{soon.map((x,i)=>{const Icon=x.icon;return <div className="soon-item" key={x.name} data-testid={`coming-soon-${i}`}><Icon size={18}/><span>{x.name}</span><small>Em breve</small></div>})}</div></section></>}
-  </main><BottomNav/></div>
+  </main>
+  {welcomeOpen && <div className="modal-overlay" onClick={dismissWelcome} data-testid="welcome-modal">
+    <div className="modal-card limit-modal" onClick={e=>e.stopPropagation()}>
+      <div className="limit-icon"><Sparkles size={24}/></div>
+      <h3>Bem-vindo ao Facilita AI ✨</h3>
+      <p>Crie sua conta grátis em 30 segundos e ganhe <strong>3 usos de IA por dia</strong> para responder WhatsApp, corrigir textos, criar legendas e muito mais.</p>
+      <div className="limit-actions">
+        <button className="primary-action" onClick={()=>{ dismissWelcome(); nav("/login?mode=register"); }} data-testid="welcome-register-button"><Sparkles size={18}/> Criar conta grátis</button>
+        <button className="ghost-action" onClick={()=>{ dismissWelcome(); nav("/login"); }} data-testid="welcome-login-button">Já tenho conta</button>
+        <button className="text-action" onClick={dismissWelcome} data-testid="welcome-dismiss-button">Ver o app antes</button>
+      </div>
+    </div>
+  </div>}
+  <BottomNav/></div>
 }
 
 function SectionTitle({title,action}){return <div className="section-title"><h2>{title}</h2>{action}</div>}
