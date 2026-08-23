@@ -1,0 +1,35 @@
+{
+  "summary": "Static validation of Capacitor 6 Android wrapper at /app/mobile + CI workflow + production URL reachability. All wrapper requirements PASS. Production URL responds 200 with 'Facilita AI' HTML and /api/ returns {status:ok, message:'Facilita AI API'}, so the WebView target is healthy. Production build is however OUTDATED (shows badge '10 de 10 usos de IA hoje' and no welcome-modal / no auth gate on Home) — this is a pending redeploy of the web app, NOT a wrapper defect (per review_request note). No Android SDK/emulator in this container, so APK install was not attempted — user will run the GitHub Actions workflow.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [
+      {"flow": "Production web (WebView target) freshness", "issue": "Production at https://smart-tools-49.emergent.host is running an older build: badge shows '10 de 10 usos de IA hoje' instead of 3; welcome-modal ([data-testid=welcome-modal]) is absent on Home; Home is accessible without login (no auth-gate). Consequences (c)/(d) of the regression checklist cannot be verified until redeploy. NOT a wrapper defect — capacitor.config.json points at prod correctly; once user redeploys, WebView will render the latest UX.", "affected_selectors": ["[data-testid=welcome-modal]","[data-testid=limit-reached-modal]"]}
+    ],
+    "design_issues": []
+  },
+  "test_report_links": ["/app/mobile/capacitor.config.json", "/app/.github/workflows/android.yml"],
+  "action_items": [
+    "User must redeploy the web app to https://smart-tools-49.emergent.host so the latest UX (limit=3, welcome-modal, auth-gate) reaches the Android WebView. No code change needed in /app/mobile.",
+    "User runs GitHub Actions 'Android build (Facilita AI)' to produce APK debug + AAB release artifacts."
+  ],
+  "critical_code_review_comments": [
+    "capacitor.config.json: appId='com.facilitaai.app' ✓, appName='Facilita AI' ✓, server.url='https://smart-tools-49.emergent.host' (production, not preview) ✓, androidScheme='https' ✓, cleartext=false ✓, errorPath='offline.html' ✓, SplashScreen.backgroundColor='#FF5722' ✓, android.allowMixedContent=false and webContentsDebuggingEnabled=false (good hardening).",
+    "AndroidManifest.xml: only <uses-permission android:name='android.permission.INTERNET' /> — no extra permissions. android:exported='true' set on launcher activity (required Android 12+). Good.",
+    "app/build.gradle: applicationId='com.facilitaai.app', versionName='1.0.0', versionCode=1. signingConfigs.release is conditional on keystore.properties existing — allows unsigned local build and CI-signed release cleanly. minifyEnabled=false on release (typical for Capacitor WebView wrapper). ",
+    "Secrets grep of /app/mobile/android for APP_USR|cdf0aaf|MP_ACCESS_TOKEN|JWT_SECRET|MONGO_URL|MP_WEBHOOK_SECRET → 0 matches. capacitor.config.json also clean. ",
+    "Icons present in mipmap-hdpi/xhdpi/xxhdpi/xxxhdpi (ic_launcher.png + ic_launcher_round.png + adaptive foreground/background). Splash present in drawable/ + drawable-port-* + drawable-land-* across all densities (hdpi..xxxhdpi, incl. night variants). ",
+    ".github/workflows/android.yml: ubuntu-latest ✓, setup-java@v4 temurin 21 ✓, setup-node@v4 node 20 with yarn cache ✓, yarn install --frozen-lockfile ✓, npx cap sync android ✓, gradlew assembleDebug ✓, upload-artifact 'facilita-ai-debug-apk' pointing app-debug.apk ✓, gradlew bundleRelease ✓, upload-artifact 'facilita-ai-release-aab' pointing app-release*.aab ✓. Optional keystore decode step reads secrets.ANDROID_KEYSTORE_BASE64 and writes keystore.properties consumed by app/build.gradle — matches contract. ",
+    "www/offline.html present, pt-BR ('Sem conexão', 'Verifique sua internet e tente novamente. O Facilita AI precisa estar online para funcionar.', botão 'Tentar novamente' que aponta para produção). ",
+    "Production HEAD/GET returns 200 with <title>Facilita AI — Sua IA para resolver o dia a dia</title>; /api/ returns 200 {status:ok}. WebView target is healthy.",
+    "OBSERVATION (not a wrapper bug): produção precisa de redeploy — badge mostra '10 de 10' e não há welcome-modal; assim que o usuário redeployar, o WebView refletirá automaticamente. Nada a mudar em /app/mobile."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "N/A (backend not re-tested; production /api/ health-check 200 OK)", "frontend": "wrapper static validation 100% (7/7 wrapper checks); production regression (a)/(b)/(c)/(d)/(e)/(f)/(g)/(h) blocked by outdated deploy — cannot verify limit=3 or welcome-modal until redeploy"},
+  "test_credentials": "admin@facilita.ai / Facilita@123 (unchanged)",
+  "seed_data_creation": "none",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Android wrapper lives in /app/mobile (Capacitor 6). Container has no Android SDK — do not try adb/emulator. Validate statically: capacitor.config.json, android/app/build.gradle, AndroidManifest.xml, .github/workflows/android.yml, www/offline.html, and grep for secrets. Regression against WebView target should be done on https://smart-tools-49.emergent.host directly. At time of this iteration production was still on the old build (limit 10, no welcome-modal); if the user redeploys, re-run the 8-step regression from iteration_8 on prod URL.",
+  "rca of the issue": "No wrapper bug. The only observable gap is that production URL (WebView target) is running an older build; this is a deploy-pipeline concern outside the /app/mobile scope. Wrapper correctly targets production, ships no secrets, requests only INTERNET, and the CI workflow produces both APK debug and AAB release artifacts with optional signing."
+}

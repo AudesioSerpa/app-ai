@@ -1,0 +1,21 @@
+{
+  "name": "facilita-ai-mobile",
+  "version": "1.0.0",
+  "description": "Facilita AI Android wrapper (Capacitor)",
+  "private": true,
+  "scripts": {
+    "sync": "npx cap sync android",
+    "open:android": "npx cap open android"
+  },
+  "dependencies": {
+    "@capacitor/android": "6.1.2",
+    "@capacitor/app": "6.0.1",
+    "@capacitor/core": "6.1.2",
+    "@capacitor/splash-screen": "6.0.2"
+  },
+  "devDependencies": {
+    "@capacitor/assets": "3.0.5",
+    "@capacitor/cli": "6.1.2",
+    "typescript": "^7.0.2"
+  }
+}
