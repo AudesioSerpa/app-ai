@@ -11,3 +11,7 @@ android/app/debug.keystore
 *.keystore
 *.log
 .DS_Store
+
+# --- Gradle wrapper: garante que o .jar do wrapper NUNCA seja ignorado ---
+# (ferramentas às vezes filtram *.jar por padrão; a linha abaixo força a inclusão)
+!android/gradle/wrapper/gradle-wrapper.jar
