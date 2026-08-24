@@ -30,11 +30,9 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'yarn'
-          cache-dependency-path: mobile/yarn.lock
 
       - name: Install JS deps
-        run: yarn install --frozen-lockfile
+        run: yarn install --network-timeout 300000
 
       - name: Capacitor sync
         run: npx cap sync android
@@ -64,17 +62,28 @@ jobs:
           retention-days: 30
 
       # ---------- AAB release (para publicar na Google Play) ----------
-      # Só assina se os secrets estiverem configurados. Sem os secrets, gera AAB não assinado.
+      # Se os 4 secrets ANDROID_* estiverem cadastrados no repo, o AAB sai assinado.
+      # Sem os secrets, o AAB é gerado não-assinado (você ainda pode inspecioná-lo,
+      # mas a Google Play só aceita a versão assinada).
       - name: Decode keystore (opcional)
-        if: env.KEYSTORE_BASE64 != ''
         env:
           KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: |
-          echo "$KEYSTORE_BASE64" | base64 -d > android/app/release.keystore
-          echo "storeFile=release.keystore" > android/keystore.properties
-          echo "storePassword=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" >> android/keystore.properties
-          echo "keyAlias=${{ secrets.ANDROID_KEY_ALIAS }}" >> android/keystore.properties
-          echo "keyPassword=${{ secrets.ANDROID_KEY_PASSWORD }}" >> android/keystore.properties
+          if [ -n "$KEYSTORE_BASE64" ]; then
+            echo "$KEYSTORE_BASE64" | base64 -d > android/app/release.keystore
+            {
+              echo "storeFile=release.keystore"
+              echo "storePassword=$KEYSTORE_PASSWORD"
+              echo "keyAlias=$KEY_ALIAS"
+              echo "keyPassword=$KEY_PASSWORD"
+            } > android/keystore.properties
+            echo "Keystore configurado — AAB sairá assinado."
+          else
+            echo "Sem ANDROID_KEYSTORE_BASE64 configurado — AAB sairá não-assinado (upload na Play Store não funcionará)."
+          fi
 
       - name: Build release AAB
         working-directory: mobile/android
@@ -84,5 +93,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: facilita-ai-release-aab
-          path: mobile/android/app/build/outputs/bundle/release/app-release*.aab
+          path: mobile/android/app/build/outputs/bundle/release/*.aab
           retention-days: 90
+          if-no-files-found: warn
