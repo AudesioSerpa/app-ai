@@ -88,3 +88,8 @@ backend/.env
 frontend/.env
 mobile/.env
 *.env.local
+.env.*
+*.env
+credentials.json
+*.key
+.credentials
