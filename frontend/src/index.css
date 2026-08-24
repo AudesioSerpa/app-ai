@@ -2,4 +2,4 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-:root{--bg:#0f0f11;--surface:#18181b;--elevated:#242429;--border:#2e2e36;--primary:#ff5722;--lime:#00e676;--muted:#a1a1aa;--white:#fafafa;--pink:#ff6ba6;--gold:#ffca28;--blue:#56b4ff}*{box-sizing:border-box}html{background:var(--bg)}body{margin:0;background:var(--bg);color:var(--white);font-family:'Plus Jakarta Sans',sans-serif;-webkit-font-smoothing:antialiased}button,input,textarea{font:inherit}button{cursor:pointer}a{text-decoration:none;color:inherit}
+:root{--bg:#0f0f11;--surface:#18181b;--elevated:#242429;--border:#2e2e36;--primary:#ff5722;--lime:#00e676;--muted:#a1a1aa;--white:#fafafa;--pink:#ff6ba6;--gold:#ffca28;--blue:#56b4ff}*{box-sizing:border-box}html{background:var(--bg)}body{margin:0;background:var(--bg);color:var(--white);font-family:'Plus Jakarta Sans',sans-serif;-webkit-font-smoothing:antialiased;overflow-x:hidden}button,input,textarea{font:inherit}button{cursor:pointer}a{text-decoration:none;color:inherit}

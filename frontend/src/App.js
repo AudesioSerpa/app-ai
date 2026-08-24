@@ -52,10 +52,9 @@ function AdBanner({ variant = "banner" }){
   if (isPremium()) return null;
   if (!settings?.ads_enabled) return null;
   if (variant === "banner" && !settings.banner_enabled) return null;
-  return <div className="ad-banner" data-testid={`ad-${variant}-placeholder`}>
-    <span>ESPAÇO PUBLICITÁRIO</span>
-    <small>anúncios aparecem no plano gratuito · <Link to="/premium" className="ad-upgrade" data-testid="ad-upgrade-link">remover</Link></small>
-  </div>
+  // Enquanto não há SDK de anúncios integrado, não mostrar placeholder técnico ao usuário.
+  // Quando o AdMob (ou similar) for conectado, este container renderiza o slot real.
+  return null;
 }
 
 function UsageBadge({ usage, onUpgrade }){
@@ -86,11 +85,10 @@ function GraceBanner({ usage }){
   </Link>
 }
 function BottomNav({active="home"}){return <nav className="bottom-nav" data-testid="bottom-navigation">
-  <Link className={active==="home"?"active":""} to="/" data-testid="nav-home"><HomeIcon size={19}/><span>Início</span></Link>
-  <Link className={active==="tools"?"active":""} to="/ferramentas" data-testid="nav-tools"><Menu size={19}/><span>Ferramentas</span></Link>
-  <Link className={active==="favorites"?"active":""} to="/favoritos" data-testid="nav-favorites"><Star size={19}/><span>Favoritos</span></Link>
-  <Link className={active==="history"?"active":""} to="/historico" data-testid="nav-history"><MoreHorizontal size={19}/><span>Histórico</span></Link>
-  <Link className={active==="profile"?"active":""} to="/perfil" data-testid="nav-profile"><UserRound size={19}/><span>Perfil</span></Link>
+  <Link className={active==="home"?"active":""} to="/" data-testid="nav-home"><HomeIcon size={22}/><span>Início</span></Link>
+  <Link className={active==="tools"?"active":""} to="/ferramentas" data-testid="nav-tools"><Menu size={22}/><span>Ferramentas</span></Link>
+  <Link className={active==="history"?"active":""} to="/historico" data-testid="nav-history"><MoreHorizontal size={22}/><span>Histórico</span></Link>
+  <Link className={active==="profile"?"active":""} to="/perfil" data-testid="nav-profile"><UserRound size={22}/><span>Perfil</span></Link>
 </nav>}
 
 function ToolCard({tool, favorite, onFavorite}){const Icon=tool.icon; return <div className="tool-card" data-testid={`tool-card-${tool.id}`}>
@@ -291,7 +289,7 @@ function Favorites(){
       <section className="page-intro compact"><p className="eyebrow">SEU JEITO DE USAR</p><h1>O que você<br/><em>mais gosta.</em></h1></section>
       {favorites.length ? <div className="tool-list">{tools.filter(t=>favorites.includes(t.id)).map(t=><ToolCard key={t.id} tool={t} favorite onFavorite={()=>toggle(t.id)}/>)}</div> : <Empty icon={Star} text="Você ainda não favoritou nenhuma ferramenta."/>}
     </main>
-    <BottomNav active="favorites"/>
+    <BottomNav active="tools"/>
   </div>
 }
 

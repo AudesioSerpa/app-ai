@@ -1,0 +1,29 @@
+{
+  "summary": "Frontend-only regression for the mobile UI redesign of Facilita AI at https://smart-tools-49.preview.emergentagent.com. Tested at viewports 360x780, 390x844 and tablet 768x1024. Verified: bottom-nav has exactly 4 items (nav-home, nav-tools, nav-history, nav-profile) with active color #ff5722, safe-area padding-bottom respected, AdBanner returns null (no ESPAÇO PUBLICITÁRIO / no ad-banner-placeholder), typography sizes on target (card strong=16px, small=13px, section h2=19px, home h1=31.2px), touch targets meet spec (tool_main 92h, favorite_btn 56w x 92h, nav item 58.5h). Regression: admin login OK, usage badge reads 'Você tem 3 usos grátis hoje', QR preview renders, /premium shows plan-free + plan-premium + R$ and subscribe button, /perfil shows usage-summary, /admin accessible for admin. Found ONE critical horizontal overflow bug on Home (soon-grid items pushing scrollWidth to 497 at 390px viewport and 493 at 360px) — root-caused to grid items without min-width:0 letting long tool names + 'EM BREVE' tag push width beyond track. Applied minimal CSS fix (min-width:0; overflow:hidden on .soon-item) and re-verified: all six routes and all three viewports now report scrollWidth === clientWidth.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [
+      {"component": "Home .soon-grid items", "issue": "FIXED: Grid items without min-width:0 caused horizontal overflow — at 390px viewport scrollWidth was 497 (107px overflow), at 360px scrollWidth was 493 (133px). Long tool names ('Criar currículo', 'Calculadora de desconto') combined with the 'EM BREVE' small tag (margin-left:auto, no wrap) forced each .soon-item to ~197px in a 2-col grid, breaking the layout. Applied min-width:0 + overflow:hidden on .soon-item. All viewports now clean.", "selector": ".soon-item", "priority": "HIGH"}
+    ],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": ["/app/test_reports/iteration_10.json"],
+  "action_items": [
+    "Confirm the .soon-item CSS fix (min-width:0; overflow:hidden) is acceptable — it does not alter visual design, only prevents overflow. Optionally consider ellipsis on the tool name span for very long labels (already applied via white-space:nowrap + text-overflow:ellipsis on .soon-item>span)."
+  ],
+  "critical_code_review_comments": [
+    "App.js is ~690 lines with many components — consider splitting Home/Tools/ToolPage/Profile/Premium/Admin into separate files for maintainability (>700 lines threshold approaching).",
+    "AdBanner returns null unconditionally right now — that's fine as an interim (matches product decision), but the useAppSettings() call still hits /api/settings on every mount from every AdBanner instance. When SDK is wired, consider memoizing settings via context to avoid duplicate calls (Home + ToolPage both mount AdBanner).",
+    "Bottom nav on ToolPage / Favorites uses active='tools' and active='favorites' but 'favorites' is no longer in the 4-item nav — that active flag is now a no-op. Small cleanup: change to active='tools' or 'profile' as appropriate.",
+    "History page: BottomNav is inside the app-shell but the outer <BottomNav active='history'/> is fine; however Favorites page still uses <BottomNav active='favorites'/> which will never match any item — cosmetic only."
+  ],
+  "updated_files": ["/app/frontend/src/App.css"],
+  "success_rate": {"backend": "N/A (not tested this iteration)", "frontend": "100% after fix (11/11 checks pass: bottom-nav 4 items, ad-banner clean, typography, touch targets, active color, mobile 360 no overflow, mobile 390 no overflow, tablet 768 2-col + no overflow, login + usage badge '3 usos grátis', qrcode preview, /premium plans + R$, /perfil usage-summary, /admin admin access, safe-area padding-bottom present via calc(8px + env(safe-area-inset-bottom)))"},
+  "test_credentials": "admin@facilita.ai / Facilita@123 (worked, admin panel accessible, free_daily_limit already at 3 usos).",
+  "seed_data_creation": "none",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Redesign of mobile UI is stable. All viewports (360/390/768) render without horizontal overflow after the .soon-item min-width:0 fix. Bottom-nav is 4-item (nav-favorites removed) with orange active state. AdBanner is stubbed to return null. If retesting, remember to dismiss welcome modal via [data-testid='welcome-dismiss-button'] or clear localStorage 'facilita_welcome_dismissed'. Admin credentials work; free_daily_limit stays at 3. Favorites page still exists at /favoritos by URL only.",
+  "rca of the issue": "Root cause of the horizontal overflow bug: `.soon-item` is a flex container inside a 2-column CSS grid. CSS grid items default to `min-width: auto` (which is 'min-content'). Because .soon-item contained a <span> with tool label + a <small> with 'EM BREVE' that used `white-space:nowrap` and `margin-left:auto`, the min-content width of each grid item became ~197px. Two 197px items + 10px gap = 404px, exceeding a 390px viewport (or 358px content area after 16px page padding). Reproduction: open Home at 390 or 360px, scroll horizontally — page scrolls right by ~110px, exposing dark background. Mitigation applied: added `min-width:0; overflow:hidden` to `.soon-item` so the flex/grid track cannot expand beyond the assigned 1fr; the inner <span> already has ellipsis so long labels truncate gracefully."
+}
