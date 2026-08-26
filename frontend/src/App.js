@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { BrowserRouter, Routes, Route, Link, useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import { QRCodeSVG } from "qrcode.react";
-import { ArrowLeft, Check, ChevronRight, Copy, FileText, Heart, Home as HomeIcon, KeyRound, Mail, Menu, MessageCircle, MoreHorizontal, Percent, QrCode, Search, Share2, Shield, Sparkles, Star, Trash2, UserRound, WandSparkles, Youtube } from "lucide-react";
+import { ArrowLeft, Check, ChevronRight, Copy, Download, FileText, Heart, Home as HomeIcon, ImagePlus, KeyRound, Mail, Menu, MessageCircle, MoreHorizontal, Percent, QrCode, Search, Share2, Shield, Sparkles, Star, Trash2, UserRound, WandSparkles, Youtube } from "lucide-react";
 import "@/App.css";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
@@ -11,6 +11,7 @@ const tools = [
   { id:"improve_text", name:"Melhorar texto", desc:"Mais claro, profissional ou simples", icon:WandSparkles, color:"lime", group:"Mais usadas" },
   { id:"correct_pt", name:"Corrigir português", desc:"Ortografia, gramática e pontuação", icon:Check, color:"blue", group:"Mais usadas" },
   { id:"summarize", name:"Resumir texto", desc:"O essencial em poucos segundos", icon:FileText, color:"gold", group:"Mais usadas" },
+  { id:"image_gen", name:"Gerador de imagens IA", desc:"Crie imagens a partir de uma descrição", icon:ImagePlus, color:"pink", group:"Mais usadas" },
   { id:"create_email", name:"Criar e-mail", desc:"Assuntos e corpos prontos", icon:Mail, color:"pink", group:"Texto e trabalho" },
   { id:"create_caption", name:"Criar legenda", desc:"Ideias que combinam com seu post", icon:HashIcon, color:"coral", group:"Redes sociais" },
   { id:"youtube_titles", name:"Títulos para YouTube", desc:"10 ideias para seu próximo vídeo", icon:Youtube, color:"red", group:"Redes sociais" },
@@ -149,7 +150,7 @@ function Home(){
     <div className="usage-row"><UsageBadge usage={usage} onUpgrade={()=>nav("/premium")}/></div>
   </section>
   {favorites.length>0 && !query && <section className="section"><SectionTitle title="Meus favoritos"/><div className="tool-list">{tools.filter(t=>favorites.includes(t.id)).map(t=><ToolCard key={t.id} tool={t} favorite onFavorite={()=>toggle(t.id)}/>)}</div></section>}
-  <AdBanner/><section className="section"><SectionTitle title={query?"Resultados":"Mais usadas"} action={query?null:<Link to="/ferramentas" data-testid="see-all-tools">Ver todas</Link>}/><div className="tool-list">{filtered.slice(0,query?20:4).map(t=><ToolCard key={t.id} tool={t} favorite={favorites.includes(t.id)} onFavorite={()=>toggle(t.id)}/>)}</div></section>
+  <AdBanner/><section className="section"><SectionTitle title={query?"Resultados":"Mais usadas"} action={query?null:<Link to="/ferramentas" data-testid="see-all-tools">Ver todas</Link>}/><div className="tool-list">{filtered.slice(0,query?20:5).map(t=><ToolCard key={t.id} tool={t} favorite={favorites.includes(t.id)} onFavorite={()=>toggle(t.id)}/>)}</div></section>
   {!query && <><ToolGroup title="Texto e trabalho" items={tools.filter(t=>t.group==="Texto e trabalho")} favorites={favorites} toggle={toggle}/><ToolGroup title="Redes sociais" items={tools.filter(t=>t.group==="Redes sociais")} favorites={favorites} toggle={toggle}/><ToolGroup title="Utilidades" items={tools.filter(t=>t.group==="Utilidades")} favorites={favorites} toggle={toggle}/><section className="section"><SectionTitle title="Em breve"/><div className="soon-grid">{soon.map((x,i)=>{const Icon=x.icon;return <div className="soon-item" key={x.name} data-testid={`coming-soon-${i}`}><Icon size={18}/><span>{x.name}</span><small>Em breve</small></div>})}</div></section></>}
   </main>
   {welcomeOpen && <div className="modal-overlay" onClick={dismissWelcome} data-testid="welcome-modal">
@@ -171,6 +172,138 @@ function SectionTitle({title,action}){return <div className="section-title"><h2>
 function ToolGroup({title,items,favorites,toggle}){return <section className="section"><SectionTitle title={title}/><div className="tool-list">{items.map(t=><ToolCard key={t.id} tool={t} favorite={favorites.includes(t.id)} onFavorite={()=>toggle(t.id)}/>)}</div></section>}
 
 function Tools(){const [favorites,toggle]=useFavorites();return <div className="app-shell"><header className="topbar"><Logo/><span className="page-label">Ferramentas</span></header><main className="page"><section className="page-intro"><p className="eyebrow">CENTRAL DE UTILIDADES</p><h1>Tudo para deixar<br/><em>mais fácil.</em></h1></section><div className="tool-list">{tools.map(t=><ToolCard key={t.id} tool={t} favorite={favorites.includes(t.id)} onFavorite={()=>toggle(t.id)}/>)}</div><section className="section"><SectionTitle title="Em breve"/><div className="soon-grid">{soon.map((x,i)=><div className="soon-item" key={x.name} data-testid={`tools-soon-${i}`}><x.icon size={18}/><span>{x.name}</span><small>Em breve</small></div>)}</div></section></main><BottomNav active="tools"/></div>}
+
+function ImageGenPage(){
+  const tool = toolMap["image_gen"];
+  const nav = useNavigate();
+  const [usage, refreshUsage] = useUsage();
+  const [prompt, setPrompt] = useState("");
+  const [aspect, setAspect] = useState("1:1");
+  const [loading, setLoading] = useState(false);
+  const [imageUrl, setImageUrl] = useState("");
+  const [errorMsg, setErrorMsg] = useState("");
+  const [limitReached, setLimitReached] = useState(false);
+  const [authRequired, setAuthRequired] = useState(false);
+  const [shared, setShared] = useState(false);
+
+  const remaining = usage?.image_remaining;
+  const limit = usage?.image_limit ?? 3;
+  const premium = usage?.is_premium;
+
+  const generate = async () => {
+    if (!getToken()) { setAuthRequired(true); return; }
+    if (!prompt.trim()) { setErrorMsg("Descreva a imagem que você quer criar."); return; }
+    setLoading(true); setErrorMsg(""); setImageUrl(""); setShared(false);
+    try {
+      const r = await axios.post(`${API}/generate-image`, { prompt: prompt.trim(), aspect_ratio: aspect }, { headers: authHeaders() });
+      setImageUrl(r.data.image_url);
+      refreshUsage();
+    } catch (e) {
+      if (e.response?.status === 401) setAuthRequired(true);
+      else if (e.response?.status === 402) setLimitReached(true);
+      else setErrorMsg(e.response?.data?.detail || "Não foi possível gerar a imagem agora.");
+    }
+    setLoading(false);
+  };
+
+  const download = async () => {
+    if (!imageUrl) return;
+    try {
+      const resp = await fetch(imageUrl);
+      const blob = await resp.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url; a.download = `facilita-ai-${Date.now()}.png`;
+      document.body.appendChild(a); a.click(); a.remove();
+      URL.revokeObjectURL(url);
+    } catch {
+      window.open(imageUrl, "_blank");
+    }
+  };
+
+  const share = async () => {
+    if (!imageUrl) return;
+    if (navigator.share) {
+      try {
+        const resp = await fetch(imageUrl);
+        const blob = await resp.blob();
+        const file = new File([blob], "facilita-ai.png", { type: blob.type || "image/png" });
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          await navigator.share({ files: [file], title: "Facilita AI", text: prompt });
+          setShared(true);
+          return;
+        }
+        await navigator.share({ title: "Facilita AI", text: prompt, url: imageUrl });
+        setShared(true);
+      } catch { /* usuário cancelou */ }
+    } else {
+      navigator.clipboard?.writeText(imageUrl);
+      setShared(true);
+    }
+  };
+
+  return <div className="app-shell">
+    <header className="tool-header"><Link to="/" data-testid="tool-back-button"><ArrowLeft size={20}/></Link><span>Facilita AI</span><button data-testid="tool-more-button"><MoreHorizontal size={21}/></button></header>
+    <main className="page tool-page">
+      <div className={`tool-hero ${tool.color}`}><span className="tool-icon"><tool.icon size={25}/></span><div><p className="eyebrow">FERRAMENTA FACILITA</p><h1>{tool.name}</h1><p>{tool.desc}</p></div></div>
+      <div className="usage-row"><UsageBadge usage={usage ? {is_premium: premium, remaining, limit} : null} onUpgrade={()=>nav("/premium")}/></div>
+      <div className="form-section">
+        <label className="field-label">Descreva a imagem que quer criar</label>
+        <textarea data-testid="image_gen-input" value={prompt} onChange={e=>setPrompt(e.target.value)} placeholder="Ex.: um gato astronauta flutuando no espaço, arte digital, cores vibrantes" maxLength={500}/>
+        <div className="chips" data-testid="image_gen-options">
+          {[["1:1","Quadrada"],["9:16","Retrato"],["16:9","Paisagem"]].map(([v,l]) => (
+            <button key={v} className={aspect===v?"selected":""} onClick={()=>setAspect(v)} data-testid={`image_gen-aspect-${v.replace(":","x")}`}>
+              <span className={`aspect-preview a-${v.replace(":","x")}`}/> {l} <small>{v}</small>
+            </button>
+          ))}
+        </div>
+        {errorMsg && <div className="error-message" data-testid="image_gen-error">{errorMsg}</div>}
+        <button className="primary-action" onClick={generate} disabled={loading || !prompt.trim()} data-testid="image_gen-generate-button">
+          <Sparkles size={18}/>{loading ? "Criando sua imagem..." : "Gerar imagem"}
+        </button>
+      </div>
+      {loading && <div className="image-loading" data-testid="image_gen-loading"><div className="image-loading-inner"><Sparkles size={22}/><p>Criando sua imagem no FLUX.1 Schnell — leva ~5 segundos</p></div></div>}
+      {imageUrl && !loading && <section className="result-panel image-result" data-testid="image_gen-result">
+        <div className="result-top"><div><p className="eyebrow">SUA IMAGEM</p><h2>Pronta para usar</h2></div></div>
+        <div className={`image-preview aspect-${aspect.replace(":","x")}`}><img src={imageUrl} alt={prompt} data-testid="image_gen-image"/></div>
+        <div className="result-actions">
+          <button onClick={download} data-testid="image_gen-download-button"><Download size={16}/> Baixar</button>
+          <button onClick={share} data-testid="image_gen-share-button"><Share2 size={16}/> {shared ? "Compartilhado" : "Compartilhar"}</button>
+          <button onClick={generate} data-testid="image_gen-retry-button" disabled={loading}><WandSparkles size={16}/> Gerar de novo</button>
+        </div>
+      </section>}
+      <AdBanner/>
+    </main>
+    {limitReached && <div className="modal-overlay" onClick={()=>setLimitReached(false)} data-testid="limit-reached-modal">
+      <div className="modal-card limit-modal" onClick={e=>e.stopPropagation()}>
+        <div className="limit-icon"><ImagePlus size={24}/></div>
+        <h3>Você chegou ao limite de imagens de hoje ✨</h3>
+        <p>Você usou suas {limit} imagens gratuitas de hoje. Volte amanhã ou assine o Premium para gerar mais agora mesmo.</p>
+        <div className="limit-actions">
+          <button className="primary-action" onClick={()=>{setLimitReached(false); nav("/premium");}} data-testid="limit-upgrade-button"><Sparkles size={18}/> Assinar Premium</button>
+          <button className="ghost-action" onClick={()=>setLimitReached(false)} data-testid="limit-dismiss-button">Agora não</button>
+        </div>
+      </div>
+    </div>}
+    {authRequired && <div className="modal-overlay" onClick={()=>setAuthRequired(false)} data-testid="auth-required-modal">
+      <div className="modal-card limit-modal" onClick={e=>e.stopPropagation()}>
+        <div className="limit-icon"><UserRound size={24}/></div>
+        <h3>Crie sua conta grátis para usar o Facilita AI</h3>
+        <p>Com uma conta você guarda seu histórico, favoritos e recebe imagens grátis por dia.</p>
+        <div className="limit-actions">
+          <button className="primary-action" onClick={()=>nav("/login?mode=register")} data-testid="auth-required-register-button"><Sparkles size={18}/> Criar conta grátis</button>
+          <button className="ghost-action" onClick={()=>nav("/login")} data-testid="auth-required-login-button">Entrar</button>
+        </div>
+      </div>
+    </div>}
+    <BottomNav active="tools"/>
+  </div>
+}
+
+function ToolRouter(){
+  const {id} = useParams();
+  return id === "image_gen" ? <ImageGenPage/> : <ToolPage/>;
+}
 
 function ToolPage(){
   const {id}=useParams();
@@ -345,7 +478,7 @@ function History(){
                 <div className="history-item" key={it.id} data-testid={`history-item-${it.id}`}>
                   <button className="history-open" onClick={() => setOpenItem(it)} data-testid={`history-open-${it.id}`}>
                     <span className={`tool-icon ${toolMap[it.tool]?.color||"blue"}`}>{(() => { const T = toolMap[it.tool]?.icon||FileText; return <T size={18}/>; })()}</span>
-                    <span className="history-copy"><strong>{toolMap[it.tool]?.name||it.tool}</strong><small>{(it.result||"").slice(0,60)}...</small></span>
+                    <span className="history-copy"><strong>{toolMap[it.tool]?.name||it.tool}</strong><small>{it.tool === "image_gen" ? (it.prompt?.prompt || "Imagem gerada") : (it.result||"").slice(0,60)+"..."}</small></span>
                     <ChevronRight size={16}/>
                   </button>
                   <button className="history-delete" onClick={() => remove(it.id)} aria-label="Excluir" data-testid={`history-delete-${it.id}`}><Trash2 size={16}/></button>
@@ -356,9 +489,13 @@ function History(){
       {openItem && <div className="modal-overlay" onClick={()=>setOpenItem(null)} data-testid="history-modal">
         <div className="modal-card" onClick={e=>e.stopPropagation()}>
           <div className="modal-head"><h3>{toolMap[openItem.tool]?.name||openItem.tool}</h3><button onClick={()=>setOpenItem(null)} data-testid="history-modal-close">Fechar</button></div>
-          <div className="result-text">{openItem.result}</div>
+          {openItem.tool === "image_gen"
+            ? <div className="image-preview" data-testid="history-modal-image-preview"><img src={openItem.result} alt="Imagem gerada"/></div>
+            : <div className="result-text">{openItem.result}</div>}
           <div className="result-actions">
-            <button onClick={()=>{navigator.clipboard?.writeText(openItem.result)}} data-testid="history-modal-copy"><Copy size={16}/> Copiar</button>
+            {openItem.tool === "image_gen"
+              ? <a href={openItem.result} target="_blank" rel="noreferrer" className="history-modal-open" data-testid="history-modal-open-image"><Download size={16}/> Abrir imagem</a>
+              : <button onClick={()=>{navigator.clipboard?.writeText(openItem.result)}} data-testid="history-modal-copy"><Copy size={16}/> Copiar</button>}
             <button onClick={()=>{ setOpenItem(null); nav(`/ferramenta/${openItem.tool}`); }} data-testid="history-modal-reopen"><WandSparkles size={16}/> Abrir ferramenta</button>
           </div>
         </div>
@@ -645,6 +782,12 @@ function Admin(){
       </section>
 
       <section className="admin-card">
+        <div className="admin-card-head"><h2>Limites de imagens (fal.ai)</h2><small>Geração de imagens FLUX.1 tem custo por chamada. Ajuste o teto por plano.</small></div>
+        <AdminSlider testid="admin-slider-free-image-limit" label="Imagens diárias no plano Grátis" value={settings.free_daily_image_limit ?? 3} min={0} max={30} onChange={v=>saveSettings({free_daily_image_limit:v})} suffix=" imgs"/>
+        <AdminSlider testid="admin-slider-premium-image-limit" label="Imagens diárias no plano Premium" value={settings.premium_daily_image_limit ?? 50} min={5} max={500} step={5} onChange={v=>saveSettings({premium_daily_image_limit:v})} suffix=" imgs"/>
+      </section>
+
+      <section className="admin-card">
         <div className="admin-card-head"><h2>Preço do Premium</h2><small>Valor cobrado mensalmente (assinatura recorrente via Mercado Pago).</small></div>
         <AdminSlider testid="admin-slider-price" label="Preço em BRL" value={settings.premium_price_brl} min={4.9} max={99.9} step={0.1} onChange={v=>saveSettings({premium_price_brl:Number(v.toFixed(2))})} suffix=" R$"/>
       </section>
@@ -684,5 +827,5 @@ function Admin(){
   </div>
 }
 
-function App(){return <BrowserRouter><Routes><Route path="/" element={<Home/>}/><Route path="/ferramentas" element={<Tools/>}/><Route path="/ferramenta/:id" element={<ToolPage/>}/><Route path="/login" element={<Auth/>}/><Route path="/favoritos" element={<Favorites/>}/><Route path="/historico" element={<History/>}/><Route path="/perfil" element={<Profile/>}/><Route path="/premium" element={<Premium/>}/><Route path="/admin" element={<Admin/>}/><Route path="/termos" element={<Legal/>}/></Routes></BrowserRouter>}
+function App(){return <BrowserRouter><Routes><Route path="/" element={<Home/>}/><Route path="/ferramentas" element={<Tools/>}/><Route path="/ferramenta/:id" element={<ToolRouter/>}/><Route path="/login" element={<Auth/>}/><Route path="/favoritos" element={<Favorites/>}/><Route path="/historico" element={<History/>}/><Route path="/perfil" element={<Profile/>}/><Route path="/premium" element={<Premium/>}/><Route path="/admin" element={<Admin/>}/><Route path="/termos" element={<Legal/>}/></Routes></BrowserRouter>}
 export default App;

@@ -16,10 +16,11 @@ Criar um PWA mobile-first em pt-BR chamado **Facilita AI** — central de ferram
 - Favoritos e histórico persistentes para usuários autenticados.
 - Rate limit / créditos / painel admin previstos na arquitetura.
 
-## Escopo MVP (10 ferramentas)
+## Escopo MVP (11 ferramentas)
 1. Responder WhatsApp • 2. Melhorar texto • 3. Corrigir português • 4. Resumir texto •
 5. Criar e-mail • 6. Criar legenda • 7. Títulos para YouTube • 8. QR Code (local) •
-9. Gerador de senhas (local) • 10. Calculadora de porcentagem (local).
+9. Gerador de senhas (local) • 10. Calculadora de porcentagem (local) •
+11. Gerador de imagens IA (fal.ai FLUX.1 Schnell).
 
 ## Stack
 - Frontend: React 19 + React Router + Tailwind + shadcn + qrcode.react.
@@ -28,7 +29,8 @@ Criar um PWA mobile-first em pt-BR chamado **Facilita AI** — central de ferram
 - Deploy: supervisor + Kubernetes ingress (`/api` prefix).
 
 ## O que está implementado (Fev/2026)
-- 10 ferramentas do MVP com UI mobile-first e tema escuro.
+- 11 ferramentas do MVP com UI mobile-first e tema escuro.
+- **Gerador de Imagens IA (fal.ai FLUX.1 Schnell)**: `POST /api/generate-image` (backend guarda `FAL_KEY` em `backend/.env`), UI `/ferramenta/image_gen` com escolha de aspecto (1:1, 16:9, 9:16), download e compartilhar. Consome 1 uso/dia do free tier. Grava no histórico com `tool="image_gen"` e resultado (URL da imagem). **Fix 26/Fev/2026**: `App.js` linha 153 — slice da seção "Mais usadas" da Home atualizado de `slice(0,4)` → `slice(0,5)` para expor o novo card.
 - Auth JWT (login/registro), seed do admin (`admin@facilita.ai` / `Facilita@123`).
 - `/api/generate` roteia IA vs. locais (senha e %) e grava histórico completo (prompt+resultado).
 - Favoritos sincronizados: hook usa localStorage + `/api/favorites` (GET/POST/DELETE) quando logado.

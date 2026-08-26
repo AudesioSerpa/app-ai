@@ -19,6 +19,7 @@ import hmac
 import hashlib
 import httpx
 import mercadopago
+import fal_client
 from zoneinfo import ZoneInfo
 from emergentintegrations.llm.chat import LlmChat, UserMessage, TextDelta
 
@@ -37,6 +38,11 @@ MP_WEBHOOK_SECRET = os.environ.get("MP_WEBHOOK_SECRET", "")
 PUBLIC_BASE_URL = os.environ.get("PUBLIC_BASE_URL", "").rstrip("/")
 PREMIUM_PRICE_BRL = float(os.environ.get("PREMIUM_PRICE_BRL", "9.90"))
 mp_sdk = mercadopago.SDK(MP_ACCESS_TOKEN) if MP_ACCESS_TOKEN else None
+
+# fal.ai — lê FAL_KEY automaticamente do os.environ; garantimos que está setado antes de qualquer chamada
+FAL_KEY = os.environ.get("FAL_KEY", "")
+FAL_MODEL = "fal-ai/flux/schnell"
+FAL_ASPECT_MAP = {"1:1": "square_hd", "9:16": "portrait_16_9", "16:9": "landscape_16_9"}
 
 # Logging (needs to exist before route handlers reference it)
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -66,6 +72,8 @@ class FavoriteInput(BaseModel):
 class SettingsInput(BaseModel):
     free_daily_limit: Optional[int] = Field(default=None, ge=0, le=1000)
     premium_daily_limit: Optional[int] = Field(default=None, ge=0, le=100000)
+    free_daily_image_limit: Optional[int] = Field(default=None, ge=0, le=200)
+    premium_daily_image_limit: Optional[int] = Field(default=None, ge=0, le=10000)
     premium_price_brl: Optional[float] = Field(default=None, ge=0)
     ads_enabled: Optional[bool] = None
     banner_enabled: Optional[bool] = None
@@ -74,10 +82,16 @@ class SettingsInput(BaseModel):
 class SubscriptionInput(BaseModel):
     plan: str  # "free" | "premium"
 
+class ImageInput(BaseModel):
+    prompt: str = Field(min_length=3, max_length=500)
+    aspect_ratio: str = Field(default="1:1")
+
 DEFAULT_SETTINGS = {
     "id": "app_settings",
     "free_daily_limit": 3,
     "premium_daily_limit": 500,
+    "free_daily_image_limit": 3,
+    "premium_daily_image_limit": 50,
     "premium_price_brl": float(os.environ.get("PREMIUM_PRICE_BRL", "9.90")),
     "ads_enabled": True,
     "banner_enabled": True,
@@ -145,6 +159,14 @@ async def count_today_ai_usage(user_id: str) -> int:
     return await db.usage.count_documents({
         "user_id": user_id,
         "tool": {"$in": list(AI_TOOLS)},
+        "created_at": {"$gte": start, "$lt": end},
+    })
+
+async def count_today_image_usage(user_id: str) -> int:
+    start, end = brt_day_bounds_utc()
+    return await db.usage.count_documents({
+        "user_id": user_id,
+        "tool": "image_gen",
         "created_at": {"$gte": start, "$lt": end},
     })
 
@@ -285,7 +307,7 @@ async def admin_stats(user=Depends(required_user)):
 @api_router.get("/settings")
 async def public_settings():
     s = await get_settings()
-    return {k: s[k] for k in ("free_daily_limit","premium_daily_limit","premium_price_brl","ads_enabled","banner_enabled","interstitial_enabled")}
+    return {k: s[k] for k in ("free_daily_limit","premium_daily_limit","free_daily_image_limit","premium_daily_image_limit","premium_price_brl","ads_enabled","banner_enabled","interstitial_enabled")}
 
 @api_router.get("/admin/settings")
 async def admin_get_settings(user=Depends(required_user)):
@@ -305,12 +327,70 @@ async def me_usage(user=Depends(current_user)):
     settings = await get_settings()
     premium = is_premium(user)
     limit = settings["premium_daily_limit"] if premium else settings["free_daily_limit"]
+    image_limit = settings["premium_daily_image_limit"] if premium else settings["free_daily_image_limit"]
     if not user:
-        # /api/generate exige login, então visitantes nunca acumulam uso — retorno 0/limit direto
-        return {"used": 0, "limit": limit, "remaining": limit, "is_premium": False, "plan": "free", "in_grace_period": False, "grace_days_left": 0}
+        return {"used": 0, "limit": limit, "remaining": limit, "image_used": 0, "image_limit": image_limit, "image_remaining": image_limit, "is_premium": False, "plan": "free", "in_grace_period": False, "grace_days_left": 0}
     used = await count_today_ai_usage(user["id"])
+    img_used = await count_today_image_usage(user["id"])
     grace = compute_grace(user)
-    return {"used": used, "limit": limit, "remaining": max(0, limit - used), "is_premium": premium, "plan": "premium" if premium else "free", **grace}
+    return {"used": used, "limit": limit, "remaining": max(0, limit - used), "image_used": img_used, "image_limit": image_limit, "image_remaining": max(0, image_limit - img_used), "is_premium": premium, "plan": "premium" if premium else "free", **grace}
+
+
+@api_router.post("/generate-image")
+async def generate_image(input: ImageInput, user=Depends(required_user)):
+    """Gera imagem via fal.ai FLUX.1 Schnell. Rate-limited por usuário (contagem BRT diária)."""
+    if not FAL_KEY:
+        raise HTTPException(503, "Geração de imagem não configurada. Adicione FAL_KEY no painel.")
+    settings = await get_settings()
+    limit = settings["premium_daily_image_limit"] if is_premium(user) else settings["free_daily_image_limit"]
+    used = await count_today_image_usage(user["id"])
+    if used >= limit:
+        raise HTTPException(402, "Você atingiu o limite gratuito de imagens de hoje. Assine o Premium para gerar mais." if not is_premium(user) else "Limite diário de imagens atingido.")
+    image_size = FAL_ASPECT_MAP.get(input.aspect_ratio, "square_hd")
+    prompt = input.prompt.strip()
+    if not prompt:
+        raise HTTPException(400, "Descreva a imagem que você quer criar.")
+    # Garante FAL_KEY no ambiente do processo (o SDK lê de os.environ)
+    os.environ["FAL_KEY"] = FAL_KEY
+    import asyncio
+    def _call():
+        return fal_client.subscribe(
+            FAL_MODEL,
+            arguments={
+                "prompt": prompt,
+                "image_size": image_size,
+                "num_inference_steps": 4,
+                "num_images": 1,
+                "enable_safety_checker": True,
+            },
+            with_logs=False,
+        )
+    try:
+        result = await asyncio.wait_for(asyncio.to_thread(_call), timeout=60)
+    except asyncio.TimeoutError:
+        raise HTTPException(504, "A geração demorou mais do que o esperado. Tente novamente.")
+    except Exception as e:
+        msg = str(e)
+        logger.exception("Falha na geração fal.ai")
+        if "safety" in msg.lower() or "nsfw" in msg.lower():
+            raise HTTPException(400, "O conteúdo pedido foi bloqueado pelo filtro de segurança. Tente descrever de outra forma.")
+        raise HTTPException(502, "Não foi possível gerar a imagem agora. Tente novamente.")
+    images = (result or {}).get("images") or []
+    if not images:
+        raise HTTPException(502, "Nenhuma imagem foi gerada. Tente reformular seu prompt.")
+    image_url = images[0].get("url")
+    if not image_url:
+        raise HTTPException(502, "Resposta inválida da API de imagens.")
+    record = {
+        "id": str(uuid.uuid4()),
+        "tool": "image_gen",
+        "user_id": user["id"],
+        "prompt": {"prompt": prompt, "aspect_ratio": input.aspect_ratio},
+        "result": image_url,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    }
+    await db.usage.insert_one(record)
+    return {"tool": "image_gen", "image_url": image_url, "aspect_ratio": input.aspect_ratio, "prompt": prompt}
 
 @api_router.post("/admin/users/{user_id}/subscription")
 async def set_subscription(user_id: str, input: SubscriptionInput, user=Depends(required_user)):

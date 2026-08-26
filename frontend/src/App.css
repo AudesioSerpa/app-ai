@@ -172,6 +172,23 @@ h2{font-weight:600}
 .password-options input[type=number]{width:70px;padding:8px 10px;font-size:14px}
 .qr-result{display:grid;place-items:center;background:#fff;border-radius:16px;padding:22px;width:max-content;margin:22px auto}
 .qr-caption{color:#333;font-size:12px;margin:14px 0 0;letter-spacing:.3px}
+.aspect-preview{display:inline-block;background:#3a3a42;border-radius:3px;margin-right:6px;vertical-align:middle}
+.aspect-preview.a-1x1{width:14px;height:14px}
+.aspect-preview.a-9x16{width:9px;height:14px}
+.aspect-preview.a-16x9{width:16px;height:9px}
+.chips button.selected .aspect-preview{background:var(--primary)}
+.chips button small{color:#6b6b73;margin-left:4px;font-size:11px}
+.chips button.selected small{color:#ffb59a}
+.image-loading{margin-top:18px;background:#18181b;border:1px dashed #3a3a42;border-radius:16px;padding:36px 20px;display:grid;place-items:center}
+.image-loading-inner{display:grid;place-items:center;gap:10px;color:#a1a1aa;font-size:13px;text-align:center;max-width:280px}
+.image-loading-inner svg{color:var(--primary);animation:pulse 1.4s ease-in-out infinite}
+@keyframes pulse{0%,100%{transform:scale(1);opacity:.8}50%{transform:scale(1.15);opacity:1}}
+.image-result .image-preview{margin-top:16px;background:#0a0a0c;border-radius:14px;overflow:hidden;display:grid;place-items:center}
+.image-preview img{display:block;max-width:100%;width:100%;height:auto}
+.image-result .image-preview.aspect-1x1{aspect-ratio:1/1}
+.image-result .image-preview.aspect-9x16{aspect-ratio:9/16;max-width:360px;margin-left:auto;margin-right:auto}
+.image-result .image-preview.aspect-16x9{aspect-ratio:16/9}
+.history-modal-open{display:inline-flex;align-items:center;gap:6px;border:1.5px solid #34343a;background:transparent;color:#c4c4ca;border-radius:10px;padding:10px 12px;font-size:13px;font-weight:600;text-decoration:none;min-height:40px}
 
 /* ---------- Usage badge ---------- */
 .usage-row{margin-top:18px;display:flex}

@@ -1,0 +1,31 @@
+{
+  "summary": "Tested the new 'Gerador de Imagens IA' (fal.ai FLUX.1 Schnell) end-to-end. Backend: 14/14 pytest cases pass (public settings extension, admin PUT, /me/usage extension for both anon & auth, POST /api/generate-image auth/validation, image_gen count isolation vs AI-text 'used', regression on login/qrcode/favorites/history). Frontend: tool page renders with 3 aspect chips (1:1 default selected), Gerar imagem button, UsageBadge 'Você tem 3 usos grátis hoje', visitor Gerar opens auth-required-modal, admin sliders for free/premium image limits present, 503 error 'Geração de imagem não configurada. Adicione FAL_KEY no painel.' surfaced correctly on authed generate. Real fal.ai call not exercised (FAL_KEY empty by design).",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [
+      {"component": "Home ('Mais usadas' section)", "issue": "Home slices tools to first 4 (App.js:153 `filtered.slice(0, query?20:4)`). The new 'Gerador de imagens IA' is at index 4 (5th) so it is NOT visible on Home for visitors/logged users, contradicting the acceptance criterion 'aparece na Home logo após Resumir texto na seção Mais usadas'. It is only reachable via /ferramentas or direct URL /ferramenta/image_gen. Recommend changing slice to 5 (or 6) so image_gen shows on Home.", "selector": ".section .tool-list", "priority": "HIGH"}
+    ],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_image_gen.py",
+    "/app/test_reports/pytest/image_gen_results.xml"
+  ],
+  "action_items": [
+    "Bump the Home 'Mais usadas' slice from 4 to 5 (or more) in /app/frontend/src/App.js line 153 so the new image_gen tool actually appears on the Home screen as required.",
+    "Configure FAL_KEY via Emergent Secrets Manager to enable real image generation (currently returns 503 as designed)."
+  ],
+  "critical_code_review_comments": [
+    "POST /api/generate-image order: Pydantic validation runs BEFORE the FAL_KEY check (dependency runs after body parsing), so short prompts return 422 while other cases with FAL_KEY empty return 503 before the rate-limit check. This matches the request's documented behavior ('se FAL_KEY vazio, retorna 503 antes de verificar limite'). No fix needed but worth documenting.",
+    "Invalid aspect_ratio is silently coerced to 'square_hd' via FAL_ASPECT_MAP.get(..., 'square_hd'). Fine per spec but consider logging/warning for observability.",
+    "count_today_image_usage properly filters by tool='image_gen' with BRT day bounds — verified via injected records: image_used=3, 'used' (AI text) stayed 0. Clean isolation."
+  ],
+  "updated_files": ["/app/backend/tests/test_image_gen.py"],
+  "success_rate": {"backend": "100% (14/14)", "frontend": "~90% (all data-testids and flows OK; only Home listing miss)"},
+  "test_credentials": "admin@facilita.ai / Facilita@123",
+  "seed_data_creation": "Ephemeral: 3 usage records with tool='image_gen' injected for the isolation test, all cleaned up in the same test. One TEST_ user registered per module (not cleaned; safe prefix).",
+  "retest_needed": true,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Backend generate-image endpoint returns 503 while FAL_KEY is empty — that's expected in preview. If FAL_KEY gets configured, add a paid smoke test that actually calls the endpoint and verifies image_url + record in db.usage. The only functional gap right now is Home tool-list slice(0,4) hiding image_gen; fix once and re-run visitor UI test. Settings were restored to defaults (free=3, premium=50). Admin remains free plan."
+}
