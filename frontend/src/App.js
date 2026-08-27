@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { BrowserRouter, Routes, Route, Link, useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import { QRCodeSVG } from "qrcode.react";
-import { ArrowLeft, Check, ChevronRight, Copy, Download, FileText, Heart, Home as HomeIcon, ImagePlus, KeyRound, Mail, Menu, MessageCircle, MoreHorizontal, Percent, QrCode, Search, Share2, Shield, Sparkles, Star, Trash2, UserRound, WandSparkles, Youtube } from "lucide-react";
+import { ArrowLeft, Check, ChevronRight, Copy, Download, FileText, Heart, Home as HomeIcon, ImagePlus, KeyRound, Mail, Menu, MessageCircle, Mic, MoreHorizontal, Pause, Percent, Play, QrCode, Search, Share2, Shield, Sparkles, Star, Trash2, UserRound, Volume2, WandSparkles, Youtube } from "lucide-react";
 import "@/App.css";
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
@@ -12,6 +12,7 @@ const tools = [
   { id:"correct_pt", name:"Corrigir português", desc:"Ortografia, gramática e pontuação", icon:Check, color:"blue", group:"Mais usadas" },
   { id:"summarize", name:"Resumir texto", desc:"O essencial em poucos segundos", icon:FileText, color:"gold", group:"Mais usadas" },
   { id:"image_gen", name:"Gerador de imagens IA", desc:"Crie imagens a partir de uma descrição", icon:ImagePlus, color:"pink", group:"Mais usadas" },
+  { id:"audio_gen", name:"Gerador de áudio IA", desc:"Transforme texto em voz natural em pt-BR", icon:Volume2, color:"coral", group:"Mais usadas" },
   { id:"create_email", name:"Criar e-mail", desc:"Assuntos e corpos prontos", icon:Mail, color:"pink", group:"Texto e trabalho" },
   { id:"create_caption", name:"Criar legenda", desc:"Ideias que combinam com seu post", icon:HashIcon, color:"coral", group:"Redes sociais" },
   { id:"youtube_titles", name:"Títulos para YouTube", desc:"10 ideias para seu próximo vídeo", icon:Youtube, color:"red", group:"Redes sociais" },
@@ -20,7 +21,7 @@ const tools = [
   { id:"percentage_calc", name:"Calculadora de porcentagem", desc:"Conta rápida, sem complicação", icon:Percent, color:"gold", group:"Utilidades" },
 ];
 const toolMap = Object.fromEntries(tools.map(t=>[t.id,t]));
-const soon = [{name:"Transcrever áudio", icon:MessageCircle},{name:"Traduzir",icon:WandSparkles},{name:"Calculadora de desconto",icon:Percent},{name:"Criar currículo",icon:FileText}];
+const soon = [{name:"Traduzir",icon:WandSparkles},{name:"Calculadora de desconto",icon:Percent},{name:"Criar currículo",icon:FileText},{name:"Transcrever áudio",icon:Mic}];
 const slug = value => value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9]+/g, "-").replace(/^-|-$/g, "").toLowerCase();
 const getToken = () => localStorage.getItem("facilita_token");
 const getUser = () => { try { return JSON.parse(localStorage.getItem("facilita_user") || "null"); } catch { return null; } };
@@ -150,7 +151,7 @@ function Home(){
     <div className="usage-row"><UsageBadge usage={usage} onUpgrade={()=>nav("/premium")}/></div>
   </section>
   {favorites.length>0 && !query && <section className="section"><SectionTitle title="Meus favoritos"/><div className="tool-list">{tools.filter(t=>favorites.includes(t.id)).map(t=><ToolCard key={t.id} tool={t} favorite onFavorite={()=>toggle(t.id)}/>)}</div></section>}
-  <AdBanner/><section className="section"><SectionTitle title={query?"Resultados":"Mais usadas"} action={query?null:<Link to="/ferramentas" data-testid="see-all-tools">Ver todas</Link>}/><div className="tool-list">{filtered.slice(0,query?20:5).map(t=><ToolCard key={t.id} tool={t} favorite={favorites.includes(t.id)} onFavorite={()=>toggle(t.id)}/>)}</div></section>
+  <AdBanner/><section className="section"><SectionTitle title={query?"Resultados":"Mais usadas"} action={query?null:<Link to="/ferramentas" data-testid="see-all-tools">Ver todas</Link>}/><div className="tool-list">{filtered.slice(0,query?20:6).map(t=><ToolCard key={t.id} tool={t} favorite={favorites.includes(t.id)} onFavorite={()=>toggle(t.id)}/>)}</div></section>
   {!query && <><ToolGroup title="Texto e trabalho" items={tools.filter(t=>t.group==="Texto e trabalho")} favorites={favorites} toggle={toggle}/><ToolGroup title="Redes sociais" items={tools.filter(t=>t.group==="Redes sociais")} favorites={favorites} toggle={toggle}/><ToolGroup title="Utilidades" items={tools.filter(t=>t.group==="Utilidades")} favorites={favorites} toggle={toggle}/><section className="section"><SectionTitle title="Em breve"/><div className="soon-grid">{soon.map((x,i)=>{const Icon=x.icon;return <div className="soon-item" key={x.name} data-testid={`coming-soon-${i}`}><Icon size={18}/><span>{x.name}</span><small>Em breve</small></div>})}</div></section></>}
   </main>
   {welcomeOpen && <div className="modal-overlay" onClick={dismissWelcome} data-testid="welcome-modal">
@@ -249,7 +250,8 @@ function ImageGenPage(){
       <div className="usage-row"><UsageBadge usage={usage ? {is_premium: premium, remaining, limit} : null} onUpgrade={()=>nav("/premium")}/></div>
       <div className="form-section">
         <label className="field-label">Descreva a imagem que quer criar</label>
-        <textarea data-testid="image_gen-input" value={prompt} onChange={e=>setPrompt(e.target.value)} placeholder="Ex.: um gato astronauta flutuando no espaço, arte digital, cores vibrantes" maxLength={500}/>
+        <textarea data-testid="image_gen-input" value={prompt} onChange={e=>setPrompt(e.target.value.slice(0,1000))} placeholder="Ex.: um gato astronauta flutuando no espaço, arte digital, cores vibrantes" maxLength={1000}/>
+        <div className="char-counter" data-testid="image_gen-char-counter"><span>{prompt.length}/1000</span></div>
         <div className="chips" data-testid="image_gen-options">
           {[["1:1","Quadrada"],["9:16","Retrato"],["16:9","Paisagem"]].map(([v,l]) => (
             <button key={v} className={aspect===v?"selected":""} onClick={()=>setAspect(v)} data-testid={`image_gen-aspect-${v.replace(":","x")}`}>
@@ -302,7 +304,178 @@ function ImageGenPage(){
 
 function ToolRouter(){
   const {id} = useParams();
-  return id === "image_gen" ? <ImageGenPage/> : <ToolPage/>;
+  if (id === "image_gen") return <ImageGenPage/>;
+  if (id === "audio_gen") return <AudioGenPage/>;
+  return <ToolPage/>;
+}
+
+function AudioGenPage(){
+  const tool = toolMap["audio_gen"];
+  const nav = useNavigate();
+  const [usage, refreshUsage] = useUsage();
+  const [text, setText] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [audioUrl, setAudioUrl] = useState("");
+  const [audioInfo, setAudioInfo] = useState(null);
+  const [errorMsg, setErrorMsg] = useState("");
+  const [limitReached, setLimitReached] = useState(false);
+  const [authRequired, setAuthRequired] = useState(false);
+  const [shared, setShared] = useState(false);
+
+  const usedSec = usage?.audio_used_seconds ?? 0;
+  const limitSec = usage?.audio_limit_seconds ?? 60;
+  const remainingSec = usage?.audio_remaining_seconds ?? 60;
+  const maxGenSec = usage?.audio_max_seconds_per_gen ?? 60;
+  const chars = text.length;
+  const estimatedSec = Math.round((chars / 15) * 10) / 10; // pré-visualização apenas
+  const overGen = estimatedSec > maxGenSec;
+  const overDaily = estimatedSec > remainingSec;
+
+  useEffect(() => () => { if (audioUrl) URL.revokeObjectURL(audioUrl); }, [audioUrl]);
+
+  const generate = async () => {
+    if (!getToken()) { setAuthRequired(true); return; }
+    if (!text.trim()) { setErrorMsg("Digite o texto que você quer transformar em áudio."); return; }
+    if (overGen) { setErrorMsg(`Este texto excede o limite de ${maxGenSec}s por geração. Reduza o texto.`); return; }
+    if (overDaily) { setLimitReached(true); return; }
+    setLoading(true); setErrorMsg(""); setShared(false);
+    if (audioUrl) { URL.revokeObjectURL(audioUrl); setAudioUrl(""); setAudioInfo(null); }
+    try {
+      const resp = await axios.post(`${API}/generate-audio`, { text: text.trim() }, {
+        headers: authHeaders(),
+        responseType: "blob",
+      });
+      const blob = resp.data;
+      const url = URL.createObjectURL(blob);
+      setAudioUrl(url);
+      setAudioInfo({
+        charsSent: resp.headers["x-chars-sent"],
+        charsBilled: resp.headers["x-chars-billed"],
+        durationReal: resp.headers["x-duration-real"] || null,
+        durationEstimated: resp.headers["x-duration-estimated"],
+        costUsdReal: resp.headers["x-cost-usd-real"],
+        minSaleBrl: resp.headers["x-min-sale-brl"],
+      });
+      refreshUsage();
+    } catch (e) {
+      const status = e.response?.status;
+      let detail = "";
+      try {
+        if (e.response?.data instanceof Blob) {
+          const txt = await e.response.data.text();
+          detail = JSON.parse(txt)?.detail || txt;
+        } else {
+          detail = e.response?.data?.detail || "";
+        }
+      } catch { detail = ""; }
+      if (status === 401) setAuthRequired(true);
+      else if (status === 402) setLimitReached(true);
+      else if (status === 413) setErrorMsg(detail || "Texto excede o limite permitido.");
+      else if (status === 503) setErrorMsg(detail || "Geração de áudio ainda não configurada.");
+      else setErrorMsg(detail || "Não foi possível gerar o áudio agora.");
+    }
+    setLoading(false);
+  };
+
+  const download = () => {
+    if (!audioUrl) return;
+    const a = document.createElement("a");
+    a.href = audioUrl; a.download = `facilita-ai-${Date.now()}.mp3`;
+    document.body.appendChild(a); a.click(); a.remove();
+  };
+
+  const share = async () => {
+    if (!audioUrl) return;
+    if (navigator.share) {
+      try {
+        const resp = await fetch(audioUrl);
+        const blob = await resp.blob();
+        const file = new File([blob], "facilita-ai.mp3", { type: "audio/mpeg" });
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          await navigator.share({ files: [file], title: "Facilita AI", text: text });
+          setShared(true); return;
+        }
+        await navigator.share({ title: "Facilita AI", text });
+        setShared(true);
+      } catch { /* cancelado */ }
+    }
+  };
+
+  return <div className="app-shell">
+    <header className="tool-header"><Link to="/" data-testid="tool-back-button"><ArrowLeft size={20}/></Link><span>Facilita AI</span><button data-testid="tool-more-button"><MoreHorizontal size={21}/></button></header>
+    <main className="page tool-page">
+      <div className={`tool-hero ${tool.color}`}><span className="tool-icon"><tool.icon size={25}/></span><div><p className="eyebrow">FERRAMENTA FACILITA</p><h1>{tool.name}</h1><p>{tool.desc}</p></div></div>
+      <div className="usage-row" data-testid="audio_gen-usage">
+        <span className="usage-pill"><Volume2 size={14}/> {remainingSec.toFixed?.(0) ?? remainingSec}s restantes hoje <small>({usedSec}s / {limitSec}s)</small></span>
+      </div>
+      <div className="form-section">
+        <label className="field-label">Digite o texto que virará áudio (pt-BR)</label>
+        <textarea
+          data-testid="audio_gen-input"
+          value={text}
+          onChange={e=>setText(e.target.value.slice(0,3000))}
+          placeholder="Ex.: Olá! Este é um lembrete: sua reunião começa em 15 minutos."
+          maxLength={3000}
+          rows={5}
+        />
+        <div className="char-counter" data-testid="audio_gen-char-counter">
+          <span>{chars}/3000 caracteres</span>
+          <span className={overGen || overDaily ? "over" : ""}>≈ {estimatedSec}s de áudio (estimado)</span>
+        </div>
+        {errorMsg && <div className="error-message" data-testid="audio_gen-error">{errorMsg}</div>}
+        <button
+          className="primary-action"
+          onClick={generate}
+          disabled={loading || !text.trim() || overGen || overDaily}
+          data-testid="audio_gen-generate-button"
+        >
+          <Sparkles size={18}/>{loading ? "Gerando áudio..." : "Gerar áudio"}
+        </button>
+        {(overGen || overDaily) && !errorMsg && <p className="hint-message" data-testid="audio_gen-hint">
+          {overGen ? `Reduza o texto para caber em ${maxGenSec}s por geração.` : `Você tem ${remainingSec.toFixed?.(0) ?? remainingSec}s restantes hoje. Reduza o texto ou volte amanhã.`}
+        </p>}
+      </div>
+      {loading && <div className="image-loading" data-testid="audio_gen-loading"><div className="image-loading-inner"><Sparkles size={22}/><p>Sintetizando voz com ElevenLabs Flash — alguns segundos…</p></div></div>}
+      {audioUrl && !loading && <section className="result-panel image-result" data-testid="audio_gen-result">
+        <div className="result-top"><div><p className="eyebrow">SEU ÁUDIO</p><h2>Pronto para ouvir</h2></div></div>
+        <audio controls src={audioUrl} data-testid="audio_gen-player" style={{width:"100%",marginTop:"12px"}}/>
+        {audioInfo && <div className="audio-meta" data-testid="audio_gen-meta">
+          <span>⏱️ {audioInfo.durationReal ? `${parseFloat(audioInfo.durationReal).toFixed(2)}s reais` : `~${audioInfo.durationEstimated}s`}</span>
+          <span>🔤 {audioInfo.charsSent} caract. enviados</span>
+          {audioInfo.charsBilled && audioInfo.charsBilled !== audioInfo.charsSent && <span>💳 {audioInfo.charsBilled} cobrados</span>}
+        </div>}
+        <div className="result-actions">
+          <button onClick={download} data-testid="audio_gen-download-button"><Download size={16}/> Baixar MP3</button>
+          <button onClick={share} data-testid="audio_gen-share-button"><Share2 size={16}/> {shared ? "Compartilhado" : "Compartilhar"}</button>
+          <button onClick={generate} data-testid="audio_gen-retry-button" disabled={loading}><WandSparkles size={16}/> Gerar de novo</button>
+        </div>
+      </section>}
+      <AdBanner/>
+    </main>
+    {limitReached && <div className="modal-overlay" onClick={()=>setLimitReached(false)} data-testid="audio-limit-modal">
+      <div className="modal-card limit-modal" onClick={e=>e.stopPropagation()}>
+        <div className="limit-icon"><Volume2 size={24}/></div>
+        <h3>Você chegou ao limite de áudio de hoje ✨</h3>
+        <p>Você usou seus {limitSec} segundos de áudio grátis de hoje. Volte amanhã ou assine o Premium para gerar mais agora mesmo.</p>
+        <div className="limit-actions">
+          <button className="primary-action" onClick={()=>{setLimitReached(false); nav("/premium");}} data-testid="audio-limit-upgrade-button"><Sparkles size={18}/> Assinar Premium</button>
+          <button className="ghost-action" onClick={()=>setLimitReached(false)} data-testid="audio-limit-dismiss-button">Agora não</button>
+        </div>
+      </div>
+    </div>}
+    {authRequired && <div className="modal-overlay" onClick={()=>setAuthRequired(false)} data-testid="audio-auth-required-modal">
+      <div className="modal-card limit-modal" onClick={e=>e.stopPropagation()}>
+        <div className="limit-icon"><UserRound size={24}/></div>
+        <h3>Crie sua conta grátis para gerar áudios</h3>
+        <p>Com uma conta você tem 60 segundos grátis por dia e guarda seu histórico.</p>
+        <div className="limit-actions">
+          <button className="primary-action" onClick={()=>nav("/login?mode=register")} data-testid="audio-auth-register-button"><Sparkles size={18}/> Criar conta grátis</button>
+          <button className="ghost-action" onClick={()=>nav("/login")} data-testid="audio-auth-login-button">Entrar</button>
+        </div>
+      </div>
+    </div>}
+    <BottomNav active="tools"/>
+  </div>
 }
 
 function ToolPage(){
@@ -478,7 +651,7 @@ function History(){
                 <div className="history-item" key={it.id} data-testid={`history-item-${it.id}`}>
                   <button className="history-open" onClick={() => setOpenItem(it)} data-testid={`history-open-${it.id}`}>
                     <span className={`tool-icon ${toolMap[it.tool]?.color||"blue"}`}>{(() => { const T = toolMap[it.tool]?.icon||FileText; return <T size={18}/>; })()}</span>
-                    <span className="history-copy"><strong>{toolMap[it.tool]?.name||it.tool}</strong><small>{it.tool === "image_gen" ? (it.prompt?.prompt || "Imagem gerada") : (it.result||"").slice(0,60)+"..."}</small></span>
+                    <span className="history-copy"><strong>{toolMap[it.tool]?.name||it.tool}</strong><small>{it.tool === "image_gen" ? (it.prompt?.prompt || "Imagem gerada") : it.tool === "audio_gen" ? ((it.prompt?.text||"").slice(0,60)+"...") + ` • ${(it.duration_seconds||0).toFixed?.(1) ?? it.duration_seconds}s` : (it.result||"").slice(0,60)+"..."}</small></span>
                     <ChevronRight size={16}/>
                   </button>
                   <button className="history-delete" onClick={() => remove(it.id)} aria-label="Excluir" data-testid={`history-delete-${it.id}`}><Trash2 size={16}/></button>
@@ -491,10 +664,19 @@ function History(){
           <div className="modal-head"><h3>{toolMap[openItem.tool]?.name||openItem.tool}</h3><button onClick={()=>setOpenItem(null)} data-testid="history-modal-close">Fechar</button></div>
           {openItem.tool === "image_gen"
             ? <div className="image-preview" data-testid="history-modal-image-preview"><img src={openItem.result} alt="Imagem gerada"/></div>
+            : openItem.tool === "audio_gen"
+            ? <div className="result-text" data-testid="history-modal-audio">
+                <p><strong>Texto:</strong> {openItem.prompt?.text}</p>
+                <p><strong>Duração:</strong> {(openItem.duration_seconds||0).toFixed?.(2) ?? openItem.duration_seconds}s</p>
+                <p><strong>Caracteres:</strong> enviados {openItem.prompt?.chars_sent} · cobrados {openItem.prompt?.chars_billed ?? openItem.prompt?.chars_sent}</p>
+                <p className="hint-message">O arquivo de áudio não é armazenado no histórico. Gere novamente para ouvir.</p>
+              </div>
             : <div className="result-text">{openItem.result}</div>}
           <div className="result-actions">
             {openItem.tool === "image_gen"
               ? <a href={openItem.result} target="_blank" rel="noreferrer" className="history-modal-open" data-testid="history-modal-open-image"><Download size={16}/> Abrir imagem</a>
+              : openItem.tool === "audio_gen"
+              ? null
               : <button onClick={()=>{navigator.clipboard?.writeText(openItem.result)}} data-testid="history-modal-copy"><Copy size={16}/> Copiar</button>}
             <button onClick={()=>{ setOpenItem(null); nav(`/ferramenta/${openItem.tool}`); }} data-testid="history-modal-reopen"><WandSparkles size={16}/> Abrir ferramenta</button>
           </div>

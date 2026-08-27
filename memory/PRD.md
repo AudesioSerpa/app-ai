@@ -69,3 +69,24 @@ Criar um PWA mobile-first em pt-BR chamado **Facilita AI** — central de ferram
 
 ## Credenciais de teste
 Ver `/app/memory/test_credentials.md`.
+
+## Update Fev/2026 — Gerador de Áudio + Sistema Central de Custos
+### Nova ferramenta: audio_gen (ElevenLabs Flash v2.5, pt-BR)
+- `POST /api/generate-audio` — retorna MP3 binário; SEM armazenamento (histórico grava apenas texto, voz, chars, duração e custos).
+- Voz padrão: `HOfBIVLhom4mc9WvXfyH` (Andrea Lot — feminina pt-BR). Modelo: `eleven_flash_v2_5`.
+- Fluxo: contar chars → estimar seg (15 chars/s) → validar limite/generation → **reservar** no `db.usage` com status `reserved` → chamar ElevenLabs → sucesso: `commit` com duração real (mutagen) e chars cobrados (header `character-cost`); falha: **delete** (estorno integral).
+- Chave: `ELEVENLABS_API_KEY` lida **APENAS** via `os.environ.get`. Nunca em `.env`, git, frontend, APK ou logs. Configurar via Emergent → Gerenciar implantação → Segredos → Chaves personalizadas.
+
+### Novo módulo `/app/backend/pricing.py` — `AI_PRICING`
+- Fórmula margem BRUTA (não markup): `preco = custo / (1 - target_gross_margin)`
+- Defaults: `usd_to_brl=5.10`, `fx_safety_buffer=0.10`, `target_gross_margin=0.70`, `mp_fee_rate=0.05`
+- Áudio: `usd_per_char=0.00005`, Free 60s/dia (60s por gen), Premium 300s/dia (60s por gen) — **nunca ilimitado**.
+- Imagem: `usd_per_image=0.003`, Free 3/dia, Prompt máx **1000 chars** (era 500).
+- Texto: `provider_prepaid=true` (Emergent LLM), Free 3/dia.
+- Endpoint público de leitura: `GET /api/pricing` (snapshot sem segredos).
+
+### Registros de custo em cada geração (para coletar dados antes de vender pacotes)
+- Imagem: `cost.api_usd`, `cost.api_brl_protected`, `cost.min_sale_price_brl`, `cost.min_sale_price_brl_with_mp_fee`
+- Áudio: `cost.estimated_api_usd`, `cost.real_api_usd`, `cost.real_api_brl_protected`, `cost.real_min_sale_brl` + `duration_estimated_seconds`, `duration_real_seconds`, `prompt.chars_sent`, `prompt.chars_billed`
+
+### Testes (iteration_14): 12/12 backend, 6/6 frontend — todos passam.

@@ -22,6 +22,21 @@ import mercadopago
 import fal_client
 from zoneinfo import ZoneInfo
 from emergentintegrations.llm.chat import LlmChat, UserMessage, TextDelta
+from elevenlabs.client import ElevenLabs
+try:
+    from mutagen.mp3 import MP3 as _MutagenMP3
+except Exception:
+    _MutagenMP3 = None
+import io
+from pricing import (
+    AI_PRICING,
+    estimate_audio_seconds,
+    calc_audio_api_cost_usd,
+    calc_image_api_cost_usd,
+    usd_to_brl_protected,
+    min_sale_price_brl,
+    pricing_snapshot,
+)
 
 
 ROOT_DIR = Path(__file__).parent
@@ -43,6 +58,17 @@ mp_sdk = mercadopago.SDK(MP_ACCESS_TOKEN) if MP_ACCESS_TOKEN else None
 FAL_KEY = os.environ.get("FAL_KEY", "")
 FAL_MODEL = "fal-ai/flux/schnell"
 FAL_ASPECT_MAP = {"1:1": "square_hd", "9:16": "portrait_16_9", "16:9": "landscape_16_9"}
+
+# ElevenLabs — chave lida SOMENTE de os.environ (Segredo da plataforma). Nunca gravar em .env, git, frontend, APK ou logs.
+def _get_elevenlabs_client():
+    key = os.environ.get("ELEVENLABS_API_KEY")
+    if not key:
+        return None
+    try:
+        return ElevenLabs(api_key=key)
+    except Exception:
+        logger.exception("Falha ao inicializar ElevenLabs")
+        return None
 
 # Logging (needs to exist before route handlers reference it)
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -83,8 +109,12 @@ class SubscriptionInput(BaseModel):
     plan: str  # "free" | "premium"
 
 class ImageInput(BaseModel):
-    prompt: str = Field(min_length=3, max_length=500)
+    prompt: str = Field(min_length=3, max_length=1000)
     aspect_ratio: str = Field(default="1:1")
+
+class AudioInput(BaseModel):
+    text: str = Field(min_length=1, max_length=3000)
+    voice_id: Optional[str] = None
 
 DEFAULT_SETTINGS = {
     "id": "app_settings",
@@ -169,6 +199,21 @@ async def count_today_image_usage(user_id: str) -> int:
         "tool": "image_gen",
         "created_at": {"$gte": start, "$lt": end},
     })
+
+async def sum_today_audio_seconds(user_id: str) -> float:
+    """Soma segundos reservados + confirmados de áudio no dia BRT atual."""
+    start, end = brt_day_bounds_utc()
+    cursor = db.usage.aggregate([
+        {"$match": {
+            "user_id": user_id,
+            "tool": "audio_gen",
+            "status": {"$in": ["reserved", "committed"]},
+            "created_at": {"$gte": start, "$lt": end},
+        }},
+        {"$group": {"_id": None, "total": {"$sum": "$duration_seconds"}}},
+    ])
+    docs = await cursor.to_list(1)
+    return float(docs[0]["total"]) if docs else 0.0
 
 def token_for(user):
     return jwt.encode({"sub": user["id"], "email": user["email"], "role": user.get("role", "user")}, JWT_SECRET, algorithm="HS256")
@@ -328,12 +373,24 @@ async def me_usage(user=Depends(current_user)):
     premium = is_premium(user)
     limit = settings["premium_daily_limit"] if premium else settings["free_daily_limit"]
     image_limit = settings["premium_daily_image_limit"] if premium else settings["free_daily_image_limit"]
+    audio_cfg = AI_PRICING["audio"]
+    audio_limit_sec = audio_cfg["premium_daily_seconds"] if premium else audio_cfg["free_daily_seconds"]
+    audio_max_gen = audio_cfg["premium_max_seconds_per_gen"] if premium else audio_cfg["free_max_seconds_per_gen"]
     if not user:
-        return {"used": 0, "limit": limit, "remaining": limit, "image_used": 0, "image_limit": image_limit, "image_remaining": image_limit, "is_premium": False, "plan": "free", "in_grace_period": False, "grace_days_left": 0}
+        return {"used": 0, "limit": limit, "remaining": limit, "image_used": 0, "image_limit": image_limit, "image_remaining": image_limit, "audio_used_seconds": 0, "audio_limit_seconds": audio_limit_sec, "audio_remaining_seconds": audio_limit_sec, "audio_max_seconds_per_gen": audio_max_gen, "is_premium": False, "plan": "free", "in_grace_period": False, "grace_days_left": 0}
     used = await count_today_ai_usage(user["id"])
     img_used = await count_today_image_usage(user["id"])
+    audio_used_sec = await sum_today_audio_seconds(user["id"])
     grace = compute_grace(user)
-    return {"used": used, "limit": limit, "remaining": max(0, limit - used), "image_used": img_used, "image_limit": image_limit, "image_remaining": max(0, image_limit - img_used), "is_premium": premium, "plan": "premium" if premium else "free", **grace}
+    return {
+        "used": used, "limit": limit, "remaining": max(0, limit - used),
+        "image_used": img_used, "image_limit": image_limit, "image_remaining": max(0, image_limit - img_used),
+        "audio_used_seconds": round(audio_used_sec, 2),
+        "audio_limit_seconds": audio_limit_sec,
+        "audio_remaining_seconds": max(0.0, round(audio_limit_sec - audio_used_sec, 2)),
+        "audio_max_seconds_per_gen": audio_max_gen,
+        "is_premium": premium, "plan": "premium" if premium else "free", **grace
+    }
 
 
 @api_router.post("/generate-image")
@@ -381,16 +438,171 @@ async def generate_image(input: ImageInput, user=Depends(required_user)):
     image_url = images[0].get("url")
     if not image_url:
         raise HTTPException(502, "Resposta inválida da API de imagens.")
+    img_cost_usd = calc_image_api_cost_usd(1)
     record = {
         "id": str(uuid.uuid4()),
         "tool": "image_gen",
         "user_id": user["id"],
-        "prompt": {"prompt": prompt, "aspect_ratio": input.aspect_ratio},
+        "prompt": {"prompt": prompt, "aspect_ratio": input.aspect_ratio, "chars": len(prompt)},
         "result": image_url,
+        "cost": {
+            "api_usd": img_cost_usd,
+            "api_brl_protected": round(usd_to_brl_protected(img_cost_usd), 4),
+            "min_sale_price_brl": min_sale_price_brl(img_cost_usd, apply_mp_fee=False),
+            "min_sale_price_brl_with_mp_fee": min_sale_price_brl(img_cost_usd, apply_mp_fee=True),
+        },
+        "status": "committed",
         "created_at": datetime.now(timezone.utc).isoformat(),
     }
     await db.usage.insert_one(record)
-    return {"tool": "image_gen", "image_url": image_url, "aspect_ratio": input.aspect_ratio, "prompt": prompt}
+    return {"tool": "image_gen", "image_url": image_url, "aspect_ratio": input.aspect_ratio, "prompt": prompt, "cost": record["cost"]}
+
+@api_router.get("/pricing")
+async def public_pricing():
+    """Snapshot público da configuração central de custos e limites (sem segredos)."""
+    return pricing_snapshot()
+
+@api_router.post("/generate-audio")
+async def generate_audio_ep(input: AudioInput, request: Request, user=Depends(required_user)):
+    """
+    Gera áudio TTS via ElevenLabs Flash v2.5 com reserva/estorno.
+    - Conta caracteres reais enviados
+    - Pré-valida duração estimada contra limite diário e por geração
+    - Reserva segundos estimados antes da chamada
+    - Ajusta reserva para duração real após sucesso; estorna em falha
+    - Retorna MP3 binário (audio/mpeg) — sem armazenar o arquivo
+    """
+    client_el = _get_elevenlabs_client()
+    if client_el is None:
+        raise HTTPException(503, "Geração de áudio não configurada. O administrador precisa cadastrar ELEVENLABS_API_KEY.")
+
+    audio_cfg = AI_PRICING["audio"]
+    premium = is_premium(user)
+    daily_limit_sec = audio_cfg["premium_daily_seconds"] if premium else audio_cfg["free_daily_seconds"]
+    max_gen_sec = audio_cfg["premium_max_seconds_per_gen"] if premium else audio_cfg["free_max_seconds_per_gen"]
+
+    text = input.text
+    chars_sent = len(text)
+    if chars_sent > audio_cfg["hard_max_chars_per_request"]:
+        raise HTTPException(413, f"Texto muito longo. Máximo permitido: {audio_cfg['hard_max_chars_per_request']} caracteres.")
+
+    estimated_sec = estimate_audio_seconds(text)
+    if estimated_sec > max_gen_sec:
+        raise HTTPException(413, f"Este texto excede o limite de {max_gen_sec} segundos por geração. Reduza o texto ou assine um plano Premium.")
+
+    used_today = await sum_today_audio_seconds(user["id"])
+    if used_today + estimated_sec > daily_limit_sec:
+        remaining = max(0.0, daily_limit_sec - used_today)
+        raise HTTPException(402, f"Limite diário de {daily_limit_sec}s de áudio atingido. Restam apenas {remaining:.1f}s hoje. Assine o Premium para gerar mais.")
+
+    # Custos estimados
+    est_cost_usd = calc_audio_api_cost_usd(chars_sent)
+    est_cost_brl_prot = usd_to_brl_protected(est_cost_usd)
+    est_min_price_brl = min_sale_price_brl(est_cost_usd, apply_mp_fee=False)
+
+    voice_id = (input.voice_id or audio_cfg["voice_id_default"]).strip()
+    reservation_id = str(uuid.uuid4())
+    now_iso = datetime.now(timezone.utc).isoformat()
+
+    # RESERVA no banco
+    await db.usage.insert_one({
+        "id": reservation_id,
+        "tool": "audio_gen",
+        "user_id": user["id"],
+        "prompt": {"text": text, "voice_id": voice_id, "model": audio_cfg["model"], "chars_sent": chars_sent},
+        "duration_seconds": estimated_sec,
+        "duration_estimated_seconds": estimated_sec,
+        "status": "reserved",
+        "cost": {
+            "estimated_api_usd": est_cost_usd,
+            "estimated_api_brl_protected": round(est_cost_brl_prot, 4),
+            "estimated_min_sale_brl": est_min_price_brl,
+        },
+        "created_at": now_iso,
+    })
+
+    # Recheck após reserva para proteger contra corrida
+    total_after = await sum_today_audio_seconds(user["id"])
+    if total_after > daily_limit_sec:
+        await db.usage.delete_one({"id": reservation_id})
+        raise HTTPException(402, "Limite diário de áudio atingido. Tente novamente amanhã ou assine o Premium.")
+
+    def _call_elevenlabs():
+        raw = client_el.text_to_speech.with_raw_response.convert(
+            voice_id=voice_id,
+            model_id=audio_cfg["model"],
+            output_format="mp3_44100_128",
+            text=text,
+        )
+        audio_bytes = bytes(raw.data) if hasattr(raw, "data") else b"".join(raw)
+        try:
+            hdrs = dict(getattr(raw, "headers", {}) or {})
+        except Exception:
+            hdrs = {}
+        return audio_bytes, hdrs
+
+    try:
+        import asyncio as _asyncio
+        audio_bytes, headers = await _asyncio.wait_for(_asyncio.to_thread(_call_elevenlabs), timeout=90)
+    except Exception as e:
+        # ESTORNO integral
+        await db.usage.delete_one({"id": reservation_id})
+        logger.warning("Falha ElevenLabs — reserva %s estornada (%s)", reservation_id, type(e).__name__)
+        raise HTTPException(502, "Não foi possível gerar o áudio agora. Nenhum uso foi contabilizado. Tente novamente.")
+
+    if not audio_bytes:
+        await db.usage.delete_one({"id": reservation_id})
+        raise HTTPException(502, "Resposta inválida do serviço de áudio. Reserva estornada.")
+
+    # Cobrança real do provedor (header character-cost quando disponível)
+    billed_raw = headers.get("character-cost") if headers else None
+    try:
+        chars_billed = int(billed_raw) if billed_raw and str(billed_raw).isdigit() else chars_sent
+    except Exception:
+        chars_billed = chars_sent
+
+    # Duração REAL do MP3
+    real_duration = None
+    if _MutagenMP3 is not None:
+        try:
+            real_duration = round(float(_MutagenMP3(io.BytesIO(audio_bytes)).info.length), 3)
+        except Exception:
+            real_duration = None
+
+    final_seconds = real_duration if (real_duration and real_duration > 0) else estimated_sec
+    real_cost_usd = calc_audio_api_cost_usd(chars_billed)
+    real_cost_brl_prot = usd_to_brl_protected(real_cost_usd)
+    real_min_price_brl = min_sale_price_brl(real_cost_usd, apply_mp_fee=False)
+
+    # Se ultrapassou o limite diário por diferença estimada vs real, mantemos como está (uso real)
+    # mas nunca deixamos negativo: MongoDB soma direta já cuida disso.
+    await db.usage.update_one({"id": reservation_id}, {"$set": {
+        "status": "committed",
+        "duration_seconds": final_seconds,
+        "duration_real_seconds": real_duration,
+        "prompt.chars_billed": chars_billed,
+        "cost.real_api_usd": real_cost_usd,
+        "cost.real_api_brl_protected": round(real_cost_brl_prot, 4),
+        "cost.real_min_sale_brl": real_min_price_brl,
+    }})
+
+    from fastapi.responses import Response as _FastResponse
+    return _FastResponse(
+        content=audio_bytes,
+        media_type="audio/mpeg",
+        headers={
+            "Content-Disposition": 'inline; filename="facilita-audio.mp3"',
+            "X-Reservation-Id": reservation_id,
+            "X-Chars-Sent": str(chars_sent),
+            "X-Chars-Billed": str(chars_billed),
+            "X-Duration-Estimated": f"{estimated_sec:.3f}",
+            "X-Duration-Real": f"{real_duration:.3f}" if real_duration else "",
+            "X-Cost-USD-Estimated": f"{est_cost_usd:.6f}",
+            "X-Cost-USD-Real": f"{real_cost_usd:.6f}",
+            "X-Min-Sale-BRL": f"{real_min_price_brl:.4f}",
+            "Access-Control-Expose-Headers": "X-Reservation-Id,X-Chars-Sent,X-Chars-Billed,X-Duration-Estimated,X-Duration-Real,X-Cost-USD-Estimated,X-Cost-USD-Real,X-Min-Sale-BRL",
+        },
+    )
 
 @api_router.post("/admin/users/{user_id}/subscription")
 async def set_subscription(user_id: str, input: SubscriptionInput, user=Depends(required_user)):
