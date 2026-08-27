@@ -90,3 +90,10 @@ Ver `/app/memory/test_credentials.md`.
 - Áudio: `cost.estimated_api_usd`, `cost.real_api_usd`, `cost.real_api_brl_protected`, `cost.real_min_sale_brl` + `duration_estimated_seconds`, `duration_real_seconds`, `prompt.chars_sent`, `prompt.chars_billed`
 
 ### Testes (iteration_14): 12/12 backend, 6/6 frontend — todos passam.
+
+## Update Fev/2026 — Correções Gerador de Áudio v2
+- **Bug SDK ElevenLabs 2.65**: `with_raw_response.convert()` é `@contextmanager` — precisa `with ... as raw:` + `b"".join(raw.data)`. Corrigido, sem mais `TypeError`.
+- **Cloudflare 502 hijack**: trocado status de erro `502 → 503` para dependência externa; Cloudflare passa JSON pt-BR ao invés da página HTML dele.
+- **RCA contagem "cobrados"**: header `character-cost` da ElevenLabs = CRÉDITOS consumidos (Flash v2.5 dá 50% desconto: 500 chars = 250 créditos). Não é literalmente "caracteres". Renomeado no UI/DB: `chars_billed` → `credits_billed`; cost calculation agora usa `len(text) × usd_per_char` (taxa efetiva já discontada), evitando subestimar custo.
+- **Meta display** (novo layout em grid): Voz · Duração real · Caracteres enviados · Créditos ElevenLabs (só se header presente) · Custo estimado · Custo real.
+- **Escolha de voz**: novo `GET /api/voices` — cache Mongo `voices_cache` (TTL 24h) → refresh live ElevenLabs → fallback estático (só Andrea). Admin: `POST /api/admin/voices/refresh`. Frontend: seção "Escolha uma voz" com filtros Todas/Femininas/Masculinas, cards com nome/gênero/idioma/descrição, botão ▶ Ouvir (usa `preview_url` — não consome limite diário), botão Selecionar, "Voz selecionada: X" antes do Gerar.

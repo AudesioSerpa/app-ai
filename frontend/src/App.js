@@ -321,6 +321,10 @@ function AudioGenPage(){
   const [limitReached, setLimitReached] = useState(false);
   const [authRequired, setAuthRequired] = useState(false);
   const [shared, setShared] = useState(false);
+  const [voices, setVoices] = useState([]);
+  const [voiceFilter, setVoiceFilter] = useState("all"); // all | female | male
+  const [selectedVoiceId, setSelectedVoiceId] = useState("");
+  const [playingPreviewId, setPlayingPreviewId] = useState("");
 
   const usedSec = usage?.audio_used_seconds ?? 0;
   const limitSec = usage?.audio_limit_seconds ?? 60;
@@ -330,8 +334,30 @@ function AudioGenPage(){
   const estimatedSec = Math.round((chars / 15) * 10) / 10; // pré-visualização apenas
   const overGen = estimatedSec > maxGenSec;
   const overDaily = estimatedSec > remainingSec;
+  const selectedVoice = voices.find(v => v.voice_id === selectedVoiceId) || voices[0];
+  const filteredVoices = voices.filter(v => voiceFilter === "all" || v.gender === voiceFilter);
 
   useEffect(() => () => { if (audioUrl) URL.revokeObjectURL(audioUrl); }, [audioUrl]);
+
+  useEffect(() => {
+    axios.get(`${API}/voices`).then(r => {
+      const list = r.data?.voices || [];
+      setVoices(list);
+      if (list.length > 0 && !selectedVoiceId) setSelectedVoiceId(list[0].voice_id);
+    }).catch(() => { /* fallback: usa a padrão do backend */ });
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const playPreview = (v) => {
+    if (!v.preview_url) return;
+    // Para preview em andamento se clicar outra
+    if (window._facilitaPreviewAudio) { try { window._facilitaPreviewAudio.pause(); } catch {} }
+    const a = new Audio(v.preview_url);
+    window._facilitaPreviewAudio = a;
+    setPlayingPreviewId(v.voice_id);
+    a.play().catch(() => setPlayingPreviewId(""));
+    a.onended = () => setPlayingPreviewId("");
+    a.onerror = () => setPlayingPreviewId("");
+  };
 
   const generate = async () => {
     if (!getToken()) { setAuthRequired(true); return; }
@@ -341,7 +367,9 @@ function AudioGenPage(){
     setLoading(true); setErrorMsg(""); setShared(false);
     if (audioUrl) { URL.revokeObjectURL(audioUrl); setAudioUrl(""); setAudioInfo(null); }
     try {
-      const resp = await axios.post(`${API}/generate-audio`, { text: text.trim() }, {
+      const body = { text: text.trim() };
+      if (selectedVoiceId) body.voice_id = selectedVoiceId;
+      const resp = await axios.post(`${API}/generate-audio`, body, {
         headers: authHeaders(),
         responseType: "blob",
       });
@@ -350,11 +378,13 @@ function AudioGenPage(){
       setAudioUrl(url);
       setAudioInfo({
         charsSent: resp.headers["x-chars-sent"],
-        charsBilled: resp.headers["x-chars-billed"],
+        creditsBilled: resp.headers["x-credits-billed"] || null,
         durationReal: resp.headers["x-duration-real"] || null,
         durationEstimated: resp.headers["x-duration-estimated"],
+        costUsdEstimated: resp.headers["x-cost-usd-estimated"],
         costUsdReal: resp.headers["x-cost-usd-real"],
         minSaleBrl: resp.headers["x-min-sale-brl"],
+        voiceName: selectedVoice?.name || "padrão",
       });
       refreshUsage();
     } catch (e) {
@@ -408,6 +438,50 @@ function AudioGenPage(){
       <div className="usage-row" data-testid="audio_gen-usage">
         <span className="usage-pill"><Volume2 size={14}/> {remainingSec.toFixed?.(0) ?? remainingSec}s restantes hoje <small>({usedSec}s / {limitSec}s)</small></span>
       </div>
+
+      {voices.length > 0 && <div className="voice-picker" data-testid="voice-picker">
+        <div className="voice-picker-head">
+          <label className="field-label">Escolha uma voz</label>
+          <div className="voice-filter" data-testid="voice-filter">
+            {[["all","Todas"],["female","Femininas"],["male","Masculinas"]].map(([v,l]) => (
+              <button
+                key={v}
+                className={voiceFilter===v?"selected":""}
+                onClick={()=>setVoiceFilter(v)}
+                data-testid={`voice-filter-${v}`}
+              >{l}</button>
+            ))}
+          </div>
+        </div>
+        {filteredVoices.length === 0 ? <p className="hint-message" data-testid="voice-empty">Nenhuma voz {voiceFilter==="female"?"feminina":voiceFilter==="male"?"masculina":""} disponível no momento.</p> :
+        <div className="voice-list">
+          {filteredVoices.map(v => {
+            const isSel = v.voice_id === selectedVoiceId;
+            const isPlaying = playingPreviewId === v.voice_id;
+            return <div key={v.voice_id} className={`voice-card ${isSel?"selected":""}`} data-testid={`voice-card-${v.voice_id}`}>
+              <div className="voice-info">
+                <strong>{v.name}</strong>
+                <small>{v.gender === "female" ? "Feminina" : v.gender === "male" ? "Masculina" : "Voz"} · {v.language || "pt-BR"}{v.accent?` · ${v.accent}`:""}</small>
+                {v.description && <span className="voice-desc">{v.description}</span>}
+              </div>
+              <div className="voice-actions">
+                {v.preview_url && <button
+                  className="voice-preview-btn"
+                  onClick={()=>playPreview(v)}
+                  data-testid={`voice-preview-${v.voice_id}`}
+                  aria-label={`Ouvir prévia de ${v.name}`}
+                >{isPlaying ? <Pause size={14}/> : <Play size={14}/>} {isPlaying?"Ouvindo…":"Ouvir"}</button>}
+                <button
+                  className={`voice-select-btn ${isSel?"selected":""}`}
+                  onClick={()=>setSelectedVoiceId(v.voice_id)}
+                  data-testid={`voice-select-${v.voice_id}`}
+                >{isSel ? "Selecionada" : "Selecionar"}</button>
+              </div>
+            </div>
+          })}
+        </div>}
+      </div>}
+
       <div className="form-section">
         <label className="field-label">Digite o texto que virará áudio (pt-BR)</label>
         <textarea
@@ -422,6 +496,9 @@ function AudioGenPage(){
           <span>{chars}/3000 caracteres</span>
           <span className={overGen || overDaily ? "over" : ""}>≈ {estimatedSec}s de áudio (estimado)</span>
         </div>
+        {selectedVoice && <p className="voice-selected-line" data-testid="voice-selected-line">
+          Voz selecionada: <strong>{selectedVoice.name}</strong> <small>({selectedVoice.gender === "female" ? "Feminina" : selectedVoice.gender === "male" ? "Masculina" : "voz"})</small>
+        </p>}
         {errorMsg && <div className="error-message" data-testid="audio_gen-error">{errorMsg}</div>}
         <button
           className="primary-action"
@@ -439,10 +516,13 @@ function AudioGenPage(){
       {audioUrl && !loading && <section className="result-panel image-result" data-testid="audio_gen-result">
         <div className="result-top"><div><p className="eyebrow">SEU ÁUDIO</p><h2>Pronto para ouvir</h2></div></div>
         <audio controls src={audioUrl} data-testid="audio_gen-player" style={{width:"100%",marginTop:"12px"}}/>
-        {audioInfo && <div className="audio-meta" data-testid="audio_gen-meta">
-          <span>⏱️ {audioInfo.durationReal ? `${parseFloat(audioInfo.durationReal).toFixed(2)}s reais` : `~${audioInfo.durationEstimated}s`}</span>
-          <span>🔤 {audioInfo.charsSent} caract. enviados</span>
-          {audioInfo.charsBilled && audioInfo.charsBilled !== audioInfo.charsSent && <span>💳 {audioInfo.charsBilled} cobrados</span>}
+        {audioInfo && <div className="audio-meta audio-meta-grid" data-testid="audio_gen-meta">
+          <div><small>Voz</small><strong>{audioInfo.voiceName}</strong></div>
+          <div><small>Duração real</small><strong>{audioInfo.durationReal ? `${parseFloat(audioInfo.durationReal).toFixed(2)}s` : `~${audioInfo.durationEstimated}s`}</strong></div>
+          <div><small>Caracteres enviados</small><strong>{audioInfo.charsSent}</strong></div>
+          {audioInfo.creditsBilled && <div><small>Créditos ElevenLabs</small><strong>{audioInfo.creditsBilled}</strong></div>}
+          {audioInfo.costUsdEstimated && <div><small>Custo estimado</small><strong>US$ {parseFloat(audioInfo.costUsdEstimated).toFixed(6)}</strong></div>}
+          {audioInfo.costUsdReal && <div><small>Custo real</small><strong>US$ {parseFloat(audioInfo.costUsdReal).toFixed(6)}</strong></div>}
         </div>}
         <div className="result-actions">
           <button onClick={download} data-testid="audio_gen-download-button"><Download size={16}/> Baixar MP3</button>

@@ -462,6 +462,129 @@ async def public_pricing():
     """Snapshot público da configuração central de custos e limites (sem segredos)."""
     return pricing_snapshot()
 
+# ---------- Vozes ElevenLabs (cache + fallback) ----------
+_VOICES_CACHE_TTL_SECONDS = 24 * 3600
+_STATIC_PTBR_VOICES = [
+    {
+        "voice_id": AI_PRICING["audio"]["voice_id_default"],
+        "name": "Andrea",
+        "gender": "female",
+        "language": "pt-BR",
+        "accent": "brazilian",
+        "description": "Voz feminina natural em português brasileiro",
+        "preview_url": None,
+    },
+]
+
+def _classify_gender(labels: dict) -> str:
+    g = ((labels or {}).get("gender") or "").lower()
+    if "female" in g or "fem" == g[:3]: return "female"
+    if "male" in g or "masc" in g: return "male"
+    return "unknown"
+
+def _is_ptbr(labels: dict) -> bool:
+    if not labels: return False
+    lang = str(labels.get("language") or "").lower()
+    accent = str(labels.get("accent") or "").lower()
+    joined = f"{lang} {accent}"
+    return any(kw in joined for kw in ("portuguese", "brazilian", "brasil", "pt-br", "pt_br", "português", "portugues"))
+
+def _shape_voice(v) -> dict | None:
+    """Extrai campos essenciais de um Voice object do SDK."""
+    try:
+        vid = getattr(v, "voice_id", None) or (v.get("voice_id") if isinstance(v, dict) else None)
+        if not vid: return None
+        name = getattr(v, "name", None) or (v.get("name") if isinstance(v, dict) else None) or "Voz"
+        labels = getattr(v, "labels", None) or (v.get("labels") if isinstance(v, dict) else {}) or {}
+        preview = getattr(v, "preview_url", None) or (v.get("preview_url") if isinstance(v, dict) else None)
+        desc = labels.get("descriptive") or labels.get("description") or labels.get("use_case")
+        return {
+            "voice_id": vid,
+            "name": name,
+            "gender": _classify_gender(labels),
+            "language": "pt-BR",
+            "accent": labels.get("accent"),
+            "description": desc,
+            "preview_url": preview,
+        }
+    except Exception:
+        return None
+
+async def _fetch_voices_live(max_count: int = 10) -> list[dict]:
+    """Tenta buscar vozes pt-BR na ElevenLabs. NUNCA levanta — retorna [] em falha."""
+    client_el = _get_elevenlabs_client()
+    if client_el is None:
+        return []
+    try:
+        import asyncio as _asyncio
+        result = await _asyncio.wait_for(_asyncio.to_thread(client_el.voices.get_all), timeout=15)
+        raw_list = getattr(result, "voices", None) or (result if isinstance(result, list) else [])
+    except Exception as e:
+        logger.warning("Falha ao listar vozes ElevenLabs: %s", type(e).__name__)
+        return []
+    filtered: list[dict] = []
+    for v in raw_list:
+        labels = getattr(v, "labels", None) or (v.get("labels") if isinstance(v, dict) else {}) or {}
+        if not _is_ptbr(labels):
+            continue
+        shaped = _shape_voice(v)
+        if shaped:
+            filtered.append(shaped)
+    # Prioriza a voz default
+    default_id = AI_PRICING["audio"]["voice_id_default"]
+    filtered.sort(key=lambda x: (0 if x["voice_id"] == default_id else 1, x["name"] or ""))
+    return filtered[:max_count]
+
+@api_router.get("/voices")
+async def list_voices():
+    """
+    Lista de vozes pt-BR do Gerador de Áudio.
+    Cache Mongo (24h). Se cache vazio/stale, tenta ElevenLabs. Se falhar, retorna fallback estático.
+    NUNCA expõe ELEVENLABS_API_KEY. NÃO gera nenhum áudio.
+    """
+    now = datetime.now(timezone.utc)
+    doc = await db.voices_cache.find_one({"id": "ptbr"}, {"_id": 0}) or {}
+    cached = doc.get("voices") or []
+    fetched_at = doc.get("fetched_at")
+    fresh = False
+    if fetched_at:
+        try:
+            dt = datetime.fromisoformat(fetched_at)
+            fresh = (now - dt).total_seconds() < _VOICES_CACHE_TTL_SECONDS
+        except Exception:
+            fresh = False
+    if fresh and cached:
+        return {"voices": cached, "source": "cache", "fetched_at": fetched_at}
+    # Tenta refresh live
+    live = await _fetch_voices_live()
+    if live:
+        await db.voices_cache.update_one(
+            {"id": "ptbr"},
+            {"$set": {"id": "ptbr", "voices": live, "fetched_at": now.isoformat()}},
+            upsert=True,
+        )
+        return {"voices": live, "source": "live", "fetched_at": now.isoformat()}
+    # Fallback: usa último cache mesmo stale, ou estático
+    if cached:
+        return {"voices": cached, "source": "cache_stale", "fetched_at": fetched_at}
+    return {"voices": _STATIC_PTBR_VOICES, "source": "fallback_static", "fetched_at": None}
+
+@api_router.post("/admin/voices/refresh")
+async def admin_refresh_voices(user=Depends(required_user)):
+    if user.get("role") != "admin":
+        raise HTTPException(403, "Acesso restrito")
+    live = await _fetch_voices_live()
+    if not live:
+        raise HTTPException(503, "Não foi possível consultar a ElevenLabs agora. Verifique a chave e tente novamente.")
+    now = datetime.now(timezone.utc)
+    await db.voices_cache.update_one(
+        {"id": "ptbr"},
+        {"$set": {"id": "ptbr", "voices": live, "fetched_at": now.isoformat()}},
+        upsert=True,
+    )
+    return {"voices": live, "count": len(live), "fetched_at": now.isoformat()}
+
+
 @api_router.post("/generate-audio")
 async def generate_audio_ep(input: AudioInput, request: Request, user=Depends(required_user)):
     """
@@ -557,12 +680,13 @@ async def generate_audio_ep(input: AudioInput, request: Request, user=Depends(re
         await db.usage.delete_one({"id": reservation_id})
         raise HTTPException(503, "Resposta inválida do serviço de áudio. Reserva estornada.")
 
-    # Cobrança real do provedor (header character-cost quando disponível)
-    billed_raw = el_headers.get("character-cost") if el_headers else None
+    # ElevenLabs header 'character-cost' representa CRÉDITOS consumidos, não caracteres literais.
+    # Em modelos Flash/Turbo, 1 char = 0.5 créditos (desconto de 50%). Guardamos separado.
+    credits_raw = el_headers.get("character-cost") if el_headers else None
     try:
-        chars_billed = int(billed_raw) if billed_raw and str(billed_raw).isdigit() else chars_sent
+        credits_billed = int(credits_raw) if credits_raw and str(credits_raw).isdigit() else None
     except Exception:
-        chars_billed = chars_sent
+        credits_billed = None
 
     # Duração REAL do MP3
     real_duration = None
@@ -573,7 +697,10 @@ async def generate_audio_ep(input: AudioInput, request: Request, user=Depends(re
             real_duration = None
 
     final_seconds = real_duration if (real_duration and real_duration > 0) else estimated_sec
-    real_cost_usd = calc_audio_api_cost_usd(chars_billed)
+    # Custo real: usar chars_sent (len(text)) — a taxa usd_per_char configurada já é a EFETIVA
+    # do modelo (Flash v2.5 = $0.05/1000 chars). NÃO usar `credits_billed` aqui, senão o custo
+    # seria subestimado em 50% no Flash.
+    real_cost_usd = calc_audio_api_cost_usd(chars_sent)
     real_cost_brl_prot = usd_to_brl_protected(real_cost_usd)
     real_min_price_brl = min_sale_price_brl(real_cost_usd, apply_mp_fee=False)
 
@@ -583,7 +710,8 @@ async def generate_audio_ep(input: AudioInput, request: Request, user=Depends(re
         "status": "committed",
         "duration_seconds": final_seconds,
         "duration_real_seconds": real_duration,
-        "prompt.chars_billed": chars_billed,
+        "prompt.chars_sent": chars_sent,
+        "prompt.credits_billed": credits_billed,
         "cost.real_api_usd": real_cost_usd,
         "cost.real_api_brl_protected": round(real_cost_brl_prot, 4),
         "cost.real_min_sale_brl": real_min_price_brl,
@@ -597,13 +725,13 @@ async def generate_audio_ep(input: AudioInput, request: Request, user=Depends(re
             "Content-Disposition": 'inline; filename="facilita-audio.mp3"',
             "X-Reservation-Id": reservation_id,
             "X-Chars-Sent": str(chars_sent),
-            "X-Chars-Billed": str(chars_billed),
+            "X-Credits-Billed": str(credits_billed) if credits_billed is not None else "",
             "X-Duration-Estimated": f"{estimated_sec:.3f}",
             "X-Duration-Real": f"{real_duration:.3f}" if real_duration else "",
             "X-Cost-USD-Estimated": f"{est_cost_usd:.6f}",
             "X-Cost-USD-Real": f"{real_cost_usd:.6f}",
             "X-Min-Sale-BRL": f"{real_min_price_brl:.4f}",
-            "Access-Control-Expose-Headers": "X-Reservation-Id,X-Chars-Sent,X-Chars-Billed,X-Duration-Estimated,X-Duration-Real,X-Cost-USD-Estimated,X-Cost-USD-Real,X-Min-Sale-BRL",
+            "Access-Control-Expose-Headers": "X-Reservation-Id,X-Chars-Sent,X-Credits-Billed,X-Duration-Estimated,X-Duration-Real,X-Cost-USD-Estimated,X-Cost-USD-Real,X-Min-Sale-BRL",
         },
     )
 
