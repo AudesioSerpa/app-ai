@@ -45,8 +45,9 @@ AI_PRICING: dict[str, Any] = {
         "premium_max_seconds_per_gen": int(_env("AUDIO_PREMIUM_MAX_SEC_GEN", "60")),
         # Proteção universal (soft limit — pode ser subido depois)
         "hard_max_chars_per_request": int(_env("AUDIO_HARD_MAX_CHARS", "3000")),
-        # Créditos Facilita por char (unidade interna configurável)
-        "credits_per_char": int(_env("AUDIO_CREDITS_PER_CHAR", "1")),
+        # Créditos Facilita — configuráveis no Admin. Unidade: créditos por 1000 caracteres.
+        # NÃO ancora crédito ao provider — se ElevenLabs mudar preço, só ajustamos este valor.
+        "credits_per_1000_chars": int(_env("AUDIO_CREDITS_PER_1000_CHARS", "1000")),
     },
 
     # ---------------- IMAGEM ----------------
@@ -57,8 +58,8 @@ AI_PRICING: dict[str, Any] = {
         "free_daily_generations": int(_env("IMG_FREE_DAILY", "3")),
         "premium_daily_generations": int(_env("IMG_PREMIUM_DAILY", "50")),
         "max_prompt_chars": int(_env("IMG_MAX_PROMPT_CHARS", "1000")),
-        # Créditos Facilita por imagem (alinhado ao custo médio por caractere de áudio)
-        "credits_per_image": int(_env("IMG_CREDITS_PER_GEN", "60")),
+        # Créditos Facilita por geração (configurável no Admin)
+        "credits_per_generation": int(_env("IMG_CREDITS_PER_GEN", "60")),
     },
 
     # ---------------- TEXTO ----------------
@@ -88,12 +89,66 @@ def calc_image_api_cost_usd(num_images: int = 1) -> float:
 
 
 def credits_for_audio(chars: int) -> int:
-    """Custo em Créditos Facilita para gerar áudio com N caracteres."""
-    return int(chars) * int(AI_PRICING["audio"]["credits_per_char"])
+    """
+    Converte N caracteres em Créditos Facilita. Unidade: créditos por 1000 chars.
+    NÃO ancora a moeda ao provider — se ElevenLabs mudar preço, ajustamos só o multiplicador.
+    """
+    per_1000 = int(AI_PRICING["audio"]["credits_per_1000_chars"])
+    return int(round(int(chars) * per_1000 / 1000))
 
 
 def credits_for_image(num_images: int = 1) -> int:
-    return int(num_images) * int(AI_PRICING["image"]["credits_per_image"])
+    return int(num_images) * int(AI_PRICING["image"]["credits_per_generation"])
+
+
+# Campos permitidos para override via Admin (SEM segredos, SEM afetar saldo dos usuários)
+PRICING_OVERRIDABLE_FIELDS = {
+    "usd_to_brl": ("root", float),
+    "fx_safety_buffer": ("root", float),
+    "target_gross_margin": ("root", float),
+    "mp_fee_rate": ("root", float),
+    "audio_usd_per_char": ("audio.usd_per_char", float),
+    "audio_credits_per_1000_chars": ("audio.credits_per_1000_chars", int),
+    "image_usd_per_image": ("image.usd_per_image", float),
+    "image_credits_per_generation": ("image.credits_per_generation", int),
+}
+
+def apply_overrides(overrides: dict) -> dict:
+    """
+    Aplica overrides do Admin (persistidos em settings) no AI_PRICING em runtime.
+    Retorna dict `{campo: valor_aplicado}` só dos campos válidos aplicados.
+    NÃO altera saldo de usuários. NÃO altera valor nominal de créditos existentes.
+    """
+    applied: dict = {}
+    if not overrides: return applied
+    for k, v in overrides.items():
+        if k not in PRICING_OVERRIDABLE_FIELDS or v is None: continue
+        path, caster = PRICING_OVERRIDABLE_FIELDS[k]
+        try:
+            typed = caster(v)
+        except Exception:
+            continue
+        if path == "root":
+            AI_PRICING[k] = typed
+        else:
+            section, key = path.split(".")
+            AI_PRICING[section][key] = typed
+        applied[k] = typed
+    return applied
+
+
+def dump_overridable() -> dict:
+    """Retorna os valores atuais dos campos que o Admin pode editar."""
+    return {
+        "usd_to_brl": AI_PRICING["usd_to_brl"],
+        "fx_safety_buffer": AI_PRICING["fx_safety_buffer"],
+        "target_gross_margin": AI_PRICING["target_gross_margin"],
+        "mp_fee_rate": AI_PRICING["mp_fee_rate"],
+        "audio_usd_per_char": AI_PRICING["audio"]["usd_per_char"],
+        "audio_credits_per_1000_chars": AI_PRICING["audio"]["credits_per_1000_chars"],
+        "image_usd_per_image": AI_PRICING["image"]["usd_per_image"],
+        "image_credits_per_generation": AI_PRICING["image"]["credits_per_generation"],
+    }
 
 
 def usd_to_brl_protected(usd: float) -> float:
@@ -132,6 +187,7 @@ def pricing_snapshot() -> dict[str, Any]:
         "audio": {
             "model": AI_PRICING["audio"]["model"],
             "usd_per_char": AI_PRICING["audio"]["usd_per_char"],
+            "credits_per_1000_chars": AI_PRICING["audio"]["credits_per_1000_chars"],
             "free_daily_seconds": AI_PRICING["audio"]["free_daily_seconds"],
             "premium_daily_seconds": AI_PRICING["audio"]["premium_daily_seconds"],
             "free_max_seconds_per_gen": AI_PRICING["audio"]["free_max_seconds_per_gen"],
@@ -139,6 +195,7 @@ def pricing_snapshot() -> dict[str, Any]:
         "image": {
             "model": AI_PRICING["image"]["model"],
             "usd_per_image": AI_PRICING["image"]["usd_per_image"],
+            "credits_per_generation": AI_PRICING["image"]["credits_per_generation"],
             "free_daily_generations": AI_PRICING["image"]["free_daily_generations"],
             "max_prompt_chars": AI_PRICING["image"]["max_prompt_chars"],
         },

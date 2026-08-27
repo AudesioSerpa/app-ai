@@ -1102,6 +1102,7 @@ function Admin(){
       </section>
 
       <FinanceDashboardSection admToken={getToken()} />
+      <PricingConfigSection admToken={getToken()} />
       <PackagesAdminSection admToken={getToken()} />
       <ApiRechargesSection admToken={getToken()} />
 
@@ -1114,8 +1115,88 @@ function Admin(){
   </div>
 }
 
-function FinanceDashboardSection({ admToken }){
-  const [data, setData] = useState(null);
+function PricingConfigSection({ admToken }){
+  const [cfg, setCfg] = useState(null);
+  const [form, setForm] = useState({});
+  const [alerts, setAlerts] = useState([]);
+  const [autoDeact, setAutoDeact] = useState([]);
+  const [feedback, setFeedback] = useState("");
+  const [error, setError] = useState("");
+  const load = useCallback(() => {
+    if (!admToken) return;
+    axios.get(`${API}/admin/pricing`, { headers: { Authorization: `Bearer ${admToken}` } }).then(r => {
+      setCfg(r.data);
+      setForm(r.data.current);
+    }).catch(() => setCfg(null));
+  }, [admToken]);
+  useEffect(() => { load(); }, [load]);
+  if (!cfg) return null;
+
+  const submit = async () => {
+    setError(""); setFeedback(""); setAlerts([]); setAutoDeact([]);
+    // Envia apenas o que mudou
+    const changes = {};
+    Object.entries(form).forEach(([k, v]) => {
+      const orig = cfg.current[k];
+      const val = typeof orig === "number" ? parseFloat(String(v).replace(",", ".")) : v;
+      if (!isNaN(val) && val !== orig) changes[k] = val;
+    });
+    if (Object.keys(changes).length === 0) { setFeedback("Nenhuma alteração."); return; }
+    try {
+      const r = await axios.put(`${API}/admin/pricing`, changes, { headers: { Authorization: `Bearer ${admToken}` } });
+      setAlerts(r.data.alerts || []);
+      setAutoDeact(r.data.auto_deactivated || []);
+      setFeedback(`${Object.keys(r.data.applied).length} campo(s) atualizado(s). Pacotes revalidados.`);
+      load();
+    } catch (e) {
+      const d = e.response?.data;
+      setError(typeof d?.detail === "string" ? d.detail : (d?.detail?.detail || "Não foi possível atualizar."));
+    }
+  };
+
+  const labels = {
+    usd_to_brl: "Cotação USD → BRL",
+    fx_safety_buffer: "Buffer cambial (0.10 = 10%)",
+    target_gross_margin: "Margem bruta alvo (0.70 = 70%)",
+    mp_fee_rate: "Taxa Mercado Pago (0.05 = 5%)",
+    audio_usd_per_char: "Áudio — USD por caractere (ElevenLabs)",
+    audio_credits_per_1000_chars: "Áudio — Créditos Facilita por 1.000 chars",
+    image_usd_per_image: "Imagem — USD por imagem (fal.ai)",
+    image_credits_per_generation: "Imagem — Créditos Facilita por imagem",
+  };
+
+  return <section className="admin-section" data-testid="admin-pricing-section">
+    <h2>Configuração de Preços & Créditos</h2>
+    <p className="admin-hint">
+      Ajuste custos das APIs, cotação, margem e a conversão custo → Créditos Facilita.
+      Ao salvar, o sistema revalida os 5 pacotes automaticamente e <strong>bloqueia (active=false)</strong> qualquer um cuja margem caia abaixo do alvo. Nenhum saldo de usuário é alterado.
+    </p>
+    <div className="admin-form-row">
+      {Object.entries(labels).map(([k, l]) => (
+        <label key={k}>{l}
+          <input
+            data-testid={`pricing-${k}`}
+            type="number"
+            step={k.includes("credits") || k === "usd_to_brl" ? "0.01" : "0.00001"}
+            value={form[k] ?? ""}
+            onChange={e => setForm({...form, [k]: e.target.value})}
+          />
+        </label>
+      ))}
+    </div>
+    {error && <div className="error-message" data-testid="pricing-error">{error}</div>}
+    {feedback && <div className="hint-message" data-testid="pricing-feedback">{feedback}</div>}
+    {alerts.length > 0 && <div className="error-message" data-testid="pricing-alerts">
+      ⚠️ Pacotes abaixo da margem alvo: {alerts.map(a => `${a.name} (${(a.margin*100).toFixed(1)}%)`).join(" · ")}
+    </div>}
+    {autoDeact.length > 0 && <div className="hint-message">
+      🔒 Auto-desativados: {autoDeact.join(", ")}
+    </div>}
+    <button className="primary-action" onClick={submit} data-testid="pricing-submit"><Sparkles size={16}/>Salvar e revalidar pacotes</button>
+  </section>;
+}
+
+function FinanceDashboardSection({ admToken }){  const [data, setData] = useState(null);
   const [days, setDays] = useState(30);
   const [mode, setMode] = useState(null);
   const load = useCallback(() => {

@@ -156,3 +156,12 @@ Auditoria Carteira Universal de Créditos entregue ao dono do produto — não i
 - Nova seção "Custos & Lucro" com pill de modo (MODO SIMULAÇÃO/ATIVO), 3 cards financeiros, tabela por ferramenta, filtros 7d/30d/90d
 - Nova seção "Pacotes de Créditos" com tabela editável (margem projetada verde/vermelho, pior custo, ativo, destaque)
 - Reusa "APIs & Recargas" existente (sem duplicar)
+
+## Update Fev/2026 — FASE 2 Revisão da precificação
+- Renomeado: `audio.credits_per_char` → `audio.credits_per_1000_chars` (default 1000). Desacopla crédito do provider — se ElevenLabs mudar preço, só ajusta este valor.
+- Renomeado: `image.credits_per_image` → `image.credits_per_generation` (default 60).
+- Novo `pricing.py::apply_overrides()` + `dump_overridable()` + `PRICING_OVERRIDABLE_FIELDS` — persistência em `settings.pricing_overrides`.
+- Novos endpoints admin: `GET/PUT /api/admin/pricing` — atualiza params, revalida os 5 pacotes automaticamente, **auto-desativa** (active=false) qualquer pacote < margem alvo, retorna alertas.
+- Novo componente `PricingConfigSection` em `/admin` — 8 campos editáveis, botão "Salvar e revalidar pacotes".
+- Testado: aumento simulado de 10x no custo ElevenLabs → todos pacotes reprovaram (margem -146% no Power), Power auto-desativado. Reverter volta a 75-94%.
+- **NÃO altera saldo dos usuários. NÃO altera valor nominal de créditos existentes.**

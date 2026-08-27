@@ -38,6 +38,9 @@ from pricing import (
     pricing_snapshot,
     credits_for_audio,
     credits_for_image,
+    apply_overrides as pricing_apply_overrides,
+    dump_overridable as pricing_dump_overridable,
+    PRICING_OVERRIDABLE_FIELDS,
 )
 from wallet import WalletService
 
@@ -272,6 +275,10 @@ async def seed_admin():
     # FASE 2: seed pacotes (idempotente)
     for pkg in DEFAULT_PACKAGES:
         await db.packages.update_one({"id": pkg["id"]}, {"$setOnInsert": pkg}, upsert=True)
+    # FASE 2 revisão: carrega overrides de pricing persistidos no admin
+    doc2 = await db.settings.find_one({"id": "app_settings"}, {"pricing_overrides": 1})
+    if doc2 and doc2.get("pricing_overrides"):
+        pricing_apply_overrides(doc2["pricing_overrides"])
     # FASE 2: wallet service
     global wallet_service
     wallet_service = WalletService(db)
@@ -700,11 +707,12 @@ def _validate_package_margin(credits: int, price_brl: float, worst_case_tool: st
     - Pior caso: usuário consome TODOS os créditos na ferramenta com maior custo/crédito.
     - Cálculo de margem bruta = (receita_liquida - custo_api_max) / receita_liquida
     """
-    audio_credits_per_char = AI_PRICING["audio"]["credits_per_char"] or 1
-    image_credits_per_gen = AI_PRICING["image"]["credits_per_image"] or 60
+    audio_credits_per_1000 = int(AI_PRICING["audio"]["credits_per_1000_chars"] or 1000)
+    image_credits_per_gen = int(AI_PRICING["image"]["credits_per_generation"] or 60)
     # Custo unitário por crédito em USD (pior ferramenta = mais caro por crédito)
-    audio_usd_per_credit = AI_PRICING["audio"]["usd_per_char"] / audio_credits_per_char
-    image_usd_per_credit = AI_PRICING["image"]["usd_per_image"] / image_credits_per_gen
+    # audio: X USD/char * (1000/N créditos por 1000 chars) = USD por crédito
+    audio_usd_per_credit = AI_PRICING["audio"]["usd_per_char"] * 1000 / audio_credits_per_1000 if audio_credits_per_1000 > 0 else 0
+    image_usd_per_credit = AI_PRICING["image"]["usd_per_image"] / image_credits_per_gen if image_credits_per_gen > 0 else 0
     worst_usd_per_credit = max(audio_usd_per_credit, image_usd_per_credit)
     worst_tool = "audio_gen" if audio_usd_per_credit >= image_usd_per_credit else "image_gen"
     worst_cost_usd = credits * worst_usd_per_credit
@@ -810,6 +818,70 @@ async def admin_delete_package(package_id: str, user=Depends(required_user)):
     r = await db.packages.delete_one({"id": package_id})
     if r.deleted_count == 0: raise HTTPException(404, "Pacote não encontrado.")
     return {"ok": True}
+
+# ---- Admin: Configuração de Pricing (com auto-revalidação de pacotes) ----
+@api_router.get("/admin/pricing")
+async def admin_get_pricing(user=Depends(required_user)):
+    if user.get("role") != "admin": raise HTTPException(403, "Acesso restrito")
+    # Rerode todos os pacotes para mostrar margem projetada atual
+    pkgs = await db.packages.find({}, {"_id": 0}).sort("order", 1).to_list(50)
+    for p in pkgs:
+        p["analysis"] = _validate_package_margin(p["credits"], p["price_brl"])
+    return {
+        "current": pricing_dump_overridable(),
+        "overridable_fields": {k: v[1].__name__ for k, v in PRICING_OVERRIDABLE_FIELDS.items()},
+        "packages_analysis": pkgs,
+    }
+
+class PricingOverrideInput(BaseModel):
+    usd_to_brl: Optional[float] = Field(default=None, gt=0, le=100)
+    fx_safety_buffer: Optional[float] = Field(default=None, ge=0, le=1)
+    target_gross_margin: Optional[float] = Field(default=None, ge=0, lt=1)
+    mp_fee_rate: Optional[float] = Field(default=None, ge=0, le=0.5)
+    audio_usd_per_char: Optional[float] = Field(default=None, ge=0, le=1)
+    audio_credits_per_1000_chars: Optional[int] = Field(default=None, gt=0, le=1_000_000)
+    image_usd_per_image: Optional[float] = Field(default=None, ge=0, le=100)
+    image_credits_per_generation: Optional[int] = Field(default=None, gt=0, le=1_000_000)
+
+@api_router.put("/admin/pricing")
+async def admin_update_pricing(input: PricingOverrideInput, user=Depends(required_user)):
+    """
+    Atualiza parâmetros de precificação (custo API, câmbio, buffer, margem, taxa MP, créditos/unidade).
+    - NÃO altera saldo dos usuários.
+    - NÃO altera valor nominal dos créditos já existentes.
+    - Após aplicar, recalcula margem projetada de TODOS os pacotes.
+    - Desativa (active=false) automaticamente qualquer pacote que caia abaixo da margem alvo.
+    - Retorna alertas dos pacotes bloqueados.
+    """
+    if user.get("role") != "admin": raise HTTPException(403, "Acesso restrito")
+    changes = {k: v for k, v in input.dict().items() if v is not None}
+    if not changes:
+        raise HTTPException(400, "Nenhum campo enviado para atualização.")
+    applied = pricing_apply_overrides(changes)
+    # Persiste overrides no settings (merge)
+    doc = await db.settings.find_one({"id": "app_settings"}, {"pricing_overrides": 1}) or {}
+    merged = {**(doc.get("pricing_overrides") or {}), **applied}
+    await db.settings.update_one({"id": "app_settings"}, {"$set": {"pricing_overrides": merged}}, upsert=True)
+    # Revalida pacotes
+    pkgs = await db.packages.find({}, {"_id": 0}).sort("order", 1).to_list(50)
+    alerts = []
+    auto_deactivated = []
+    for p in pkgs:
+        a = _validate_package_margin(p["credits"], p["price_brl"])
+        p["analysis"] = a
+        if not a["ok"] and p.get("active"):
+            await db.packages.update_one({"id": p["id"]}, {"$set": {"active": False}})
+            p["active"] = False
+            auto_deactivated.append(p["id"])
+        if not a["ok"]:
+            alerts.append({"id": p["id"], "name": p["name"], "margin": a["projected_margin"], "target": a["target_margin"]})
+    return {
+        "applied": applied,
+        "current": pricing_dump_overridable(),
+        "alerts": alerts,
+        "auto_deactivated": auto_deactivated,
+        "packages_analysis": pkgs,
+    }
 
 # ---- Admin: Custos & Lucro (dashboard consolidado) ----
 @api_router.get("/admin/finance/dashboard")
