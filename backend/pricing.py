@@ -45,6 +45,8 @@ AI_PRICING: dict[str, Any] = {
         "premium_max_seconds_per_gen": int(_env("AUDIO_PREMIUM_MAX_SEC_GEN", "60")),
         # Proteção universal (soft limit — pode ser subido depois)
         "hard_max_chars_per_request": int(_env("AUDIO_HARD_MAX_CHARS", "3000")),
+        # Créditos Facilita por char (unidade interna configurável)
+        "credits_per_char": int(_env("AUDIO_CREDITS_PER_CHAR", "1")),
     },
 
     # ---------------- IMAGEM ----------------
@@ -55,6 +57,8 @@ AI_PRICING: dict[str, Any] = {
         "free_daily_generations": int(_env("IMG_FREE_DAILY", "3")),
         "premium_daily_generations": int(_env("IMG_PREMIUM_DAILY", "50")),
         "max_prompt_chars": int(_env("IMG_MAX_PROMPT_CHARS", "1000")),
+        # Créditos Facilita por imagem (alinhado ao custo médio por caractere de áudio)
+        "credits_per_image": int(_env("IMG_CREDITS_PER_GEN", "60")),
     },
 
     # ---------------- TEXTO ----------------
@@ -81,6 +85,15 @@ def calc_audio_api_cost_usd(chars: int) -> float:
 
 def calc_image_api_cost_usd(num_images: int = 1) -> float:
     return num_images * AI_PRICING["image"]["usd_per_image"]
+
+
+def credits_for_audio(chars: int) -> int:
+    """Custo em Créditos Facilita para gerar áudio com N caracteres."""
+    return int(chars) * int(AI_PRICING["audio"]["credits_per_char"])
+
+
+def credits_for_image(num_images: int = 1) -> int:
+    return int(num_images) * int(AI_PRICING["image"]["credits_per_image"])
 
 
 def usd_to_brl_protected(usd: float) -> float:

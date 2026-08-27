@@ -1101,6 +1101,8 @@ function Admin(){
         </div>
       </section>
 
+      <FinanceDashboardSection admToken={getToken()} />
+      <PackagesAdminSection admToken={getToken()} />
       <ApiRechargesSection admToken={getToken()} />
 
       <div className="admin-footer">
@@ -1112,8 +1114,146 @@ function Admin(){
   </div>
 }
 
-function ApiRechargesSection({ admToken }){
-  const [items, setItems] = useState([]);
+function FinanceDashboardSection({ admToken }){
+  const [data, setData] = useState(null);
+  const [days, setDays] = useState(30);
+  const [mode, setMode] = useState(null);
+  const load = useCallback(() => {
+    if (!admToken) return;
+    axios.get(`${API}/admin/finance/dashboard?days=${days}`, { headers: { Authorization: `Bearer ${admToken}` } }).then(r => { setData(r.data); setMode(r.data.wallet_mode); }).catch(() => setData(null));
+  }, [admToken, days]);
+  useEffect(() => { load(); }, [load]);
+  if (!data) return <section className="admin-section"><h2>Custos & Lucro</h2><p className="helper">Carregando...</p></section>;
+
+  const toolLabel = (t) => toolMap[t]?.name || t;
+
+  return <section className="admin-section" data-testid="admin-finance-section">
+    <div className="admin-summary-head">
+      <h2>Custos & Lucro <span className={`wallet-mode-pill ${mode}`} data-testid="wallet-mode-pill">{mode === "active" ? "MODO ATIVO" : "MODO SIMULAÇÃO"}</span></h2>
+      <div className="chips">
+        {[7,30,90].map(d => <button key={d} className={days===d?"selected":""} onClick={()=>setDays(d)} data-testid={`finance-days-${d}`}>{d}d</button>)}
+      </div>
+    </div>
+    <p className="admin-hint">
+      {mode === "simulation" ? "Modo simulação: gerações reais NÃO descontam créditos dos usuários. O sistema apenas registra quanto TERIA sido debitado, para análise de rentabilidade antes do cutover." : "Modo ativo: cobrança real de Créditos Facilita em cada geração."}
+    </p>
+
+    <div className="admin-summary-grid">
+      <div className="admin-summary-card cash" data-testid="finance-cash-card">
+        <p className="eyebrow">FLUXO DE CAIXA — Recargas</p>
+        <h2>R$ {(data.cash_flow.total_brl || 0).toFixed(2)}</h2>
+        <ul>
+          {Object.entries(data.cash_flow.by_provider).map(([p,v]) => (
+            <li key={p}><span>{p}</span><strong>R$ {v.total_brl.toFixed(2)}</strong><small>{v.recharges} recarga(s)</small></li>
+          ))}
+          {Object.keys(data.cash_flow.by_provider).length===0 && <li className="empty">Sem recargas.</li>}
+        </ul>
+      </div>
+      <div className="admin-summary-card cons" data-testid="finance-consumption-card">
+        <p className="eyebrow">CONSUMO REAL DAS APIs</p>
+        <h2>US$ {(data.consumption.total_usd || 0).toFixed(4)}</h2>
+        <small className="admin-hint">≈ R$ {(data.consumption.total_brl_protected || 0).toFixed(2)}</small>
+        <ul>
+          {Object.entries(data.consumption.by_tool).map(([t,v]) => (
+            <li key={t}><span>{toolLabel(t)}</span><strong>US$ {v.usd_real.toFixed(6)}</strong><small>{v.generations} ger.{v.chars_total?` · ${v.chars_total.toLocaleString('pt-BR')} chars`:''}{v.seconds_total?` · ${v.seconds_total.toFixed(1)}s`:''}</small></li>
+          ))}
+          {Object.keys(data.consumption.by_tool).length===0 && <li className="empty">Sem gerações no período.</li>}
+        </ul>
+      </div>
+      <div className="admin-summary-card sim" data-testid="finance-simulation-card">
+        <p className="eyebrow">SIMULAÇÃO — Créditos & Rentabilidade</p>
+        <h2>{data.credits.simulated_total.toLocaleString('pt-BR')} <small style={{fontSize:'12px',color:'#8a8f98'}}>créditos simulados</small></h2>
+        <ul>
+          <li><span>Receita equivalente (referência pkg Popular)</span><strong>R$ {(data.simulation.revenue_equivalent_brl || 0).toFixed(2)}</strong></li>
+          <li><span>Custo real das APIs</span><strong>R$ {(data.consumption.total_brl_protected || 0).toFixed(2)}</strong></li>
+          <li><span>Lucro projetado</span><strong>R$ {(data.simulation.gross_profit_brl || 0).toFixed(2)}</strong></li>
+          <li><span>Margem projetada</span><strong>{data.simulation.margin != null ? (data.simulation.margin * 100).toFixed(1) + '%' : '—'}</strong></li>
+          <li><span>Créditos vendidos (real)</span><strong>{data.credits.sold_total.toLocaleString('pt-BR')}</strong><small>{data.credits.purchases_count} compras</small></li>
+        </ul>
+      </div>
+    </div>
+
+    <h3 style={{marginTop:'24px'}}>Consumo por ferramenta</h3>
+    <table className="admin-table" data-testid="finance-tools-table">
+      <thead><tr><th>Ferramenta</th><th>Gerações</th><th>Créditos simulados</th><th>Custo real USD</th><th>Custo real BRL</th></tr></thead>
+      <tbody>
+        {Object.entries(data.consumption.by_tool).map(([t,v]) => (
+          <tr key={t}>
+            <td>{toolLabel(t)}</td>
+            <td>{v.generations}</td>
+            <td>{(data.credits.by_tool[t]?.simulated || 0).toLocaleString('pt-BR')}</td>
+            <td>US$ {v.usd_real.toFixed(6)}</td>
+            <td>R$ {v.brl_real.toFixed(4)}</td>
+          </tr>
+        ))}
+        {Object.keys(data.consumption.by_tool).length === 0 && <tr><td colSpan="5" className="notes-cell">Sem gerações no período.</td></tr>}
+      </tbody>
+    </table>
+  </section>;
+}
+
+function PackagesAdminSection({ admToken }){
+  const [pkgs, setPkgs] = useState([]);
+  const [editing, setEditing] = useState(null);
+  const [feedback, setFeedback] = useState("");
+  const [error, setError] = useState("");
+
+  const load = useCallback(() => {
+    if (!admToken) return;
+    axios.get(`${API}/admin/packages`, { headers: { Authorization: `Bearer ${admToken}` } }).then(r => setPkgs(r.data.packages || [])).catch(() => setPkgs([]));
+  }, [admToken]);
+  useEffect(() => { load(); }, [load]);
+
+  const save = async (pkg) => {
+    setError(""); setFeedback("");
+    try {
+      await axios.put(`${API}/admin/packages/${pkg.id}`, {
+        name: pkg.name,
+        credits: parseInt(pkg.credits),
+        price_brl: parseFloat(String(pkg.price_brl).replace(",", ".")),
+        active: !!pkg.active,
+        featured: !!pkg.featured,
+        order: parseInt(pkg.order || 0),
+        description: pkg.description || "",
+      }, { headers: { Authorization: `Bearer ${admToken}` } });
+      setFeedback("Pacote salvo."); setEditing(null); load();
+    } catch (e) {
+      const d = e.response?.data;
+      setError(typeof d?.detail === "string" ? d.detail : (d?.detail?.detail || "Não foi possível salvar."));
+    }
+  };
+
+  return <section className="admin-section" data-testid="admin-packages-section">
+    <h2>Pacotes de Créditos <span className="admin-hint" style={{marginLeft:'8px',fontSize:'11px'}}>(modo simulação — nada à venda ainda)</span></h2>
+    {error && <div className="error-message" data-testid="packages-error">{error}</div>}
+    {feedback && <div className="hint-message" data-testid="packages-feedback">{feedback}</div>}
+    <table className="admin-table" data-testid="packages-table">
+      <thead><tr><th>Nome</th><th>Créditos</th><th>Preço BRL</th><th>Margem projetada</th><th>Pior custo</th><th>Ativo</th><th>Destaque</th><th></th></tr></thead>
+      <tbody>
+        {pkgs.map(p => {
+          const a = p.analysis || {};
+          const isEditing = editing?.id === p.id;
+          const row = isEditing ? editing : p;
+          return <tr key={p.id} data-testid={`package-row-${p.id}`} className={a.ok === false ? "warn-row" : ""}>
+            <td>{isEditing ? <input value={row.name} onChange={e=>setEditing({...editing, name: e.target.value})}/> : p.name}</td>
+            <td>{isEditing ? <input type="number" value={row.credits} onChange={e=>setEditing({...editing, credits: e.target.value})}/> : p.credits.toLocaleString("pt-BR")}</td>
+            <td>{isEditing ? <input type="number" step="0.01" value={row.price_brl} onChange={e=>setEditing({...editing, price_brl: e.target.value})}/> : `R$ ${p.price_brl.toFixed(2)}`}</td>
+            <td style={{color: a.ok === false ? "#ff6b6b" : "#4dd47f"}}>{a.projected_margin != null ? (a.projected_margin*100).toFixed(1)+"%" : "—"} {a.ok === false && "⚠️"}</td>
+            <td>R$ {(a.worst_case_cost_brl || 0).toFixed(2)}<small style={{display:'block',fontSize:'10px',color:'#8a8f98'}}>{a.worst_case_tool}</small></td>
+            <td>{isEditing ? <input type="checkbox" checked={row.active} onChange={e=>setEditing({...editing, active: e.target.checked})}/> : (p.active ? "✅" : "❌")}</td>
+            <td>{isEditing ? <input type="checkbox" checked={row.featured} onChange={e=>setEditing({...editing, featured: e.target.checked})}/> : (p.featured ? "⭐" : "—")}</td>
+            <td>{isEditing ? <>
+              <button className="ghost-action tiny" onClick={()=>save(row)} data-testid={`package-save-${p.id}`}><Check size={14}/></button>
+              <button className="ghost-action tiny" onClick={()=>setEditing(null)}>✕</button>
+            </> : <button className="ghost-action tiny" onClick={()=>setEditing({...p})} data-testid={`package-edit-${p.id}`}>Editar</button>}</td>
+          </tr>;
+        })}
+      </tbody>
+    </table>
+  </section>;
+}
+
+function ApiRechargesSection({ admToken }){  const [items, setItems] = useState([]);
   const [summary, setSummary] = useState(null);
   const [form, setForm] = useState({ provider: "elevenlabs", paid_amount: "", currency: "USD", fx_rate_used: "", credits_received: "", date: "", notes: "" });
   const [saving, setSaving] = useState(false);

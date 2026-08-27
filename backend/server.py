@@ -36,7 +36,10 @@ from pricing import (
     usd_to_brl_protected,
     min_sale_price_brl,
     pricing_snapshot,
+    credits_for_audio,
+    credits_for_image,
 )
+from wallet import WalletService
 
 
 ROOT_DIR = Path(__file__).parent
@@ -135,7 +138,20 @@ DEFAULT_SETTINGS = {
     "ads_enabled": True,
     "banner_enabled": True,
     "interstitial_enabled": False,
+    # FASE 2: modo carteira. simulation = shadow ledger, active = descontar créditos reais.
+    "wallet_mode": "simulation",
 }
+
+# Pacotes de créditos iniciais (FASE 2 — modo simulação; não vender ainda)
+DEFAULT_PACKAGES = [
+    {"id": "pkg_teste", "name": "Teste", "credits": 1000, "price_brl": 4.90, "active": False, "featured": False, "order": 1, "description": "Ideal para conhecer a plataforma"},
+    {"id": "pkg_basico", "name": "Básico", "credits": 5000, "price_brl": 14.90, "active": False, "featured": False, "order": 2, "description": "Uso pontual sem preocupação"},
+    {"id": "pkg_popular", "name": "Popular", "credits": 15000, "price_brl": 29.90, "active": False, "featured": True, "order": 3, "description": "Mais vendido — melhor custo-benefício"},
+    {"id": "pkg_pro", "name": "Pro", "credits": 40000, "price_brl": 59.90, "active": False, "featured": False, "order": 4, "description": "Para uso profissional recorrente"},
+    {"id": "pkg_power", "name": "Power", "credits": 100000, "price_brl": 119.90, "active": False, "featured": False, "order": 5, "description": "Volume máximo com melhor preço unitário"},
+]
+
+wallet_service: Optional[WalletService] = None
 
 async def get_settings():
     s = await db.settings.find_one({"id": "app_settings"}, {"_id": 0})
@@ -250,6 +266,22 @@ async def seed_admin():
     doc = await db.settings.find_one({"id": "app_settings"})
     if doc and doc.get("free_daily_limit") == 10:
         await db.settings.update_one({"id": "app_settings"}, {"$set": {"free_daily_limit": 3}})
+    # FASE 2: garantir wallet_mode
+    if doc and "wallet_mode" not in doc:
+        await db.settings.update_one({"id": "app_settings"}, {"$set": {"wallet_mode": "simulation"}})
+    # FASE 2: seed pacotes (idempotente)
+    for pkg in DEFAULT_PACKAGES:
+        await db.packages.update_one({"id": pkg["id"]}, {"$setOnInsert": pkg}, upsert=True)
+    # FASE 2: wallet service
+    global wallet_service
+    wallet_service = WalletService(db)
+    # Index para idempotência de pagamentos + performance
+    try:
+        await db.wallet_ledger.create_index([("user_id", 1), ("created_at", -1)])
+        await db.wallet_ledger.create_index([("payment_id", 1), ("type", 1)], sparse=True)
+        await db.wallet_ledger.create_index([("mode", 1), ("created_at", -1)])
+    except Exception:
+        pass
 
 
 # Define Models
@@ -632,12 +664,257 @@ async def generate_image(input: ImageInput, user=Depends(required_user)):
         "created_at": datetime.now(timezone.utc).isoformat(),
     }
     await db.usage.insert_one(record)
+    # FASE 2 — shadow ledger: registra quantos créditos TERIAM sido consumidos.
+    try:
+        if wallet_service:
+            await wallet_service.simulate_consume(
+                user_id=user["id"], credits=credits_for_image(1),
+                tool="image_gen", provider="fal_ai",
+                estimated_cost_usd=img_cost_usd, real_cost_usd=img_cost_usd,
+                provider_usage={"aspect_ratio": input.aspect_ratio},
+                reference_id=record["id"],
+            )
+    except Exception as e:
+        logger.warning("Shadow ledger falhou (image_gen): %s", type(e).__name__)
     return {"tool": "image_gen", "image_url": image_url, "aspect_ratio": input.aspect_ratio, "prompt": prompt, "cost": record["cost"]}
 
 @api_router.get("/pricing")
 async def public_pricing():
     """Snapshot público da configuração central de custos e limites (sem segredos)."""
     return pricing_snapshot()
+
+# ================== FASE 2 — CARTEIRA / PACOTES / FINANCE ==================
+
+class PackageInput(BaseModel):
+    name: str = Field(min_length=1, max_length=40)
+    credits: int = Field(gt=0, le=10_000_000)
+    price_brl: float = Field(gt=0, le=100_000)
+    active: bool = False
+    featured: bool = False
+    order: int = 0
+    description: Optional[str] = Field(default=None, max_length=200)
+
+def _validate_package_margin(credits: int, price_brl: float, worst_case_tool: str = "image_gen") -> dict:
+    """
+    Retorna análise financeira do pacote:
+    - Pior caso: usuário consome TODOS os créditos na ferramenta com maior custo/crédito.
+    - Cálculo de margem bruta = (receita_liquida - custo_api_max) / receita_liquida
+    """
+    audio_credits_per_char = AI_PRICING["audio"]["credits_per_char"] or 1
+    image_credits_per_gen = AI_PRICING["image"]["credits_per_image"] or 60
+    # Custo unitário por crédito em USD (pior ferramenta = mais caro por crédito)
+    audio_usd_per_credit = AI_PRICING["audio"]["usd_per_char"] / audio_credits_per_char
+    image_usd_per_credit = AI_PRICING["image"]["usd_per_image"] / image_credits_per_gen
+    worst_usd_per_credit = max(audio_usd_per_credit, image_usd_per_credit)
+    worst_tool = "audio_gen" if audio_usd_per_credit >= image_usd_per_credit else "image_gen"
+    worst_cost_usd = credits * worst_usd_per_credit
+    worst_cost_brl = usd_to_brl_protected(worst_cost_usd)
+
+    mp_fee_rate = AI_PRICING["mp_fee_rate"]
+    net_revenue_brl = price_brl * (1 - mp_fee_rate)
+    mp_fee_brl = price_brl * mp_fee_rate
+
+    if net_revenue_brl <= 0:
+        return {"ok": False, "reason": "Preço inválido"}
+    gross_profit = net_revenue_brl - worst_cost_brl
+    margin = gross_profit / net_revenue_brl if net_revenue_brl > 0 else 0
+    target = AI_PRICING["target_gross_margin"]
+    return {
+        "ok": margin >= target,
+        "target_margin": target,
+        "projected_margin": round(margin, 4),
+        "gross_profit_brl": round(gross_profit, 4),
+        "price_brl": price_brl,
+        "mp_fee_brl": round(mp_fee_brl, 4),
+        "net_revenue_brl": round(net_revenue_brl, 4),
+        "worst_case_tool": worst_tool,
+        "worst_case_cost_brl": round(worst_cost_brl, 4),
+        "worst_case_cost_usd": round(worst_cost_usd, 6),
+        "credit_economic_value_brl": round(net_revenue_brl / credits, 6) if credits else 0,
+        "reason": None if margin >= target else f"Margem projetada {margin*100:.1f}% < alvo {target*100:.0f}%",
+    }
+
+# ---- Wallet ----
+@api_router.get("/wallet/me")
+async def get_my_wallet(user=Depends(required_user)):
+    """Saldo + últimos lançamentos (apenas do próprio usuário)."""
+    snap = await wallet_service.get_wallet_snapshot(user["id"], ledger_limit=30)
+    settings = await get_settings()
+    return {**snap, "wallet_mode": settings.get("wallet_mode", "simulation")}
+
+# ---- Packages (público — listagem) ----
+@api_router.get("/packages")
+async def list_packages():
+    items = await db.packages.find({}, {"_id": 0}).sort("order", 1).to_list(50)
+    settings = await get_settings()
+    return {"packages": items, "wallet_mode": settings.get("wallet_mode", "simulation")}
+
+# ---- Admin: Wallet Mode ----
+@api_router.get("/admin/wallet-mode")
+async def admin_get_wallet_mode(user=Depends(required_user)):
+    if user.get("role") != "admin": raise HTTPException(403, "Acesso restrito")
+    s = await get_settings()
+    return {"wallet_mode": s.get("wallet_mode", "simulation")}
+
+class WalletModeInput(BaseModel):
+    wallet_mode: str  # simulation | active
+    confirm: bool = False
+
+@api_router.put("/admin/wallet-mode")
+async def admin_set_wallet_mode(input: WalletModeInput, user=Depends(required_user)):
+    if user.get("role") != "admin": raise HTTPException(403, "Acesso restrito")
+    if input.wallet_mode not in {"simulation", "active"}:
+        raise HTTPException(400, "wallet_mode deve ser 'simulation' ou 'active'.")
+    if input.wallet_mode == "active" and not input.confirm:
+        raise HTTPException(400, "Ativação exige confirm=true (cutover manual).")
+    await db.settings.update_one({"id": "app_settings"}, {"$set": {"wallet_mode": input.wallet_mode}}, upsert=True)
+    return {"wallet_mode": input.wallet_mode}
+
+# ---- Admin: Packages CRUD com validação de margem ----
+@api_router.get("/admin/packages")
+async def admin_list_packages(user=Depends(required_user)):
+    if user.get("role") != "admin": raise HTTPException(403, "Acesso restrito")
+    items = await db.packages.find({}, {"_id": 0}).sort("order", 1).to_list(50)
+    enriched = []
+    for p in items:
+        analysis = _validate_package_margin(p["credits"], p["price_brl"])
+        enriched.append({**p, "analysis": analysis})
+    return {"packages": enriched}
+
+@api_router.post("/admin/packages")
+async def admin_create_package(input: PackageInput, user=Depends(required_user)):
+    if user.get("role") != "admin": raise HTTPException(403, "Acesso restrito")
+    analysis = _validate_package_margin(input.credits, input.price_brl)
+    if input.active and not analysis["ok"]:
+        raise HTTPException(400, {"detail": "Pacote não pode ser ativado com margem abaixo do mínimo.", "analysis": analysis})
+    doc = {"id": f"pkg_{uuid.uuid4().hex[:8]}", **input.dict()}
+    await db.packages.insert_one(doc.copy())
+    doc.pop("_id", None)
+    return {"package": doc, "analysis": analysis}
+
+@api_router.put("/admin/packages/{package_id}")
+async def admin_update_package(package_id: str, input: PackageInput, user=Depends(required_user)):
+    if user.get("role") != "admin": raise HTTPException(403, "Acesso restrito")
+    analysis = _validate_package_margin(input.credits, input.price_brl)
+    if input.active and not analysis["ok"]:
+        raise HTTPException(400, {"detail": "Pacote não pode ser ativado com margem abaixo do mínimo.", "analysis": analysis})
+    result = await db.packages.update_one({"id": package_id}, {"$set": input.dict()})
+    if result.matched_count == 0:
+        raise HTTPException(404, "Pacote não encontrado.")
+    doc = await db.packages.find_one({"id": package_id}, {"_id": 0})
+    return {"package": doc, "analysis": analysis}
+
+@api_router.delete("/admin/packages/{package_id}")
+async def admin_delete_package(package_id: str, user=Depends(required_user)):
+    if user.get("role") != "admin": raise HTTPException(403, "Acesso restrito")
+    r = await db.packages.delete_one({"id": package_id})
+    if r.deleted_count == 0: raise HTTPException(404, "Pacote não encontrado.")
+    return {"ok": True}
+
+# ---- Admin: Custos & Lucro (dashboard consolidado) ----
+@api_router.get("/admin/finance/dashboard")
+async def admin_finance_dashboard(days: int = 30, user=Depends(required_user)):
+    if user.get("role") != "admin": raise HTTPException(403, "Acesso restrito")
+    days = max(1, min(int(days), 3650))
+    now = datetime.now(timezone.utc)
+    since_iso = (now - timedelta(days=days)).isoformat()
+    since_date = (now - timedelta(days=days)).date().isoformat()
+    settings = await get_settings()
+    mode = settings.get("wallet_mode", "simulation")
+
+    # A) Fluxo de caixa (recargas manuais) — reusa collection existente
+    cash_agg = await db.api_recharges.aggregate([
+        {"$match": {"date": {"$gte": since_date}}},
+        {"$group": {"_id": "$provider", "total_brl": {"$sum": "$paid_amount_brl"}, "count": {"$sum": 1}, "credits_received": {"$sum": {"$ifNull": ["$credits_received", 0]}}}},
+    ]).to_list(50)
+    cash_flow = {row["_id"]: {"total_brl": round(row["total_brl"], 4), "recharges": row["count"], "credits_received": round(row["credits_received"], 4)} for row in cash_agg}
+    cash_total = round(sum(v["total_brl"] for v in cash_flow.values()), 4)
+
+    # B) Consumo real de APIs
+    cons_agg = await db.usage.aggregate([
+        {"$match": {"created_at": {"$gte": since_iso}, "status": {"$in": ["committed", None]}}},
+        {"$group": {"_id": "$tool", "generations": {"$sum": 1},
+                    "usd_real": {"$sum": {"$ifNull": ["$cost.real_api_usd", "$cost.api_usd"]}},
+                    "brl_real": {"$sum": {"$ifNull": ["$cost.real_api_brl_protected", "$cost.api_brl_protected"]}},
+                    "chars": {"$sum": {"$ifNull": ["$prompt.chars_sent", 0]}},
+                    "seconds": {"$sum": {"$ifNull": ["$duration_seconds", 0]}}}},
+    ]).to_list(50)
+    consumption_by_tool = {}
+    for r in cons_agg:
+        tool = r["_id"]
+        consumption_by_tool[tool] = {
+            "generations": int(r.get("generations") or 0),
+            "usd_real": round(float(r.get("usd_real") or 0), 6),
+            "brl_real": round(float(r.get("brl_real") or 0), 4),
+            "chars_total": int(r.get("chars") or 0),
+            "seconds_total": round(float(r.get("seconds") or 0), 2),
+        }
+    consumption_total_usd = round(sum(v["usd_real"] for v in consumption_by_tool.values()), 6)
+    consumption_total_brl = round(sum(v["brl_real"] for v in consumption_by_tool.values()), 4)
+
+    # C) Créditos simulados/consumidos (ledger)
+    ledger_agg = await db.wallet_ledger.aggregate([
+        {"$match": {"type": "consume", "created_at": {"$gte": since_iso}}},
+        {"$group": {"_id": {"tool": "$tool", "mode": "$mode"},
+                    "credits_absolute": {"$sum": {"$abs": "$credits"}}, "count": {"$sum": 1}}},
+    ]).to_list(50)
+    credits_by_tool: dict = {}
+    for r in ledger_agg:
+        tool = r["_id"]["tool"] or "unknown"
+        m = r["_id"]["mode"] or "active"
+        if tool not in credits_by_tool: credits_by_tool[tool] = {"simulated": 0, "active": 0, "generations": 0}
+        credits_by_tool[tool][m if m == "simulation" else "active"] = int(r["credits_absolute"])
+        credits_by_tool[tool]["generations"] += int(r["count"])
+    credits_simulated_total = sum(v.get("simulated", 0) for v in credits_by_tool.values())
+    credits_consumed_total = sum(v.get("active", 0) for v in credits_by_tool.values())
+
+    # D) Receita real (purchases no ledger active)
+    rev_agg = await db.wallet_ledger.aggregate([
+        {"$match": {"type": "purchase", "mode": "active", "created_at": {"$gte": since_iso}}},
+        {"$group": {"_id": None, "credits_sold": {"$sum": "$credits"}, "purchases": {"$sum": 1}}},
+    ]).to_list(1)
+    credits_sold = int(rev_agg[0]["credits_sold"]) if rev_agg else 0
+    purchases_count = int(rev_agg[0]["purchases"]) if rev_agg else 0
+
+    # E) Receita simulada equivalente (valor econômico dos créditos simulados)
+    # Uma referência: preço médio simples do pacote Popular
+    popular = await db.packages.find_one({"id": "pkg_popular"}, {"_id": 0}) or {}
+    ref_credit_value = 0.0
+    if popular.get("credits") and popular.get("price_brl"):
+        # valor econômico líquido por crédito (aplicando taxa MP)
+        ref_credit_value = (popular["price_brl"] * (1 - AI_PRICING["mp_fee_rate"])) / popular["credits"]
+    simulated_revenue_equiv_brl = round(credits_simulated_total * ref_credit_value, 4)
+    simulated_gross_profit_brl = round(simulated_revenue_equiv_brl - consumption_total_brl, 4)
+    simulated_margin = (simulated_gross_profit_brl / simulated_revenue_equiv_brl) if simulated_revenue_equiv_brl > 0 else None
+
+    # F) Pacotes com análise
+    packages = await db.packages.find({}, {"_id": 0}).sort("order", 1).to_list(50)
+    for p in packages:
+        p["analysis"] = _validate_package_margin(p["credits"], p["price_brl"])
+
+    return {
+        "wallet_mode": mode,
+        "period_days": days,
+        "since": since_date,
+        "cash_flow": {"by_provider": cash_flow, "total_brl": cash_total},
+        "consumption": {"by_tool": consumption_by_tool, "total_usd": consumption_total_usd, "total_brl_protected": consumption_total_brl},
+        "credits": {
+            "by_tool": credits_by_tool,
+            "simulated_total": credits_simulated_total,
+            "consumed_total": credits_consumed_total,
+            "sold_total": credits_sold,
+            "purchases_count": purchases_count,
+            "reference_credit_value_brl_net": round(ref_credit_value, 6),
+        },
+        "simulation": {
+            "revenue_equivalent_brl": simulated_revenue_equiv_brl,
+            "gross_profit_brl": simulated_gross_profit_brl,
+            "margin": round(simulated_margin, 4) if simulated_margin is not None else None,
+        },
+        "packages": packages,
+        "pricing_snapshot": pricing_snapshot(),
+    }
+
 
 # ---------- Vozes ElevenLabs (cache + fallback) ----------
 _VOICES_CACHE_TTL_SECONDS = 24 * 3600
@@ -887,6 +1164,19 @@ async def generate_audio_ep(input: AudioInput, request: Request, user=Depends(re
         "cost.real_api_brl_protected": round(real_cost_brl_prot, 4),
         "cost.real_min_sale_brl": real_min_price_brl,
     }})
+
+    # FASE 2 — shadow ledger: quantos créditos TERIAM sido debitados
+    try:
+        if wallet_service:
+            await wallet_service.simulate_consume(
+                user_id=user["id"], credits=credits_for_audio(chars_sent),
+                tool="audio_gen", provider="elevenlabs",
+                estimated_cost_usd=est_cost_usd, real_cost_usd=real_cost_usd,
+                provider_usage={"chars_sent": chars_sent, "credits_billed": credits_billed, "voice_id": voice_id, "model": audio_cfg["model"]},
+                reference_id=reservation_id,
+            )
+    except Exception as e:
+        logger.warning("Shadow ledger falhou (audio_gen): %s", type(e).__name__)
 
     from fastapi.responses import Response as _FastResponse
     return _FastResponse(

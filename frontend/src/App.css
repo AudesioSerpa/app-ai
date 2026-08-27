@@ -450,3 +450,11 @@ h2{font-weight:600}
 .admin-table td{padding:8px;border-bottom:1px dashed rgba(255,255,255,.05);color:#eee}
 .admin-table .notes-cell{color:#a8adba;font-size:11px;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .ghost-action.tiny{padding:4px 6px;font-size:12px}
+
+/* FASE 2 — Admin financeiro */
+.wallet-mode-pill{display:inline-block;font-size:11px;padding:3px 10px;border-radius:999px;margin-left:10px;vertical-align:middle;font-weight:700;letter-spacing:.5px}
+.wallet-mode-pill.simulation{background:rgba(255,201,102,.15);color:#ffc966;border:1px solid rgba(255,201,102,.3)}
+.wallet-mode-pill.active{background:rgba(77,212,127,.15);color:#4dd47f;border:1px solid rgba(77,212,127,.3)}
+.admin-summary-card.sim{border-left:3px solid #ffc966}
+.admin-table tr.warn-row{background:rgba(255,107,107,.05)}
+.admin-table input[type="text"],.admin-table input[type="number"]{width:90%;padding:4px 6px;font-size:12px;border-radius:6px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.06);color:#eee}

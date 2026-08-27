@@ -120,3 +120,39 @@ Auditoria Carteira Universal de Créditos entregue ao dono do produto — não i
   - `GET /api/admin/api-recharges/summary?days=N` — retorna DOIS blocos separados: `cash_flow` (BRL total pago aos providers) e `consumption` (USD/BRL agregado das gerações committed via `cost.real_api_usd`/`cost.api_usd`)
   - UI: form + summary cards com filtros 7/30/90 dias + tabela histórica com delete
 - **Carteira universal**: NÃO implementada — aguardando dados reais + revisão da unidade de crédito (interface deve mostrar inteiros).
+
+## Update Fev/2026 — FASE 2 (Modo Simulação — NÃO ATIVADA)
+### Novo módulo `/app/backend/wallet.py`
+- Classe `WalletService`: reserve_atomic (findOneAndUpdate condicional), release_reserve, commit_reserve (ajusta reserved→actual, nunca negativo), simulate_consume (shadow, não altera saldo), credit_purchase (idempotente via payment_id), admin_grant.
+
+### Coleções novas
+- `wallet_ledger`: append-only, campos {id, transaction_id, user_id, type, credits, balance_before, balance_after, tool, provider, estimated/real_cost_usd, provider_usage, payment_id, package_id, reference_id, mode(simulation|active), category, expires_at, notes, created_at}
+- `packages`: {id, name, credits, price_brl, active, featured, order, description} — 5 pacotes seed (todos INATIVOS)
+
+### Campos users
+- `credit_balance` (int, default 0) — inteiro, sem microunidades no UI
+
+### Config em `AI_PRICING`
+- `audio.credits_per_char = 1` (1 char = 1 crédito Facilita)
+- `image.credits_per_image = 60` (1 imagem = 60 créditos, alinhado ao custo/crédito do áudio)
+- `wallet_mode` em settings (`simulation` | `active`), default `simulation`
+
+### Endpoints novos
+- GET/PUT `/api/admin/wallet-mode` (exige `confirm=true` para active)
+- GET `/api/wallet/me` — saldo + últimos lançamentos do próprio user
+- GET `/api/packages` — público, lista pacotes ativos
+- GET/POST/PUT/DELETE `/api/admin/packages` — CRUD com análise `_validate_package_margin` (pior caso = ferramenta com maior custo/crédito, bloqueia active se margem < 70%)
+- GET `/api/admin/finance/dashboard?days=N` — consolidado: cash_flow (recargas), consumption (custo real APIs), credits (simulated/consumed/sold por ferramenta), simulation (receita equiv, lucro projetado, margem), packages com análise
+
+### Shadow ledger integrado
+- `/api/generate-image` grava `simulate_consume` no ledger após commit (60 créditos por imagem)
+- `/api/generate-audio` grava `simulate_consume` após commit (N créditos = N chars)
+- Modo `active` NÃO ATIVADO — nenhuma cobrança real de créditos em nenhuma ferramenta.
+
+### Testes automatizados `/app/backend/tests/test_wallet.py` — 6/6 passam
+- test_reserve_ok_and_release · test_reserve_insufficient · test_concurrent_reserve_no_double_spend (4 reqs simult, só 2 pegam) · test_commit_adjusts_reserve · test_purchase_idempotent · test_simulate_does_not_alter_balance
+
+### UI Admin (só admin, `/admin`)
+- Nova seção "Custos & Lucro" com pill de modo (MODO SIMULAÇÃO/ATIVO), 3 cards financeiros, tabela por ferramenta, filtros 7d/30d/90d
+- Nova seção "Pacotes de Créditos" com tabela editável (margem projetada verde/vermelho, pior custo, ativo, destaque)
+- Reusa "APIs & Recargas" existente (sem duplicar)
