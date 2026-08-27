@@ -109,3 +109,14 @@ Ver `/app/memory/test_credentials.md`.
 
 ### Aprovação pendente
 Auditoria Carteira Universal de Créditos entregue ao dono do produto — não implementar até aprovação explícita.
+
+## Update Fev/2026 — Painel de Recargas + Correções
+- **Curated voice list (9 vozes pt-BR)**: filtro por metadata substituído por allowlist manual (`CURATED_PTBR_VOICES`) enriquecida via ElevenLabs API. 4 F + 5 M.
+- **Sync Premium**: `useUsage()` agora atualiza `subscription.plan` no localStorage a cada refresh; `AdBanner` lê de `usage.is_premium`. Backend Free↔Premium sempre foi correto (validado ponta a ponta).
+- **Novo Painel: APIs & Recargas** (`/admin` → seção "APIs & Recargas"):
+  - `POST /api/admin/api-recharges` — registra recarga manual (provider, valor, moeda, cotação, créditos recebidos, data, obs)
+  - `GET /api/admin/api-recharges` — lista as últimas 50
+  - `DELETE /api/admin/api-recharges/{id}` — remove
+  - `GET /api/admin/api-recharges/summary?days=N` — retorna DOIS blocos separados: `cash_flow` (BRL total pago aos providers) e `consumption` (USD/BRL agregado das gerações committed via `cost.real_api_usd`/`cost.api_usd`)
+  - UI: form + summary cards com filtros 7/30/90 dias + tabela histórica com delete
+- **Carteira universal**: NÃO implementada — aguardando dados reais + revisão da unidade de crédito (interface deve mostrar inteiros).

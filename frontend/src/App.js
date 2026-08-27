@@ -1101,6 +1101,8 @@ function Admin(){
         </div>
       </section>
 
+      <ApiRechargesSection admToken={getToken()} />
+
       <div className="admin-footer">
         {error && <span className="admin-error" data-testid="admin-error">{error}</span>}
         {saving && <span className="admin-saving">Salvando...</span>}
@@ -1108,6 +1110,162 @@ function Admin(){
       </div>
     </main>
   </div>
+}
+
+function ApiRechargesSection({ admToken }){
+  const [items, setItems] = useState([]);
+  const [summary, setSummary] = useState(null);
+  const [form, setForm] = useState({ provider: "elevenlabs", paid_amount: "", currency: "USD", fx_rate_used: "", credits_received: "", date: "", notes: "" });
+  const [saving, setSaving] = useState(false);
+  const [feedback, setFeedback] = useState("");
+  const [error, setError] = useState("");
+  const [days, setDays] = useState(30);
+
+  const load = useCallback(() => {
+    if (!admToken) return;
+    axios.get(`${API}/admin/api-recharges?limit=50`, { headers: { Authorization: `Bearer ${admToken}` } }).then(r => setItems(r.data.items || [])).catch(() => setItems([]));
+    axios.get(`${API}/admin/api-recharges/summary?days=${days}`, { headers: { Authorization: `Bearer ${admToken}` } }).then(r => setSummary(r.data)).catch(() => setSummary(null));
+  }, [admToken, days]);
+
+  useEffect(() => { load(); }, [load]);
+
+  const submit = async () => {
+    setError(""); setFeedback("");
+    const amount = parseFloat(String(form.paid_amount).replace(",", "."));
+    if (!amount || amount <= 0) { setError("Informe o valor pago (maior que zero)."); return; }
+    if (!form.provider.trim()) { setError("Informe o provider."); return; }
+    if (form.currency === "USD" && !form.fx_rate_used) {
+      // opcional — backend usa cotação central
+    }
+    setSaving(true);
+    try {
+      const body = {
+        provider: form.provider.trim(),
+        paid_amount: amount,
+        currency: form.currency,
+      };
+      if (form.fx_rate_used) body.fx_rate_used = parseFloat(String(form.fx_rate_used).replace(",", "."));
+      if (form.credits_received) body.credits_received = parseFloat(String(form.credits_received).replace(",", "."));
+      if (form.date) body.date = form.date;
+      if (form.notes) body.notes = form.notes;
+      await axios.post(`${API}/admin/api-recharges`, body, { headers: { Authorization: `Bearer ${admToken}` } });
+      setForm({ ...form, paid_amount: "", credits_received: "", notes: "" });
+      setFeedback("Recarga registrada.");
+      load();
+    } catch (e) {
+      setError(e.response?.data?.detail || "Não foi possível registrar a recarga.");
+    }
+    setSaving(false);
+  };
+
+  const remove = async (id) => {
+    if (!window.confirm("Excluir esta recarga do histórico? Essa ação não pode ser desfeita.")) return;
+    try {
+      await axios.delete(`${API}/admin/api-recharges/${id}`, { headers: { Authorization: `Bearer ${admToken}` } });
+      load();
+    } catch {}
+  };
+
+  const providerLabel = (p) => ({elevenlabs:"ElevenLabs", fal_ai:"fal.ai", openai:"OpenAI", anthropic:"Anthropic", google:"Google", outro:"Outro"})[p] || p;
+
+  return <section className="admin-section" data-testid="admin-recharges-section">
+    <h2>APIs & Recargas</h2>
+    <p className="admin-hint">Registre quanto você colocou de dinheiro em cada provider. Isso é <strong>fluxo de caixa</strong> — separado do consumo real dos usuários.</p>
+
+    <div className="admin-recharges-form" data-testid="recharges-form">
+      <div className="admin-form-row">
+        <label>Provider
+          <select data-testid="recharge-provider" value={form.provider} onChange={e=>setForm({...form, provider: e.target.value})}>
+            <option value="elevenlabs">ElevenLabs</option>
+            <option value="fal_ai">fal.ai</option>
+            <option value="openai">OpenAI</option>
+            <option value="anthropic">Anthropic</option>
+            <option value="google">Google</option>
+            <option value="outro">Outro</option>
+          </select>
+        </label>
+        <label>Moeda
+          <select data-testid="recharge-currency" value={form.currency} onChange={e=>setForm({...form, currency: e.target.value})}>
+            <option value="USD">USD</option>
+            <option value="BRL">BRL</option>
+          </select>
+        </label>
+      </div>
+      <div className="admin-form-row">
+        <label>Valor pago
+          <input data-testid="recharge-amount" type="number" step="0.01" min="0" placeholder="Ex.: 10.00" value={form.paid_amount} onChange={e=>setForm({...form, paid_amount: e.target.value})}/>
+        </label>
+        {form.currency === "USD" && <label>Cotação USD→BRL usada
+          <input data-testid="recharge-fx" type="number" step="0.0001" min="0" placeholder={`Padrão ${summary?.pricing_snapshot?.usd_to_brl ?? "5.10"}`} value={form.fx_rate_used} onChange={e=>setForm({...form, fx_rate_used: e.target.value})}/>
+        </label>}
+        <label>Créditos recebidos (opcional)
+          <input data-testid="recharge-credits" type="number" step="0.01" min="0" placeholder="Ex.: 240000" value={form.credits_received} onChange={e=>setForm({...form, credits_received: e.target.value})}/>
+        </label>
+      </div>
+      <div className="admin-form-row">
+        <label>Data
+          <input data-testid="recharge-date" type="date" value={form.date} onChange={e=>setForm({...form, date: e.target.value})}/>
+        </label>
+        <label style={{flex:2}}>Observação
+          <input data-testid="recharge-notes" type="text" placeholder="Ex.: pacote Creator anual" value={form.notes} onChange={e=>setForm({...form, notes: e.target.value})} maxLength={500}/>
+        </label>
+      </div>
+      {error && <div className="error-message" data-testid="recharges-error">{error}</div>}
+      {feedback && <div className="hint-message" data-testid="recharges-feedback">{feedback}</div>}
+      <button className="primary-action" onClick={submit} disabled={saving} data-testid="recharge-submit"><Sparkles size={16}/>{saving ? "Salvando..." : "Registrar recarga"}</button>
+    </div>
+
+    {summary && <div className="admin-recharges-summary" data-testid="recharges-summary">
+      <div className="admin-summary-head">
+        <h3>Resumo — últimos {summary.period_days} dias</h3>
+        <div className="chips" data-testid="recharges-period">
+          {[7,30,90].map(d => <button key={d} className={days===d?"selected":""} onClick={()=>setDays(d)} data-testid={`recharges-days-${d}`}>{d}d</button>)}
+        </div>
+      </div>
+      <div className="admin-summary-grid">
+        <div className="admin-summary-card cash" data-testid="cash-flow-card">
+          <p className="eyebrow">FLUXO DE CAIXA (o que você pagou)</p>
+          <h2>R$ {(summary.cash_flow.total_brl || 0).toFixed(2)}</h2>
+          <ul>
+            {Object.entries(summary.cash_flow.by_provider).map(([p,v]) => (
+              <li key={p}><span>{providerLabel(p)}</span><strong>R$ {v.total_brl.toFixed(2)}</strong><small>{v.recharges} recarga(s){v.credits_received?` · ${v.credits_received.toLocaleString("pt-BR")} créditos`:""}</small></li>
+            ))}
+            {Object.keys(summary.cash_flow.by_provider).length===0 && <li className="empty">Sem recargas nesse período.</li>}
+          </ul>
+        </div>
+        <div className="admin-summary-card cons" data-testid="consumption-card">
+          <p className="eyebrow">CONSUMO REAL (o que os usuários gastaram)</p>
+          <h2>US$ {(summary.consumption.total_usd || 0).toFixed(4)}</h2>
+          <small className="admin-hint">≈ R$ {(summary.consumption.total_brl_protected || 0).toFixed(2)} (com buffer cambial)</small>
+          <ul>
+            {Object.entries(summary.consumption.by_tool).map(([tool,v]) => (
+              <li key={tool}><span>{toolMap[tool]?.name || tool}</span><strong>US$ {v.usd_total.toFixed(6)}</strong><small>{v.generations} ger.{v.seconds_total?` · ${v.seconds_total.toFixed(1)}s`:""}{v.chars_total?` · ${v.chars_total.toLocaleString("pt-BR")} chars`:""}</small></li>
+            ))}
+            {Object.keys(summary.consumption.by_tool).length===0 && <li className="empty">Sem gerações pagas registradas.</li>}
+          </ul>
+        </div>
+      </div>
+    </div>}
+
+    <div className="admin-recharges-list" data-testid="recharges-list">
+      <h3>Últimas recargas</h3>
+      {items.length === 0 ? <p className="helper">Nenhuma recarga registrada ainda.</p> :
+      <table className="admin-table">
+        <thead><tr><th>Data</th><th>Provider</th><th>Valor</th><th>BRL</th><th>Créditos</th><th>Nota</th><th></th></tr></thead>
+        <tbody>
+          {items.map(it => <tr key={it.id} data-testid={`recharge-row-${it.id}`}>
+            <td>{it.date}</td>
+            <td>{providerLabel(it.provider)}</td>
+            <td>{it.currency} {it.paid_amount.toFixed(2)}{it.fx_rate_used?` @ ${it.fx_rate_used}`:""}</td>
+            <td>R$ {it.paid_amount_brl.toFixed(2)}</td>
+            <td>{it.credits_received ? it.credits_received.toLocaleString("pt-BR") : "—"}</td>
+            <td className="notes-cell">{it.notes || "—"}</td>
+            <td><button className="ghost-action tiny" onClick={()=>remove(it.id)} data-testid={`recharge-delete-${it.id}`} aria-label="Excluir"><Trash2 size={14}/></button></td>
+          </tr>)}
+        </tbody>
+      </table>}
+    </div>
+  </section>;
 }
 
 function App(){return <BrowserRouter><Routes><Route path="/" element={<Home/>}/><Route path="/ferramentas" element={<Tools/>}/><Route path="/ferramenta/:id" element={<ToolRouter/>}/><Route path="/login" element={<Auth/>}/><Route path="/favoritos" element={<Favorites/>}/><Route path="/historico" element={<History/>}/><Route path="/perfil" element={<Profile/>}/><Route path="/premium" element={<Premium/>}/><Route path="/admin" element={<Admin/>}/><Route path="/termos" element={<Legal/>}/></Routes></BrowserRouter>}

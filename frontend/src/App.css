@@ -421,3 +421,32 @@ h2{font-weight:600}
 .audio-meta-grid div{display:flex;flex-direction:column;gap:2px;padding:8px 12px;background:rgba(255,255,255,.03);border-radius:10px}
 .audio-meta-grid small{font-size:10px;color:#8a8f98;text-transform:uppercase;letter-spacing:.5px}
 .audio-meta-grid strong{font-size:13px;color:#fff}
+
+/* Painel de Recargas */
+.admin-hint{font-size:12px;color:#8a8f98;margin:6px 0 14px}
+.admin-recharges-form{background:rgba(255,255,255,.03);border-radius:14px;padding:14px;margin-bottom:20px}
+.admin-form-row{display:flex;gap:10px;margin-bottom:10px;flex-wrap:wrap}
+.admin-form-row label{flex:1;min-width:120px;display:flex;flex-direction:column;gap:4px;font-size:12px;color:#c9c9c9}
+.admin-form-row input,.admin-form-row select{padding:8px 10px;border-radius:8px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.04);color:#eee;font-size:13px}
+.admin-recharges-summary{margin:18px 0}
+.admin-summary-head{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:10px}
+.admin-summary-head h3{margin:0;font-size:15px}
+.admin-summary-head .chips{display:inline-flex;background:rgba(255,255,255,.05);border-radius:999px;padding:3px}
+.admin-summary-head .chips button{padding:5px 10px;font-size:12px;border-radius:999px;background:transparent;color:#c9c9c9;border:none;cursor:pointer}
+.admin-summary-head .chips button.selected{background:#ff7a3d;color:#fff;font-weight:600}
+.admin-summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px}
+.admin-summary-card{background:rgba(255,255,255,.04);border-radius:14px;padding:14px;border:1px solid rgba(255,255,255,.06)}
+.admin-summary-card.cash{border-left:3px solid #4dd47f}
+.admin-summary-card.cons{border-left:3px solid #ff7a3d}
+.admin-summary-card h2{margin:6px 0 4px;font-size:22px;color:#fff}
+.admin-summary-card ul{list-style:none;padding:0;margin:12px 0 0}
+.admin-summary-card li{display:flex;justify-content:space-between;align-items:baseline;gap:8px;padding:6px 0;border-bottom:1px dashed rgba(255,255,255,.06);flex-wrap:wrap;font-size:12px}
+.admin-summary-card li:last-child{border-bottom:none}
+.admin-summary-card li strong{color:#fff;font-size:13px}
+.admin-summary-card li small{color:#8a8f98;font-size:11px;width:100%}
+.admin-summary-card li.empty{color:#8a8f98;font-style:italic;justify-content:center}
+.admin-table{width:100%;border-collapse:collapse;font-size:12px;margin-top:10px}
+.admin-table th{text-align:left;padding:6px 8px;color:#8a8f98;font-weight:500;border-bottom:1px solid rgba(255,255,255,.06)}
+.admin-table td{padding:8px;border-bottom:1px dashed rgba(255,255,255,.05);color:#eee}
+.admin-table .notes-cell{color:#a8adba;font-size:11px;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ghost-action.tiny{padding:4px 6px;font-size:12px}

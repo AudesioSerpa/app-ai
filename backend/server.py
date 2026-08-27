@@ -116,6 +116,15 @@ class AudioInput(BaseModel):
     text: str = Field(min_length=1, max_length=3000)
     voice_id: Optional[str] = None
 
+class ApiRechargeInput(BaseModel):
+    provider: str = Field(min_length=2, max_length=40)         # elevenlabs | fal_ai | outro (livre)
+    paid_amount: float = Field(gt=0, le=1_000_000)              # sempre positivo
+    currency: str = Field(default="USD")                        # USD | BRL
+    fx_rate_used: Optional[float] = Field(default=None, gt=0, le=100)  # cotação USD->BRL usada
+    credits_received: Optional[float] = Field(default=None, ge=0)      # créditos ganhos no provider (se aplicável)
+    date: Optional[str] = None                                  # ISO date (yyyy-mm-dd). Se ausente, usa hoje BRT
+    notes: Optional[str] = Field(default=None, max_length=500)
+
 DEFAULT_SETTINGS = {
     "id": "app_settings",
     "free_daily_limit": 3,
@@ -348,6 +357,174 @@ async def remove_history(item_id: str, user=Depends(required_user)):
 async def admin_stats(user=Depends(required_user)):
     if user.get("role") != "admin": raise HTTPException(403, "Acesso restrito")
     return {"users": await db.users.count_documents({}), "generations": await db.usage.count_documents({}), "tools": await db.usage.aggregate([{"$group":{"_id":"$tool","count":{"$sum":1}}}]).to_list(20)}
+
+# ============ Painel de Recargas (fluxo de caixa manual das APIs) ============
+# NÃO altera carteira, saldo ou cobrança de usuários. É registro contábil manual.
+
+def _normalize_provider(p: str) -> str:
+    """Aceita variações comuns; normaliza para chaves internas."""
+    key = (p or "").strip().lower().replace(" ", "_").replace("-", "_").replace(".", "_")
+    aliases = {
+        "eleven": "elevenlabs", "eleven_labs": "elevenlabs", "11labs": "elevenlabs",
+        "fal": "fal_ai", "falai": "fal_ai", "fal_ai": "fal_ai", "fal_ai_flux": "fal_ai",
+        "openai": "openai", "anthropic": "anthropic", "google": "google",
+    }
+    return aliases.get(key, key) or "outro"
+
+def _paid_brl(amount: float, currency: str, fx_rate: Optional[float]) -> float:
+    """Converte valor pago para BRL. USD requer fx_rate."""
+    cur = (currency or "USD").upper()
+    if cur == "BRL":
+        return round(amount, 4)
+    if cur == "USD":
+        rate = fx_rate or AI_PRICING["usd_to_brl"]
+        return round(amount * rate, 4)
+    # Outras moedas: assume BRL como fallback conservador
+    return round(amount, 4)
+
+@api_router.post("/admin/api-recharges")
+async def create_api_recharge(input: ApiRechargeInput, user=Depends(required_user)):
+    if user.get("role") != "admin": raise HTTPException(403, "Acesso restrito")
+    provider = _normalize_provider(input.provider)
+    currency = (input.currency or "USD").upper()
+    if currency not in {"USD", "BRL"}:
+        raise HTTPException(400, "Moeda deve ser USD ou BRL.")
+    if currency == "USD" and not input.fx_rate_used:
+        # Sem cotação explícita, usamos a central — mas gravamos qual foi usada
+        pass
+    fx = input.fx_rate_used if input.fx_rate_used else (AI_PRICING["usd_to_brl"] if currency == "USD" else None)
+    paid_brl = _paid_brl(input.paid_amount, currency, fx)
+    date_iso = (input.date or "").strip() or datetime.now(BRT_TZ).date().isoformat()
+    doc = {
+        "id": str(uuid.uuid4()),
+        "provider": provider,
+        "provider_label": input.provider.strip(),  # preserva a grafia digitada pelo admin
+        "paid_amount": round(float(input.paid_amount), 4),
+        "currency": currency,
+        "fx_rate_used": round(float(fx), 4) if fx else None,
+        "paid_amount_brl": paid_brl,
+        "credits_received": round(float(input.credits_received), 4) if input.credits_received is not None else None,
+        "date": date_iso,
+        "notes": (input.notes or "").strip() or None,
+        "created_by": user.get("id"),
+        "created_by_email": user.get("email"),
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    }
+    await db.api_recharges.insert_one(doc.copy())
+    doc.pop("_id", None)
+    return {"recharge": doc}
+
+@api_router.get("/admin/api-recharges")
+async def list_api_recharges(provider: Optional[str] = None, limit: int = 100, user=Depends(required_user)):
+    if user.get("role") != "admin": raise HTTPException(403, "Acesso restrito")
+    q: dict = {}
+    if provider:
+        q["provider"] = _normalize_provider(provider)
+    limit = max(1, min(int(limit), 500))
+    items = await db.api_recharges.find(q, {"_id": 0}).sort("date", -1).to_list(limit)
+    return {"items": items, "count": len(items)}
+
+@api_router.delete("/admin/api-recharges/{recharge_id}")
+async def delete_api_recharge(recharge_id: str, user=Depends(required_user)):
+    if user.get("role") != "admin": raise HTTPException(403, "Acesso restrito")
+    result = await db.api_recharges.delete_one({"id": recharge_id})
+    if result.deleted_count == 0:
+        raise HTTPException(404, "Recarga não encontrada")
+    return {"ok": True}
+
+@api_router.get("/admin/api-recharges/summary")
+async def api_recharges_summary(days: int = 30, user=Depends(required_user)):
+    """
+    Retorna DOIS blocos separados:
+    - cash_flow: quanto o admin registrou como pago aos providers (recargas manuais)
+    - consumption: quanto os usuários consumiram efetivamente (baseado em db.usage)
+    """
+    if user.get("role") != "admin": raise HTTPException(403, "Acesso restrito")
+    days = max(1, min(int(days), 3650))
+    now = datetime.now(timezone.utc)
+    since_iso = (now - timedelta(days=days)).isoformat()
+    since_date = (now - timedelta(days=days)).date().isoformat()
+
+    # A) Fluxo de caixa (recargas manuais)
+    cash_agg = await db.api_recharges.aggregate([
+        {"$match": {"date": {"$gte": since_date}}},
+        {"$group": {
+            "_id": "$provider",
+            "total_brl": {"$sum": "$paid_amount_brl"},
+            "count": {"$sum": 1},
+            "total_credits_received": {"$sum": {"$ifNull": ["$credits_received", 0]}},
+        }},
+    ]).to_list(50)
+    cash_by_provider = {row["_id"]: {
+        "total_brl": round(row["total_brl"], 4),
+        "recharges": row["count"],
+        "credits_received": round(row["total_credits_received"], 4),
+    } for row in cash_agg}
+    cash_total_brl = round(sum(v["total_brl"] for v in cash_by_provider.values()), 4)
+
+    # B) Consumo real (baseado em cost.real_api_usd nas gerações committed)
+    cons_agg = await db.usage.aggregate([
+        {"$match": {
+            "status": {"$in": ["committed", None]},  # image_gen antigos não tinham status
+            "created_at": {"$gte": since_iso},
+            "cost.real_api_usd": {"$exists": True, "$ne": None},
+        }},
+        {"$group": {
+            "_id": "$tool",
+            "generations": {"$sum": 1},
+            "usd_total": {"$sum": "$cost.real_api_usd"},
+            "brl_total": {"$sum": {"$ifNull": ["$cost.real_api_brl_protected", 0]}},
+            "chars_total": {"$sum": {"$ifNull": ["$prompt.chars_sent", 0]}},
+            "seconds_total": {"$sum": {"$ifNull": ["$duration_seconds", 0]}},
+        }},
+    ]).to_list(50)
+    # Também precisamos incluir image_gen que grava cost.api_usd (não real_api_usd)
+    img_agg = await db.usage.aggregate([
+        {"$match": {
+            "tool": "image_gen",
+            "created_at": {"$gte": since_iso},
+            "cost.api_usd": {"$exists": True, "$ne": None},
+        }},
+        {"$group": {
+            "_id": "$tool",
+            "generations": {"$sum": 1},
+            "usd_total": {"$sum": "$cost.api_usd"},
+            "brl_total": {"$sum": {"$ifNull": ["$cost.api_brl_protected", 0]}},
+        }},
+    ]).to_list(10)
+    consumption_by_tool: dict = {}
+    for row in cons_agg + img_agg:
+        tool = row["_id"]
+        if tool not in consumption_by_tool:
+            consumption_by_tool[tool] = {"generations": 0, "usd_total": 0.0, "brl_total": 0.0, "chars_total": 0, "seconds_total": 0.0}
+        agg = consumption_by_tool[tool]
+        agg["generations"] += int(row.get("generations") or 0)
+        agg["usd_total"] += float(row.get("usd_total") or 0)
+        agg["brl_total"] += float(row.get("brl_total") or 0)
+        agg["chars_total"] += int(row.get("chars_total") or 0)
+        agg["seconds_total"] += float(row.get("seconds_total") or 0)
+    for tool, agg in consumption_by_tool.items():
+        agg["usd_total"] = round(agg["usd_total"], 6)
+        agg["brl_total"] = round(agg["brl_total"], 4)
+        agg["seconds_total"] = round(agg["seconds_total"], 2)
+    cons_total_usd = round(sum(v["usd_total"] for v in consumption_by_tool.values()), 6)
+    cons_total_brl = round(sum(v["brl_total"] for v in consumption_by_tool.values()), 4)
+
+    return {
+        "period_days": days,
+        "since": since_date,
+        "cash_flow": {
+            "by_provider": cash_by_provider,
+            "total_brl": cash_total_brl,
+        },
+        "consumption": {
+            "by_tool": consumption_by_tool,
+            "total_usd": cons_total_usd,
+            "total_brl_protected": cons_total_brl,
+        },
+        "pricing_snapshot": pricing_snapshot(),
+    }
+
 
 @api_router.get("/settings")
 async def public_settings():
