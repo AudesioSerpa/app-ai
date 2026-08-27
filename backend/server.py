@@ -528,34 +528,37 @@ async def generate_audio_ep(input: AudioInput, request: Request, user=Depends(re
         raise HTTPException(402, "Limite diário de áudio atingido. Tente novamente amanhã ou assine o Premium.")
 
     def _call_elevenlabs():
-        raw = client_el.text_to_speech.with_raw_response.convert(
+        # SDK elevenlabs>=2.x: with_raw_response.convert é um contextmanager;
+        # o objeto HttpResponse só existe DENTRO do bloco `with`. Iterar raw.data
+        # depois do __exit__ retornaria vazio, então consumimos aqui mesmo.
+        with client_el.text_to_speech.with_raw_response.convert(
             voice_id=voice_id,
             model_id=audio_cfg["model"],
             output_format="mp3_44100_128",
             text=text,
-        )
-        audio_bytes = bytes(raw.data) if hasattr(raw, "data") else b"".join(raw)
-        try:
-            hdrs = dict(getattr(raw, "headers", {}) or {})
-        except Exception:
-            hdrs = {}
+        ) as raw:
+            audio_bytes = b"".join(raw.data)
+            try:
+                hdrs = dict(raw.headers or {})
+            except Exception:
+                hdrs = {}
         return audio_bytes, hdrs
 
     try:
         import asyncio as _asyncio
-        audio_bytes, headers = await _asyncio.wait_for(_asyncio.to_thread(_call_elevenlabs), timeout=90)
+        audio_bytes, el_headers = await _asyncio.wait_for(_asyncio.to_thread(_call_elevenlabs), timeout=90)
     except Exception as e:
         # ESTORNO integral
         await db.usage.delete_one({"id": reservation_id})
         logger.warning("Falha ElevenLabs — reserva %s estornada (%s)", reservation_id, type(e).__name__)
-        raise HTTPException(502, "Não foi possível gerar o áudio agora. Nenhum uso foi contabilizado. Tente novamente.")
+        raise HTTPException(503, "Não foi possível gerar o áudio agora. Nenhum uso foi contabilizado. Tente novamente.")
 
     if not audio_bytes:
         await db.usage.delete_one({"id": reservation_id})
-        raise HTTPException(502, "Resposta inválida do serviço de áudio. Reserva estornada.")
+        raise HTTPException(503, "Resposta inválida do serviço de áudio. Reserva estornada.")
 
     # Cobrança real do provedor (header character-cost quando disponível)
-    billed_raw = headers.get("character-cost") if headers else None
+    billed_raw = el_headers.get("character-cost") if el_headers else None
     try:
         chars_billed = int(billed_raw) if billed_raw and str(billed_raw).isdigit() else chars_sent
     except Exception:
