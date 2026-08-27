@@ -97,3 +97,15 @@ Ver `/app/memory/test_credentials.md`.
 - **RCA contagem "cobrados"**: header `character-cost` da ElevenLabs = CRÉDITOS consumidos (Flash v2.5 dá 50% desconto: 500 chars = 250 créditos). Não é literalmente "caracteres". Renomeado no UI/DB: `chars_billed` → `credits_billed`; cost calculation agora usa `len(text) × usd_per_char` (taxa efetiva já discontada), evitando subestimar custo.
 - **Meta display** (novo layout em grid): Voz · Duração real · Caracteres enviados · Créditos ElevenLabs (só se header presente) · Custo estimado · Custo real.
 - **Escolha de voz**: novo `GET /api/voices` — cache Mongo `voices_cache` (TTL 24h) → refresh live ElevenLabs → fallback estático (só Andrea). Admin: `POST /api/admin/voices/refresh`. Frontend: seção "Escolha uma voz" com filtros Todas/Femininas/Masculinas, cards com nome/gênero/idioma/descrição, botão ▶ Ouvir (usa `preview_url` — não consome limite diário), botão Selecionar, "Voz selecionada: X" antes do Gerar.
+
+## Update Fev/2026 — FASE 1 Auditoria Carteira Universal
+### Fix vozes (só 1 aparecia)
+- **RCA**: filtro `_is_ptbr(labels)` descartava 99% das vozes porque `labels.language` da ElevenLabs raramente vem preenchido em vozes premade; e Flash v2.5 é multilíngue — descartar por metadata é errado.
+- **Correção**: substituído filtro dinâmico por **lista curada manual** (`CURATED_PTBR_VOICES`) com 9 vozes premade conhecidas boas em pt-BR (4 F, 5 M). Backend enriquece `preview_url` via live API quando disponível; se falhar, retorna lista curada sem preview.
+
+### Fix reconhecimento Premium
+- **RCA**: backend SEMPRE reconheceu Premium corretamente (validado: Free→Premium 60s→300s em `/api/me/usage` sem re-login). O problema era o **frontend** lendo `subscription.plan` do localStorage, que não sincroniza quando o admin promove alguém externamente.
+- **Correção**: `useUsage()` agora sincroniza `subscription.plan` do backend no `localStorage.facilita_user` em cada refresh. `AdBanner` usa `usage.is_premium` (fresh) em vez de `isPremium()` (stale).
+
+### Aprovação pendente
+Auditoria Carteira Universal de Créditos entregue ao dono do produto — não implementar até aprovação explícita.

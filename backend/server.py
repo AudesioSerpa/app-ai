@@ -464,82 +464,73 @@ async def public_pricing():
 
 # ---------- Vozes ElevenLabs (cache + fallback) ----------
 _VOICES_CACHE_TTL_SECONDS = 24 * 3600
-_STATIC_PTBR_VOICES = [
-    {
-        "voice_id": AI_PRICING["audio"]["voice_id_default"],
-        "name": "Andrea",
-        "gender": "female",
-        "language": "pt-BR",
-        "accent": "brazilian",
-        "description": "Voz feminina natural em português brasileiro",
-        "preview_url": None,
-    },
+
+# Lista curada — voice_ids são vozes PREMADE da ElevenLabs conhecidamente boas
+# em pt-BR via modelo multilingual/Flash v2.5. Gênero é MANUAL porque a API
+# não expõe metadata confiável. Preview_url e demais campos são preenchidos
+# a partir da chamada live à ElevenLabs quando disponível.
+CURATED_PTBR_VOICES = [
+    {"voice_id": "HOfBIVLhom4mc9WvXfyH", "name": "Andrea", "gender": "female", "description": "Voz feminina natural brasileira"},
+    {"voice_id": "21m00Tcm4TlvDq8ikWAM", "name": "Rachel", "gender": "female", "description": "Voz calma e clara, boa para narração"},
+    {"voice_id": "EXAVITQu4vr4xnSDxMaL", "name": "Bella", "gender": "female", "description": "Voz jovem e envolvente"},
+    {"voice_id": "AZnzlk1XvdvUeBnXmlld", "name": "Domi", "gender": "female", "description": "Voz forte e confiante"},
+    {"voice_id": "pNInz6obpgDQGcFmaJgB", "name": "Adam", "gender": "male", "description": "Voz masculina grave e narrativa"},
+    {"voice_id": "ErXwobaYiN019PkySvjV", "name": "Antoni", "gender": "male", "description": "Voz masculina jovem e amigável"},
+    {"voice_id": "VR6AewLTigWG4xSOukaG", "name": "Arnold", "gender": "male", "description": "Voz masculina intensa e clara"},
+    {"voice_id": "TxGEqnHWrfWFTfGW9XjX", "name": "Josh", "gender": "male", "description": "Voz masculina moderna e limpa"},
+    {"voice_id": "yoZ06aMxZJJ28mfd3POQ", "name": "Sam", "gender": "male", "description": "Voz masculina neutra e confiável"},
 ]
 
-def _classify_gender(labels: dict) -> str:
-    g = ((labels or {}).get("gender") or "").lower()
-    if "female" in g or "fem" == g[:3]: return "female"
-    if "male" in g or "masc" in g: return "male"
-    return "unknown"
-
-def _is_ptbr(labels: dict) -> bool:
-    if not labels: return False
-    lang = str(labels.get("language") or "").lower()
-    accent = str(labels.get("accent") or "").lower()
-    joined = f"{lang} {accent}"
-    return any(kw in joined for kw in ("portuguese", "brazilian", "brasil", "pt-br", "pt_br", "português", "portugues"))
-
-def _shape_voice(v) -> dict | None:
-    """Extrai campos essenciais de um Voice object do SDK."""
-    try:
-        vid = getattr(v, "voice_id", None) or (v.get("voice_id") if isinstance(v, dict) else None)
-        if not vid: return None
-        name = getattr(v, "name", None) or (v.get("name") if isinstance(v, dict) else None) or "Voz"
-        labels = getattr(v, "labels", None) or (v.get("labels") if isinstance(v, dict) else {}) or {}
-        preview = getattr(v, "preview_url", None) or (v.get("preview_url") if isinstance(v, dict) else None)
-        desc = labels.get("descriptive") or labels.get("description") or labels.get("use_case")
-        return {
-            "voice_id": vid,
-            "name": name,
-            "gender": _classify_gender(labels),
-            "language": "pt-BR",
-            "accent": labels.get("accent"),
-            "description": desc,
-            "preview_url": preview,
-        }
-    except Exception:
-        return None
+_STATIC_PTBR_VOICES = [dict(v, language="pt-BR", accent="multilingual", preview_url=None) for v in CURATED_PTBR_VOICES]
 
 async def _fetch_voices_live(max_count: int = 10) -> list[dict]:
-    """Tenta buscar vozes pt-BR na ElevenLabs. NUNCA levanta — retorna [] em falha."""
+    """
+    Enriquece a lista CURATED com dados live da ElevenLabs (preview_url, nome oficial).
+    NUNCA levanta — retorna a lista estática em falha.
+    NUNCA filtra por language (Flash v2.5 é multilíngue; a curadoria é manual).
+    """
     client_el = _get_elevenlabs_client()
     if client_el is None:
-        return []
+        return list(_STATIC_PTBR_VOICES)
     try:
         import asyncio as _asyncio
         result = await _asyncio.wait_for(_asyncio.to_thread(client_el.voices.get_all), timeout=15)
         raw_list = getattr(result, "voices", None) or (result if isinstance(result, list) else [])
     except Exception as e:
-        logger.warning("Falha ao listar vozes ElevenLabs: %s", type(e).__name__)
-        return []
-    filtered: list[dict] = []
+        logger.warning("Falha ao listar vozes ElevenLabs: %s — usando lista estática", type(e).__name__)
+        return list(_STATIC_PTBR_VOICES)
+    # Index by voice_id for quick enrichment
+    live_by_id: dict[str, Any] = {}
     for v in raw_list:
-        labels = getattr(v, "labels", None) or (v.get("labels") if isinstance(v, dict) else {}) or {}
-        if not _is_ptbr(labels):
-            continue
-        shaped = _shape_voice(v)
-        if shaped:
-            filtered.append(shaped)
-    # Prioriza a voz default
-    default_id = AI_PRICING["audio"]["voice_id_default"]
-    filtered.sort(key=lambda x: (0 if x["voice_id"] == default_id else 1, x["name"] or ""))
-    return filtered[:max_count]
+        vid = getattr(v, "voice_id", None) or (v.get("voice_id") if isinstance(v, dict) else None)
+        if vid:
+            live_by_id[vid] = v
+    enriched: list[dict] = []
+    for base in CURATED_PTBR_VOICES:
+        v = live_by_id.get(base["voice_id"])
+        preview = None
+        api_name = None
+        if v is not None:
+            preview = getattr(v, "preview_url", None) or (v.get("preview_url") if isinstance(v, dict) else None)
+            api_name = getattr(v, "name", None) or (v.get("name") if isinstance(v, dict) else None)
+        enriched.append({
+            **base,
+            "language": "pt-BR",
+            "accent": "multilingual",
+            "preview_url": preview,
+            # Se o nome oficial da voz na conta divergir, mantemos o curado (mais amigável)
+            "api_name": api_name,
+        })
+    return enriched[:max_count]
 
 @api_router.get("/voices")
 async def list_voices():
     """
-    Lista de vozes pt-BR do Gerador de Áudio.
-    Cache Mongo (24h). Se cache vazio/stale, tenta ElevenLabs. Se falhar, retorna fallback estático.
+    Lista de vozes pt-BR do Gerador de Áudio (curadoria fixa + preview_url via API).
+    - Curadoria manual de 9 vozes premade (4 femininas, 5 masculinas) que funcionam bem
+      no Flash v2.5 multilíngue com pt-BR.
+    - Cache Mongo (24h) armazena a versão enriquecida com preview_url quando disponível.
+    - Se ElevenLabs cair, retorna a lista curada sem preview_url (áudio real segue funcionando).
     NUNCA expõe ELEVENLABS_API_KEY. NÃO gera nenhum áudio.
     """
     now = datetime.now(timezone.utc)
@@ -555,19 +546,22 @@ async def list_voices():
             fresh = False
     if fresh and cached:
         return {"voices": cached, "source": "cache", "fetched_at": fetched_at}
-    # Tenta refresh live
+    # Refresh live (sempre retorna algo — enriquecido OU estático)
     live = await _fetch_voices_live()
-    if live:
+    has_previews = any(v.get("preview_url") for v in live)
+    if has_previews:
+        # Só grava cache quando a API respondeu e trouxe preview_url — evita cachear estático
         await db.voices_cache.update_one(
             {"id": "ptbr"},
             {"$set": {"id": "ptbr", "voices": live, "fetched_at": now.isoformat()}},
             upsert=True,
         )
         return {"voices": live, "source": "live", "fetched_at": now.isoformat()}
-    # Fallback: usa último cache mesmo stale, ou estático
-    if cached:
+    # Se live falhou mas há cache anterior (com previews), reusa mesmo stale
+    if cached and any(v.get("preview_url") for v in cached):
         return {"voices": cached, "source": "cache_stale", "fetched_at": fetched_at}
-    return {"voices": _STATIC_PTBR_VOICES, "source": "fallback_static", "fetched_at": None}
+    # Último recurso: retorna curadoria estática (sem preview_url)
+    return {"voices": live, "source": "curated_static", "fetched_at": None}
 
 @api_router.post("/admin/voices/refresh")
 async def admin_refresh_voices(user=Depends(required_user)):

@@ -43,7 +43,25 @@ function useUsage(){
   const [usage, setUsage] = useState(null);
   const refresh = useCallback(() => {
     if (!getToken()) { setUsage(null); return; }
-    axios.get(`${API}/me/usage`, { headers: authHeaders() }).then(r => setUsage(r.data)).catch(() => setUsage(null));
+    axios.get(`${API}/me/usage`, { headers: authHeaders() }).then(r => {
+      setUsage(r.data);
+      // Fonte da verdade: sincroniza plano/subscription do backend no localStorage
+      // Evita que o AdBanner e demais leituras via getUser() fiquem defasadas
+      // quando o admin altera Free<->Premium externamente.
+      try {
+        const stored = JSON.parse(localStorage.getItem("facilita_user") || "null");
+        if (stored) {
+          const nextPlan = r.data.plan || "free";
+          const currentPlan = stored?.subscription?.plan;
+          if (currentPlan !== nextPlan) {
+            stored.subscription = { ...(stored.subscription || {}), plan: nextPlan };
+            localStorage.setItem("facilita_user", JSON.stringify(stored));
+            // dispara evento pra outros componentes reagirem
+            window.dispatchEvent(new CustomEvent("facilita:user-updated"));
+          }
+        }
+      } catch { /* silencioso */ }
+    }).catch(() => setUsage(null));
   }, []);
   useEffect(() => { refresh(); }, [refresh]);
   return [usage, refresh];
@@ -51,7 +69,10 @@ function useUsage(){
 
 function AdBanner({ variant = "banner" }){
   const settings = useAppSettings();
-  if (isPremium()) return null;
+  const [usage] = useUsage();
+  // Fonte da verdade: backend (usage.is_premium). Fallback pra localStorage só se usage ainda não carregou.
+  const premium = usage ? usage.is_premium : isPremium();
+  if (premium) return null;
   if (!settings?.ads_enabled) return null;
   if (variant === "banner" && !settings.banner_enabled) return null;
   // Enquanto não há SDK de anúncios integrado, não mostrar placeholder técnico ao usuário.
