@@ -251,13 +251,18 @@ async def current_user(authorization: Optional[str] = Header(default=None)):
         return None
     try:
         data = jwt.decode(authorization.split(" ", 1)[1], JWT_SECRET, algorithms=["HS256"])
-        return await db.users.find_one({"id": data["sub"]}, {"_id": 0, "password": 0})
+        u = await db.users.find_one({"id": data["sub"]}, {"_id": 0, "password": 0})
+        if u and u.get("deleted"):
+            return None
+        return u
     except Exception:
         return None
 
 async def required_user(user=Depends(current_user)):
     if not user:
         raise HTTPException(401, "Faça login para continuar")
+    if user.get("deleted"):
+        raise HTTPException(403, "Esta conta foi encerrada.")
     return user
 
 @app.on_event("startup")
@@ -320,6 +325,7 @@ async def register(input: AuthInput):
 async def login(input: AuthInput):
     user = await db.users.find_one({"email": input.email.strip().lower()})
     if not user or not bcrypt.checkpw(input.password.encode(), user.get("password", "").encode()): raise HTTPException(401, "E-mail ou senha incorretos")
+    if user.get("deleted"): raise HTTPException(403, "Esta conta foi encerrada.")
     safe = {k: user.get(k) for k in ("id", "email", "name", "role", "subscription")}
     return {"token": token_for(user), "user": safe}
 
@@ -767,6 +773,65 @@ async def admin_get_wallet_mode(user=Depends(required_user)):
 class WalletModeInput(BaseModel):
     wallet_mode: str  # simulation | active
     confirm: bool = False
+
+class SubscriptionInputV2(BaseModel):
+    plan: str  # premium | free
+    source: Optional[str] = "admin"  # admin | mercado_pago
+
+@api_router.get("/admin/users")
+async def admin_list_users(q: Optional[str] = None, limit: int = 50, user=Depends(required_user)):
+    if user.get("role") != "admin": raise HTTPException(403, "Acesso restrito")
+    query: dict = {"deleted": {"$ne": True}}
+    if q:
+        rx = {"$regex": q, "$options": "i"}
+        query["$or"] = [{"email": rx}, {"name": rx}]
+    limit = max(1, min(int(limit), 500))
+    items = await db.users.find(query, {"_id": 0, "hashed_password": 0}).sort("created_at", -1).to_list(limit)
+    for u in items:
+        u["is_premium"] = is_premium(u)
+        u["plan"] = "premium" if u["is_premium"] else "free"
+    total = await db.users.count_documents({"deleted": {"$ne": True}})
+    premium = sum(1 for u in items if u.get("is_premium"))
+    return {"items": items, "count": len(items), "total_users": total, "premium_in_page": premium}
+
+@api_router.delete("/admin/users/{user_id}")
+async def admin_delete_user(user_id: str, user=Depends(required_user)):
+    """
+    SOFT DELETE — preserva histórico financeiro (wallet_ledger, api_recharges, usage).
+    - Não permite deletar a si mesmo.
+    - Anonimiza email/name para liberar o email para novo cadastro.
+    - Bloqueia login futuro (deleted=true).
+    """
+    if user.get("role") != "admin": raise HTTPException(403, "Acesso restrito")
+    if user_id == user.get("id"):
+        raise HTTPException(400, "Não é permitido excluir a própria conta administrativa logada.")
+    target = await db.users.find_one({"id": user_id})
+    if not target: raise HTTPException(404, "Usuário não encontrado.")
+    if target.get("deleted"):
+        raise HTTPException(400, "Usuário já foi excluído.")
+    now = datetime.now(timezone.utc).isoformat()
+    anon_email = f"deleted_{user_id[:8]}@facilita.deleted"
+    await db.users.update_one({"id": user_id}, {"$set": {
+        "deleted": True, "deleted_at": now, "deleted_by": user.get("id"),
+        "email_original": target.get("email"),
+        "email": anon_email,
+        "name": "(usuário excluído)",
+        "hashed_password": "",  # bloqueia login
+        "subscription": {"plan": "free"},
+    }})
+    await db.admin_audit.insert_one({
+        "id": str(uuid.uuid4()), "admin_id": user.get("id"), "admin_email": user.get("email"),
+        "action": "user_soft_delete", "target_user_id": user_id,
+        "target_email_original": target.get("email"), "at": now,
+    })
+    return {"ok": True, "user_id": user_id, "financial_records_preserved": True}
+
+@api_router.get("/admin/audit-log")
+async def admin_audit_log(limit: int = 100, user=Depends(required_user)):
+    if user.get("role") != "admin": raise HTTPException(403, "Acesso restrito")
+    limit = max(1, min(int(limit), 500))
+    items = await db.admin_audit.find({}, {"_id": 0}).sort("at", -1).to_list(limit)
+    return {"items": items}
 
 @api_router.put("/admin/wallet-mode")
 async def admin_set_wallet_mode(input: WalletModeInput, user=Depends(required_user)):
@@ -1272,9 +1337,24 @@ async def generate_audio_ep(input: AudioInput, request: Request, user=Depends(re
 async def set_subscription(user_id: str, input: SubscriptionInput, user=Depends(required_user)):
     if user.get("role") != "admin": raise HTTPException(403, "Acesso restrito")
     if input.plan not in {"free", "premium"}: raise HTTPException(400, "Plano inválido")
-    await db.users.update_one({"id": user_id}, {"$set": {"subscription": {"plan": input.plan, "updated_at": datetime.now(timezone.utc).isoformat()}}})
-    fresh = await db.users.find_one({"id": user_id}, {"_id": 0, "password": 0})
-    if not fresh: raise HTTPException(404, "Usuário não encontrado")
+    # Preserva metadados de assinatura Mercado Pago existente (não sobrescrever silenciosamente)
+    target = await db.users.find_one({"id": user_id}, {"subscription": 1})
+    if not target: raise HTTPException(404, "Usuário não encontrado")
+    prev_sub = target.get("subscription") or {}
+    now_iso = datetime.now(timezone.utc).isoformat()
+    new_sub: dict = {"plan": input.plan, "updated_at": now_iso, "premium_source": "admin"}
+    # Se removendo Premium E havia assinatura MP ativa, mantemos referências para auditoria
+    if input.plan == "free" and prev_sub.get("preapproval_id"):
+        new_sub["previous_preapproval_id"] = prev_sub.get("preapproval_id")
+        new_sub["previous_source"] = prev_sub.get("premium_source") or ("mercado_pago" if prev_sub.get("preapproval_id") else "unknown")
+    await db.users.update_one({"id": user_id}, {"$set": {"subscription": new_sub}})
+    # Audit
+    await db.admin_audit.insert_one({
+        "id": str(uuid.uuid4()), "admin_id": user.get("id"), "admin_email": user.get("email"),
+        "action": f"subscription_{input.plan}", "target_user_id": user_id,
+        "prev_plan": prev_sub.get("plan"), "at": now_iso,
+    })
+    fresh = await db.users.find_one({"id": user_id}, {"_id": 0, "password": 0, "hashed_password": 0})
     return {"user": fresh}
 
 @api_router.post("/checkout/premium")

@@ -1004,19 +1004,18 @@ function Admin(){
   const user = getUser();
   const [settings, setSettings] = useState(null);
   const [stats, setStats] = useState(null);
-  const [users, setUsers] = useState([]);
-  const [search, setSearch] = useState("");
   const [savedAt, setSavedAt] = useState(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [section, setSection] = useState(() => localStorage.getItem("admin_section") || "overview");
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     if (!user || user.role !== "admin") { nav("/"); return; }
     Promise.all([
       axios.get(`${API}/admin/settings`, { headers: authHeaders() }),
       axios.get(`${API}/admin/stats`, { headers: authHeaders() }),
-      axios.get(`${API}/admin/users`, { headers: authHeaders() }),
-    ]).then(([s, st, u]) => { setSettings(s.data); setStats(st.data); setUsers(u.data); })
+    ]).then(([s, st]) => { setSettings(s.data); setStats(st.data); })
      .catch(e => setError(e.response?.data?.detail || "Falha ao carregar painel"));
   }, [nav, user]);
 
@@ -1030,89 +1029,185 @@ function Admin(){
     setSaving(false);
   };
 
-  const searchUsers = async (q) => {
-    setSearch(q);
-    try {
-      const r = await axios.get(`${API}/admin/users${q?`?search=${encodeURIComponent(q)}`:""}`, { headers: authHeaders() });
-      setUsers(r.data);
-    } catch { /* ignore */ }
-  };
-
-  const setPlan = async (u, plan) => {
-    try {
-      const r = await axios.post(`${API}/admin/users/${u.id}/subscription`, { plan }, { headers: authHeaders() });
-      setUsers(users.map(x => x.id === u.id ? r.data.user : x));
-    } catch (e) { setError(e.response?.data?.detail || "Falha ao alterar assinatura"); }
-  };
+  const changeSection = (s) => { setSection(s); localStorage.setItem("admin_section", s); setMobileMenuOpen(false); };
 
   if (!settings) return <div className="app-shell"><header className="tool-header"><Link to="/perfil"><ArrowLeft size={20}/></Link><span>Painel administrativo</span><span/></header><main className="page"><p className="helper">{error||"Carregando painel..."}</p></main></div>;
 
-  return <div className="app-shell">
-    <header className="tool-header"><Link to="/perfil" data-testid="admin-back-button"><ArrowLeft size={20}/></Link><span>Painel administrativo</span><span/></header>
-    <main className="page admin-page">
-      <section className="page-intro compact"><p className="eyebrow">FACILITA AI · ADMIN</p><h1>Configure seu<br/><em>Facilita AI.</em></h1></section>
+  const nav_items = [
+    { id: "overview", label: "Visão Geral", icon: HomeIcon },
+    { id: "users", label: "Usuários", icon: UserRound },
+    { id: "plans", label: "Planos & Limites", icon: Star },
+    { id: "ads", label: "Publicidade", icon: MessageCircle },
+    { id: "finance", label: "Custos & Lucro", icon: Percent },
+    { id: "pricing", label: "Preços & Créditos", icon: KeyRound },
+    { id: "packages", label: "Pacotes", icon: Sparkles },
+    { id: "recharges", label: "APIs & Recargas", icon: WandSparkles },
+  ];
 
-      {stats && <div className="admin-stats">
-        <div className="admin-stat" data-testid="admin-stat-users"><small>Usuários</small><strong>{stats.users}</strong></div>
-        <div className="admin-stat" data-testid="admin-stat-gens"><small>Gerações totais</small><strong>{stats.generations}</strong></div>
-        <div className="admin-stat" data-testid="admin-stat-tools"><small>Ferramentas ativas</small><strong>{stats.tools?.length||0}</strong></div>
-      </div>}
-
-      <section className="admin-card">
-        <div className="admin-card-head"><h2>Limites de IA</h2><small>Aplicado imediatamente para todos os usuários.</small></div>
-        <AdminSlider testid="admin-slider-free-limit" label="Usos diários no plano Grátis" value={settings.free_daily_limit} min={0} max={100} onChange={v=>saveSettings({free_daily_limit:v})} suffix=" usos"/>
-        <AdminSlider testid="admin-slider-premium-limit" label="Usos diários no plano Premium" value={settings.premium_daily_limit} min={10} max={2000} step={10} onChange={v=>saveSettings({premium_daily_limit:v})} suffix=" usos"/>
-      </section>
-
-      <section className="admin-card">
-        <div className="admin-card-head"><h2>Limites de imagens (fal.ai)</h2><small>Geração de imagens FLUX.1 tem custo por chamada. Ajuste o teto por plano.</small></div>
-        <AdminSlider testid="admin-slider-free-image-limit" label="Imagens diárias no plano Grátis" value={settings.free_daily_image_limit ?? 3} min={0} max={30} onChange={v=>saveSettings({free_daily_image_limit:v})} suffix=" imgs"/>
-        <AdminSlider testid="admin-slider-premium-image-limit" label="Imagens diárias no plano Premium" value={settings.premium_daily_image_limit ?? 50} min={5} max={500} step={5} onChange={v=>saveSettings({premium_daily_image_limit:v})} suffix=" imgs"/>
-      </section>
-
-      <section className="admin-card">
-        <div className="admin-card-head"><h2>Preço do Premium</h2><small>Valor cobrado mensalmente (assinatura recorrente via Mercado Pago).</small></div>
-        <AdminSlider testid="admin-slider-price" label="Preço em BRL" value={settings.premium_price_brl} min={4.9} max={99.9} step={0.1} onChange={v=>saveSettings({premium_price_brl:Number(v.toFixed(2))})} suffix=" R$"/>
-      </section>
-
-      <section className="admin-card">
-        <div className="admin-card-head"><h2>Publicidade</h2><small>Todos os anúncios são desligados automaticamente para assinantes Premium.</small></div>
-        <AdminSwitch testid="admin-switch-ads" label="Publicidade global" hint="Desativa todos os formatos com um clique" checked={settings.ads_enabled} onChange={v=>saveSettings({ads_enabled:v})}/>
-        <AdminSwitch testid="admin-switch-banner" label="Banners" hint="Faixas discretas no topo/rodapé" checked={settings.banner_enabled} onChange={v=>saveSettings({banner_enabled:v})}/>
-        <AdminSwitch testid="admin-switch-interstitial" label="Intersticiais" hint="Anúncios em transições, sem interromper resultado" checked={settings.interstitial_enabled} onChange={v=>saveSettings({interstitial_enabled:v})}/>
-      </section>
-
-      <section className="admin-card">
-        <div className="admin-card-head"><h2>Assinantes</h2><small>Promova ou rebaixe manualmente. Busque por e-mail.</small></div>
-        <label className="searchbox admin-search"><Search size={18}/><input value={search} onChange={e=>searchUsers(e.target.value)} placeholder="Buscar por e-mail" data-testid="admin-user-search"/></label>
-        <div className="admin-user-list">
-          {users.map(u => {
-            const uPremium = u?.subscription?.plan === "premium" && (!u.subscription.expires_at || new Date(u.subscription.expires_at) > new Date());
-            return <div className="admin-user" key={u.id} data-testid={`admin-user-${u.id}`}>
-              <div><strong>{u.name || u.email}</strong><small>{u.email} · {u.role}{uPremium?" · PREMIUM":""}</small></div>
-              <div className="admin-user-actions">
-                {uPremium
-                  ? <button className="ghost-action" onClick={()=>setPlan(u,"free")} data-testid={`admin-user-downgrade-${u.id}`}>Remover Premium</button>
-                  : <button className="primary-action tiny" onClick={()=>setPlan(u,"premium")} data-testid={`admin-user-upgrade-${u.id}`}><Sparkles size={14}/> Tornar Premium</button>}
-              </div>
-            </div>;
-          })}
-          {users.length === 0 && <p className="helper">Nenhum usuário encontrado.</p>}
-        </div>
-      </section>
-
-      <FinanceDashboardSection admToken={getToken()} />
-      <PricingConfigSection admToken={getToken()} />
-      <PackagesAdminSection admToken={getToken()} />
-      <ApiRechargesSection admToken={getToken()} />
-
-      <div className="admin-footer">
-        {error && <span className="admin-error" data-testid="admin-error">{error}</span>}
-        {saving && <span className="admin-saving">Salvando...</span>}
-        {savedAt && !saving && <span className="admin-saved" data-testid="admin-saved">Alterações salvas • {savedAt.toLocaleTimeString("pt-BR").slice(0,5)}</span>}
+  return <div className="admin-layout">
+    <aside className={`admin-sidebar ${mobileMenuOpen?"open":""}`} data-testid="admin-sidebar">
+      <div className="admin-brand"><Sparkles size={18}/> <span>Facilita AI · Admin</span></div>
+      <nav>
+        {nav_items.map(it => (
+          <button
+            key={it.id}
+            className={section === it.id ? "active" : ""}
+            onClick={() => changeSection(it.id)}
+            data-testid={`admin-nav-${it.id}`}
+          ><it.icon size={16}/> {it.label}</button>
+        ))}
+      </nav>
+      <div className="admin-side-footer">
+        <Link to="/perfil" className="admin-side-back" data-testid="admin-back-link"><ArrowLeft size={14}/> Voltar ao app</Link>
       </div>
-    </main>
-  </div>
+    </aside>
+    <div className="admin-main">
+      <header className="admin-topbar">
+        <button className="admin-menu-btn" onClick={()=>setMobileMenuOpen(!mobileMenuOpen)} data-testid="admin-menu-toggle"><Menu size={20}/></button>
+        <h1>{nav_items.find(i=>i.id===section)?.label}</h1>
+        <div className="admin-topbar-status">
+          {saving && <span className="admin-saving">Salvando...</span>}
+          {savedAt && !saving && <span className="admin-saved" data-testid="admin-saved">✓ {savedAt.toLocaleTimeString("pt-BR").slice(0,5)}</span>}
+          {error && <span className="admin-error" data-testid="admin-error">{error}</span>}
+        </div>
+      </header>
+      <div className="admin-body">
+        {section === "overview" && <OverviewSection stats={stats} admToken={getToken()}/>}
+        {section === "users" && <UsersSection admToken={getToken()} currentAdminId={user?.id}/>}
+        {section === "plans" && <PlansSection settings={settings} saveSettings={saveSettings}/>}
+        {section === "ads" && <AdsSection settings={settings} saveSettings={saveSettings}/>}
+        {section === "finance" && <FinanceDashboardSection admToken={getToken()}/>}
+        {section === "pricing" && <PricingConfigSection admToken={getToken()}/>}
+        {section === "packages" && <PackagesAdminSection admToken={getToken()}/>}
+        {section === "recharges" && <ApiRechargesSection admToken={getToken()}/>}
+      </div>
+    </div>
+    {mobileMenuOpen && <div className="admin-overlay" onClick={()=>setMobileMenuOpen(false)}/>}
+  </div>;
+}
+
+function OverviewSection({ stats, admToken }){
+  const [wallet, setWallet] = useState(null);
+  const [dash, setDash] = useState(null);
+  const [usersCount, setUsersCount] = useState({ total: 0, premium: 0 });
+  useEffect(() => {
+    if (!admToken) return;
+    const h = { headers: { Authorization: `Bearer ${admToken}` } };
+    axios.get(`${API}/admin/wallet-mode`, h).then(r => setWallet(r.data)).catch(()=>{});
+    axios.get(`${API}/admin/finance/dashboard?days=30`, h).then(r => setDash(r.data)).catch(()=>{});
+    axios.get(`${API}/admin/users?limit=500`, h).then(r => {
+      const total = r.data.total_users || 0;
+      const premium = (r.data.items || []).filter(u => u.is_premium).length;
+      setUsersCount({ total, premium });
+    }).catch(()=>{});
+  }, [admToken]);
+  return <section className="admin-content" data-testid="admin-overview">
+    <div className="admin-cards-grid">
+      <div className="admin-mini-card" data-testid="stat-total-users"><p className="eyebrow">USUÁRIOS</p><h2>{usersCount.total.toLocaleString("pt-BR")}</h2><small>{usersCount.premium} Premium · {usersCount.total - usersCount.premium} Free</small></div>
+      <div className="admin-mini-card" data-testid="stat-generations"><p className="eyebrow">GERAÇÕES TOTAIS</p><h2>{(stats?.generations||0).toLocaleString("pt-BR")}</h2><small>{stats?.tools?.length||0} ferramentas ativas</small></div>
+      <div className="admin-mini-card" data-testid="stat-consumption"><p className="eyebrow">CONSUMO API (30d)</p><h2>US$ {(dash?.consumption?.total_usd||0).toFixed(4)}</h2><small>≈ R$ {(dash?.consumption?.total_brl_protected||0).toFixed(2)}</small></div>
+      <div className="admin-mini-card" data-testid="stat-cash-flow"><p className="eyebrow">FLUXO DE CAIXA (30d)</p><h2>R$ {(dash?.cash_flow?.total_brl||0).toFixed(2)}</h2><small>Recargas nos providers</small></div>
+      <div className="admin-mini-card" data-testid="stat-wallet-mode"><p className="eyebrow">CARTEIRA</p><h2 style={{fontSize:'16px'}}><span className={`wallet-mode-pill ${wallet?.wallet_mode}`}>{wallet?.wallet_mode==="active"?"ATIVA":"SIMULAÇÃO"}</span></h2><small>{(dash?.credits?.simulated_total||0).toLocaleString("pt-BR")} créditos simulados</small></div>
+      <div className="admin-mini-card" data-testid="stat-margin"><p className="eyebrow">MARGEM PROJETADA</p><h2>{dash?.simulation?.margin!=null?(dash.simulation.margin*100).toFixed(1)+"%":"—"}</h2><small>Baseada em receita equiv. simulada</small></div>
+    </div>
+    {stats?.tools?.length > 0 && <div className="admin-tools-list">
+      <h3>Ferramentas ativas</h3>
+      <ul>{stats.tools.slice(0,10).map(t => <li key={t._id}><span>{toolMap[t._id]?.name||t._id}</span><strong>{t.count}</strong></li>)}</ul>
+    </div>}
+  </section>;
+}
+
+function UsersSection({ admToken, currentAdminId }){
+  const [items, setItems] = useState([]);
+  const [q, setQ] = useState("");
+  const [feedback, setFeedback] = useState("");
+  const [error, setError] = useState("");
+  const load = useCallback((query="") => {
+    if (!admToken) return;
+    axios.get(`${API}/admin/users${query?`?q=${encodeURIComponent(query)}`:""}`, { headers: { Authorization: `Bearer ${admToken}` } })
+      .then(r => setItems(r.data.items || []))
+      .catch(() => setItems([]));
+  }, [admToken]);
+  useEffect(() => { load(); }, [load]);
+  const setPlan = async (u, plan) => {
+    setError(""); setFeedback("");
+    try {
+      await axios.post(`${API}/admin/users/${u.id}/subscription`, { plan }, { headers: { Authorization: `Bearer ${admToken}` } });
+      setFeedback(plan === "premium" ? `${u.email} agora é Premium.` : `${u.email} voltou a ser Free.`);
+      load(q);
+    } catch (e) { setError(e.response?.data?.detail || "Falha ao alterar plano."); }
+  };
+  const deleteUser = async (u) => {
+    setError(""); setFeedback("");
+    if (u.id === currentAdminId) { setError("Você não pode excluir sua própria conta admin."); return; }
+    if (!window.confirm(`Tem certeza de que deseja excluir ${u.email}?\n\nEsta ação é PERMANENTE. O usuário não conseguirá mais fazer login. Dados financeiros (pagamentos, ledger, recargas) permanecem preservados para auditoria.`)) return;
+    try {
+      await axios.delete(`${API}/admin/users/${u.id}`, { headers: { Authorization: `Bearer ${admToken}` } });
+      setFeedback(`${u.email} foi excluído.`);
+      load(q);
+    } catch (e) { setError(e.response?.data?.detail || "Falha ao excluir."); }
+  };
+  return <section className="admin-content" data-testid="admin-users-section">
+    <div className="admin-toolbar">
+      <label className="searchbox admin-search"><Search size={16}/>
+        <input value={q} onChange={e=>{setQ(e.target.value); load(e.target.value);}} placeholder="Buscar por nome ou e-mail..." data-testid="admin-user-search"/>
+      </label>
+      <span className="admin-hint" style={{margin:0}}>{items.length} usuário(s)</span>
+    </div>
+    {error && <div className="error-message" data-testid="users-error">{error}</div>}
+    {feedback && <div className="hint-message" data-testid="users-feedback">{feedback}</div>}
+    <table className="admin-table" data-testid="admin-users-table">
+      <thead><tr><th>Nome</th><th>E-mail</th><th>Plano</th><th>Origem</th><th>Cadastrado</th><th>Ações</th></tr></thead>
+      <tbody>
+        {items.map(u => (
+          <tr key={u.id} data-testid={`admin-user-row-${u.id}`}>
+            <td>{u.name || "—"}{u.role==="admin"&&" 🛡️"}</td>
+            <td className="notes-cell">{u.email}</td>
+            <td><span className={`plan-badge ${u.is_premium?"premium":"free"}`}>{u.is_premium?"Premium":"Free"}</span></td>
+            <td className="notes-cell">{u.subscription?.premium_source || (u.subscription?.preapproval_id ? "mercado_pago" : "—")}</td>
+            <td className="notes-cell">{u.created_at ? new Date(u.created_at).toLocaleDateString("pt-BR") : "—"}</td>
+            <td className="admin-row-actions">
+              {u.is_premium
+                ? <button className="ghost-action tiny" onClick={()=>setPlan(u,"free")} data-testid={`admin-user-downgrade-${u.id}`}>Remover Premium</button>
+                : <button className="primary-action tiny" onClick={()=>setPlan(u,"premium")} data-testid={`admin-user-upgrade-${u.id}`}><Sparkles size={12}/> Premium</button>}
+              {u.id !== currentAdminId && <button className="ghost-action tiny danger" onClick={()=>deleteUser(u)} data-testid={`admin-user-delete-${u.id}`}><Trash2 size={12}/></button>}
+            </td>
+          </tr>
+        ))}
+        {items.length === 0 && <tr><td colSpan="6" className="notes-cell">Nenhum usuário encontrado.</td></tr>}
+      </tbody>
+    </table>
+  </section>;
+}
+
+function PlansSection({ settings, saveSettings }){
+  return <section className="admin-content">
+    <div className="admin-card">
+      <div className="admin-card-head"><h2>Limites de IA (texto)</h2><small>Aplicado imediatamente. Free = usuário não pago. Premium = assinante.</small></div>
+      <AdminSlider testid="admin-slider-free-limit" label="Usos diários Free" value={settings.free_daily_limit} min={0} max={100} onChange={v=>saveSettings({free_daily_limit:v})} suffix=" usos"/>
+      <AdminSlider testid="admin-slider-premium-limit" label="Usos diários Premium" value={settings.premium_daily_limit} min={10} max={2000} step={10} onChange={v=>saveSettings({premium_daily_limit:v})} suffix=" usos"/>
+    </div>
+    <div className="admin-card">
+      <div className="admin-card-head"><h2>Limites de imagem (fal.ai FLUX)</h2><small>Cada geração tem custo real. Ajuste com cuidado.</small></div>
+      <AdminSlider testid="admin-slider-free-image-limit" label="Imagens/dia Free" value={settings.free_daily_image_limit ?? 3} min={0} max={30} onChange={v=>saveSettings({free_daily_image_limit:v})} suffix=" imgs"/>
+      <AdminSlider testid="admin-slider-premium-image-limit" label="Imagens/dia Premium" value={settings.premium_daily_image_limit ?? 50} min={5} max={500} step={5} onChange={v=>saveSettings({premium_daily_image_limit:v})} suffix=" imgs"/>
+    </div>
+    <div className="admin-card">
+      <div className="admin-card-head"><h2>Preço da assinatura Premium</h2><small>Mensal recorrente via Mercado Pago (Preapproval).</small></div>
+      <AdminSlider testid="admin-slider-price" label="Preço BRL" value={settings.premium_price_brl} min={4.9} max={99.9} step={0.1} onChange={v=>saveSettings({premium_price_brl:Number(v.toFixed(2))})} suffix=" R$"/>
+    </div>
+  </section>;
+}
+
+function AdsSection({ settings, saveSettings }){
+  return <section className="admin-content">
+    <div className="admin-card">
+      <div className="admin-card-head"><h2>Publicidade</h2><small>Anúncios são automaticamente desativados para Premium.</small></div>
+      <AdminSwitch testid="admin-switch-ads" label="Publicidade global" hint="Chave-mestra: desativa todos os formatos" checked={settings.ads_enabled} onChange={v=>saveSettings({ads_enabled:v})}/>
+      <AdminSwitch testid="admin-switch-banner" label="Banners" hint="Faixas discretas no topo/rodapé" checked={settings.banner_enabled} onChange={v=>saveSettings({banner_enabled:v})}/>
+      <AdminSwitch testid="admin-switch-interstitial" label="Intersticiais" hint="Anúncios em transições, sem interromper resultado" checked={settings.interstitial_enabled} onChange={v=>saveSettings({interstitial_enabled:v})}/>
+    </div>
+  </section>;
 }
 
 function PricingConfigSection({ admToken }){

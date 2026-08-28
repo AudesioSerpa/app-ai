@@ -458,3 +458,55 @@ h2{font-weight:600}
 .admin-summary-card.sim{border-left:3px solid #ffc966}
 .admin-table tr.warn-row{background:rgba(255,107,107,.05)}
 .admin-table input[type="text"],.admin-table input[type="number"]{width:90%;padding:4px 6px;font-size:12px;border-radius:6px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.06);color:#eee}
+
+/* ==== Admin SaaS Layout (Fev/2026) ==== */
+.admin-layout{display:flex;min-height:100vh;background:#0e1013;color:#eee}
+.admin-sidebar{width:240px;background:#141619;border-right:1px solid rgba(255,255,255,.06);padding:20px 0;display:flex;flex-direction:column;position:sticky;top:0;height:100vh;flex-shrink:0}
+.admin-brand{padding:0 20px 20px;display:flex;align-items:center;gap:10px;font-weight:700;font-size:14px;color:#ff7a3d;border-bottom:1px solid rgba(255,255,255,.05);margin-bottom:10px}
+.admin-sidebar nav{display:flex;flex-direction:column;padding:8px 10px;gap:2px;flex:1}
+.admin-sidebar nav button{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:10px;border:none;background:transparent;color:#c9c9c9;font-size:13px;text-align:left;cursor:pointer;transition:all .15s;font-family:inherit}
+.admin-sidebar nav button:hover{background:rgba(255,255,255,.04);color:#fff}
+.admin-sidebar nav button.active{background:rgba(255,122,61,.12);color:#ff7a3d;font-weight:600;border-left:2px solid #ff7a3d;padding-left:12px}
+.admin-side-footer{padding:14px 20px;border-top:1px solid rgba(255,255,255,.05)}
+.admin-side-back{display:flex;align-items:center;gap:6px;font-size:12px;color:#8a8f98;text-decoration:none}
+.admin-side-back:hover{color:#fff}
+.admin-main{flex:1;min-width:0;display:flex;flex-direction:column}
+.admin-topbar{display:flex;align-items:center;justify-content:space-between;padding:16px 24px;background:#141619;border-bottom:1px solid rgba(255,255,255,.06);position:sticky;top:0;z-index:5}
+.admin-topbar h1{margin:0;font-size:18px;font-weight:700}
+.admin-topbar-status{display:flex;gap:12px;font-size:12px;color:#8a8f98}
+.admin-saved{color:#4dd47f}.admin-error{color:#ff6b6b}
+.admin-menu-btn{display:none;background:transparent;border:none;color:#eee;cursor:pointer;padding:4px}
+.admin-body{padding:24px;flex:1;overflow-y:auto}
+.admin-content{max-width:1200px}
+.admin-cards-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-bottom:24px}
+.admin-mini-card{background:#191c20;border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:16px 18px}
+.admin-mini-card .eyebrow{font-size:10px;color:#8a8f98;letter-spacing:1px;margin:0}
+.admin-mini-card h2{margin:6px 0 4px;font-size:24px;color:#fff}
+.admin-mini-card small{font-size:11px;color:#8a8f98}
+.admin-tools-list{background:#191c20;border-radius:14px;padding:16px 20px}
+.admin-tools-list h3{margin:0 0 10px;font-size:14px}
+.admin-tools-list ul{list-style:none;padding:0;margin:0}
+.admin-tools-list li{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px dashed rgba(255,255,255,.05);font-size:13px}
+.admin-tools-list li:last-child{border-bottom:none}
+.admin-toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;gap:10px;flex-wrap:wrap}
+.admin-toolbar .searchbox{max-width:320px;flex:1}
+.plan-badge{display:inline-block;padding:3px 8px;border-radius:6px;font-size:11px;font-weight:600}
+.plan-badge.free{background:rgba(138,143,152,.15);color:#c9c9c9}
+.plan-badge.premium{background:rgba(255,122,61,.15);color:#ff7a3d;border:1px solid rgba(255,122,61,.3)}
+.admin-row-actions{display:flex;gap:4px;flex-wrap:wrap}
+.ghost-action.tiny.danger{color:#ff6b6b;border:1px solid rgba(255,107,107,.25)}
+.ghost-action.tiny.danger:hover{background:rgba(255,107,107,.1)}
+.admin-card{background:#191c20;border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:20px;margin-bottom:16px}
+.admin-card-head h2{margin:0;font-size:16px;color:#fff}
+.admin-card-head small{color:#8a8f98;font-size:12px}
+.admin-content .admin-section{background:transparent;padding:0;border:none}
+
+@media (max-width: 900px){
+  .admin-sidebar{position:fixed;left:0;top:0;transform:translateX(-100%);z-index:20;transition:transform .25s;height:100vh}
+  .admin-sidebar.open{transform:translateX(0)}
+  .admin-menu-btn{display:block}
+  .admin-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:15}
+  .admin-body{padding:16px}
+  .admin-cards-grid{grid-template-columns:repeat(2, 1fr);gap:10px}
+  .admin-mini-card h2{font-size:18px}
+}
