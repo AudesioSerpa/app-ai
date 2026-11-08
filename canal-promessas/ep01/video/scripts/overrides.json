@@ -1,14 +1,91 @@
 {
  "_comment": "Cenas revisadas: novas buscas para trocar fotos que não combinaram com a narração.",
- "s001": ["empty wallet coins", "coins and banknotes table"],
- "s002": ["city night apartment window", "city lights at night"],
- "s003": ["golden sunrise over hills", "sunrise landscape"],
- "s006": ["iron chain", "rusty chain links"],
- "s009": ["ancient stone road countryside", "old stone road"],
- "s011": ["candle flame in the dark", "candle light"],
- "s012": ["sunrise over meadow", "morning sunrise field"],
- "s013": ["hands praying over bible", "praying hands"],
- "s015": ["job search newspaper classifieds", "man reading newspaper"],
- "s016": ["construction worker", "tired worker"],
- "s017": ["homemade bread loaves", "bread bakery"]
+ "s001": [
+  "empty wallet coins",
+  "coins and banknotes table"
+ ],
+ "s002": [
+  "city night apartment window",
+  "city lights at night"
+ ],
+ "s003": [
+  "golden sunrise over hills",
+  "sunrise landscape"
+ ],
+ "s006": [
+  "iron chain",
+  "rusty chain links"
+ ],
+ "s009": [
+  "ancient stone road countryside",
+  "old stone road"
+ ],
+ "s011": [
+  "candle flame in the dark",
+  "candle light"
+ ],
+ "s012": [
+  "sunrise over meadow",
+  "morning sunrise field"
+ ],
+ "s013": [
+  "hands praying over bible",
+  "praying hands"
+ ],
+ "s015": [
+  "job search newspaper classifieds",
+  "man reading newspaper"
+ ],
+ "s016": [
+  "construction worker",
+  "tired worker"
+ ],
+ "s017": [
+  "homemade bread loaves",
+  "bread bakery"
+ ],
+ "s037": [
+  "Roman inscription Latin stone",
+  "Latin inscription"
+ ],
+ "s039": [
+  "Philippi Greece ruins",
+  "ancient Philippi"
+ ],
+ "s041": [
+  "busy street crowd people walking",
+  "crowd street"
+ ],
+ "s042": [
+  "ancient synagogue ruins",
+  "Capernaum synagogue"
+ ],
+ "s043": [
+  "river flowing stones trees",
+  "calm river"
+ ],
+ "s045": [
+  "Apostle Paul painting",
+  "Saint Paul Rembrandt"
+ ],
+ "s046": [
+  "old wooden door closed",
+  "locked old door"
+ ],
+ "s047": [
+  "ancient harbor ruins Turkey coast",
+  "Aegean coast ruins"
+ ],
+ "s050": [
+  "Philippi Greece",
+  "ancient Philippi ruins"
+ ],
+ "s057": [
+  "Lydia baptism Philippi",
+  "Zygaktis river"
+ ],
+ "s058": [
+  "Roman house atrium ruins",
+  "Roman villa ruins"
+ ]
 }
