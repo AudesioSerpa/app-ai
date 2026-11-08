@@ -25,7 +25,7 @@ export const Overlay: React.FC<{ data: OverlayData }> = ({ data }) => {
   if (data.type === "place") {
     return (
       <AbsoluteFill style={{ justifyContent: "flex-start", alignItems: "flex-start", padding: "90px 0 0 110px", pointerEvents: "none" }}>
-        <div style={{ opacity: op, transform: `translateY(${-rise}px)` }}>
+        <div style={{ opacity: op, transform: `translateY(${-rise}px)`, padding: "14px 40px 16px 22px", background: "linear-gradient(90deg, rgba(10,7,3,0.72), rgba(10,7,3,0.3) 85%, rgba(10,7,3,0))" }}>
           <div style={{ width: 70, height: 3, background: GOLD, marginBottom: 14 }} />
           <div style={{ fontFamily: SERIF, fontSize: 44, color: PARCHMENT, letterSpacing: 3, textShadow: "0 2px 14px rgba(0,0,0,0.95)" }}>{data.text}</div>
         </div>

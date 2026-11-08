@@ -14,62 +14,6 @@
    }
   ]
  },
- "s001": {
-  "files": [
-   {
-    "file": "media/s001_0.jpg",
-    "type": "image",
-    "title": "Holding Bitcoin cryptocurrency coin in hand",
-    "page": "https://www.flickr.com/photos/96149081@N03/52687909661",
-    "license": "CC BY 2.0",
-    "artist": "satheeshsankaran.com",
-    "source": "flickr",
-    "w": 1024,
-    "h": 693
-   }
-  ]
- },
- "s002": {
-  "files": [
-   {
-    "file": "media/s002_0.jpg",
-    "type": "image",
-    "title": "Night falls over New York",
-    "page": "https://www.flickr.com/photos/73014677@N05/15376038351",
-    "license": "CC BY 2.0",
-    "artist": "Fraser Mummery",
-    "source": "flickr",
-    "w": 1024,
-    "h": 768
-   },
-   {
-    "file": "media/s002_1.jpg",
-    "type": "image",
-    "title": "Kilmainham Gaol (Jail)",
-    "page": "https://www.flickr.com/photos/83413148@N00/91181864",
-    "license": "CC BY-SA 2.0",
-    "artist": "Sean Munson",
-    "source": "flickr",
-    "w": 1024,
-    "h": 768
-   }
-  ]
- },
- "s003": {
-  "files": [
-   {
-    "file": "media/s003_0.jpg",
-    "type": "image",
-    "title": "Shooting sunrise timelapse",
-    "page": "https://www.flickr.com/photos/55128416@N05/15243247410",
-    "license": "CC0",
-    "artist": "brenkee",
-    "source": "flickr",
-    "w": 1024,
-    "h": 672
-   }
-  ]
- },
  "s005": {
   "files": [
    {
@@ -79,21 +23,6 @@
     "page": "https://www.flickr.com/photos/93226994@N00/11478659",
     "license": "CC BY 2.0",
     "artist": "antmoose",
-    "source": "flickr",
-    "w": 1024,
-    "h": 768
-   }
-  ]
- },
- "s006": {
-  "files": [
-   {
-    "file": "media/s006_0.jpg",
-    "type": "image",
-    "title": "Clockwork",
-    "page": "https://www.flickr.com/photos/26782864@N00/11271766325",
-    "license": "CC BY 2.0",
-    "artist": "wwarby",
     "source": "flickr",
     "w": 1024,
     "h": 768
@@ -130,21 +59,6 @@
    }
   ]
  },
- "s009": {
-  "files": [
-   {
-    "file": "media/s009_0.jpg",
-    "type": "image",
-    "title": "Chora from Mykonos Lookout Point, Mykonos, Greece",
-    "page": "https://www.flickr.com/photos/59081381@N03/53500088942",
-    "license": "CC BY-SA 2.0",
-    "artist": "w_lemay",
-    "source": "flickr",
-    "w": 1024,
-    "h": 768
-   }
-  ]
- },
  "s010": {
   "files": [
    {
@@ -171,62 +85,6 @@
    }
   ]
  },
- "s011": {
-  "files": [
-   {
-    "file": "media/s011_0.jpg",
-    "type": "image",
-    "title": "A Pair of Candle Flames",
-    "page": "https://www.flickr.com/photos/29968788@N00/1793613381",
-    "license": "CC BY 2.0",
-    "artist": "DrGBB",
-    "source": "flickr",
-    "w": 1024,
-    "h": 683
-   }
-  ]
- },
- "s012": {
-  "files": [
-   {
-    "file": "media/s012_0.jpg",
-    "type": "image",
-    "title": "Sunrise Timelapses",
-    "page": "https://www.flickr.com/photos/124865019@N04/14788082794",
-    "license": "CC BY 2.0",
-    "artist": "peter.valpiani",
-    "source": "flickr",
-    "w": 1024,
-    "h": 683
-   }
-  ]
- },
- "s013": {
-  "files": [
-   {
-    "file": "media/s013_0.jpg",
-    "type": "image",
-    "title": "Praying Hands",
-    "page": "https://www.flickr.com/photos/10710442@N08/6117657027",
-    "license": "CC BY 2.0",
-    "artist": "Steve Snodgrass",
-    "source": "flickr",
-    "w": 1024,
-    "h": 624
-   },
-   {
-    "file": "media/s013_1.jpg",
-    "type": "image",
-    "title": "Praying Hands",
-    "page": "https://www.flickr.com/photos/16446663@N03/4074213268",
-    "license": "CC BY-SA 2.0",
-    "artist": "xomiele",
-    "source": "flickr",
-    "w": 1024,
-    "h": 768
-   }
-  ]
- },
  "s014": {
   "files": [
    {
@@ -236,51 +94,6 @@
     "page": "https://www.flickr.com/photos/47264866@N00/4252069473",
     "license": "CC BY 2.0",
     "artist": "OakleyOriginals",
-    "source": "flickr",
-    "w": 1024,
-    "h": 768
-   }
-  ]
- },
- "s015": {
-  "files": [
-   {
-    "file": "media/s015_0.jpg",
-    "type": "image",
-    "title": "Healthcare worker presents an orange while sitting at a desk with paperwork and a laptop in a professional setting",
-    "page": "https://www.flickr.com/photos/202846129@N03/54564797749",
-    "license": "CC BY 2.0",
-    "artist": "nenadstojkovicart",
-    "source": "flickr",
-    "w": 1024,
-    "h": 684
-   }
-  ]
- },
- "s016": {
-  "files": [
-   {
-    "file": "media/s016_0.jpg",
-    "type": "image",
-    "title": "Ai Weiwei / 艾未未 : Sunflower Seeds",
-    "page": "https://www.flickr.com/photos/64097751@N00/5343825239",
-    "license": "CC BY 2.0",
-    "artist": "Dominic's pics",
-    "source": "flickr",
-    "w": 1024,
-    "h": 683
-   }
-  ]
- },
- "s017": {
-  "files": [
-   {
-    "file": "media/s017_0.jpg",
-    "type": "image",
-    "title": "Pizza Oven 2",
-    "page": "https://www.flickr.com/photos/49169223@N00/15116779547",
-    "license": "CC BY-SA 2.0",
-    "artist": "daryl_mitchell",
     "source": "flickr",
     "w": 1024,
     "h": 768
@@ -428,5 +241,2858 @@
     "h": 682
    }
   ]
+ },
+ "s029": {
+  "files": [
+   {
+    "file": "media/s029_0.jpg",
+    "type": "image",
+    "title": "Romans #1",
+    "page": "https://www.flickr.com/photos/29057345@N04/4123999205",
+    "license": "CC BY 2.0",
+    "artist": "It's No Game",
+    "source": "flickr",
+    "w": 1024,
+    "h": 673
+   }
+  ]
+ },
+ "s030": {
+  "files": [
+   {
+    "file": "media/s030_0.jpg",
+    "type": "image",
+    "title": "West parodos of the Ancient Theatre with the Pangaion mountain in the background, Philippi",
+    "page": "https://www.flickr.com/photos/41523983@N08/7272322984",
+    "license": "CC BY-SA 2.0",
+    "artist": "Following Hadrian",
+    "source": "flickr",
+    "w": 1024,
+    "h": 768
+   }
+  ]
+ },
+ "s031": {
+  "files": [
+   {
+    "file": "media/s031_0.jpg",
+    "type": "image",
+    "title": "Philip II, B.C. 359-336, Archaeological Museum, Pella",
+    "page": "https://www.flickr.com/photos/41523983@N08/7061155007",
+    "license": "CC BY-SA 2.0",
+    "artist": "Following Hadrian",
+    "source": "flickr",
+    "w": 1024,
+    "h": 638
+   }
+  ]
+ },
+ "s032": {
+  "files": [
+   {
+    "file": "media/s032_0.jpg",
+    "type": "image",
+    "title": "View on the basilica B with Pangaion Hills in the background, Philippi",
+    "page": "https://www.flickr.com/photos/41523983@N08/7272449092",
+    "license": "CC BY-SA 2.0",
+    "artist": "Following Hadrian",
+    "source": "flickr",
+    "w": 1024,
+    "h": 772
+   }
+  ]
+ },
+ "s033": {
+  "files": [
+   {
+    "file": "media/s033_0.jpg",
+    "type": "image",
+    "title": "peloponnesian treasures",
+    "page": "https://www.flickr.com/photos/69275268@N00/5431942688",
+    "license": "CC BY 2.0",
+    "artist": "Xuan Che",
+    "source": "flickr",
+    "w": 1024,
+    "h": 599
+   }
+  ]
+ },
+ "s034": {
+  "files": [
+   {
+    "file": "media/s034_0.jpg",
+    "type": "image",
+    "title": "View on the forum and the basilica B with Pangaion Hills in the background, Philippi",
+    "page": "https://www.flickr.com/photos/41523983@N08/7272372866",
+    "license": "CC BY-SA 2.0",
+    "artist": "Following Hadrian",
+    "source": "flickr",
+    "w": 1024,
+    "h": 769
+   }
+  ]
+ },
+ "s035": {
+  "files": [
+   {
+    "file": "media/s035_0.jpg",
+    "type": "image",
+    "title": "Augustus of Prima Porta",
+    "page": "https://www.flickr.com/photos/12680458@N08/4098790549",
+    "license": "CC BY 2.0",
+    "artist": "TyB",
+    "source": "flickr",
+    "w": 1024,
+    "h": 717
+   }
+  ]
+ },
+ "s036": {
+  "files": [
+   {
+    "file": "media/s036_0.jpg",
+    "type": "image",
+    "title": "20180519_Greece_4991 crop Philippi sRGB",
+    "page": "https://www.flickr.com/photos/9508280@N07/41983684650",
+    "license": "CC BY-SA 2.0",
+    "artist": "Dan Lundberg",
+    "source": "flickr",
+    "w": 1024,
+    "h": 683
+   }
+  ]
+ },
+ "s038": {
+  "files": [
+   {
+    "file": "media/s038_0.jpg",
+    "type": "image",
+    "title": "Tafel63",
+    "page": "https://www.flickr.com/photos/111072739@N03/11325673093",
+    "license": "Domínio público",
+    "artist": "mbarrett1066",
+    "source": "flickr",
+    "w": 1024,
+    "h": 631
+   }
+  ]
+ },
+ "s040": {
+  "files": [
+   {
+    "file": "media/s040_0.jpg",
+    "type": "image",
+    "title": "Roman collared slaves",
+    "page": "https://www.flickr.com/photos/69223375@N00/4338292346",
+    "license": "CC BY-SA 2.0",
+    "artist": "Biker Jun",
+    "source": "flickr",
+    "w": 1024,
+    "h": 683
+   },
+   {
+    "file": "media/s040_1.jpg",
+    "type": "image",
+    "title": "Funerary Stele of Quintus Sossius Albus - II",
+    "page": "https://www.flickr.com/photos/69716881@N02/49776549883",
+    "license": "CC BY-SA 2.0",
+    "artist": "Egisto Sani",
+    "source": "flickr",
+    "w": 1024,
+    "h": 768
+   }
+  ]
+ },
+ "s048": {
+  "files": [
+   {
+    "file": "media/s048_0.jpg",
+    "type": "image",
+    "title": "20180519_Greece_4986 crop Philippi sRGB",
+    "page": "https://www.flickr.com/photos/9508280@N07/42888982385",
+    "license": "CC BY-SA 2.0",
+    "artist": "Dan Lundberg",
+    "source": "flickr",
+    "w": 1024,
+    "h": 683
+   }
+  ]
+ },
+ "s051": {
+  "files": [
+   {
+    "file": "media/s051_0.jpg",
+    "type": "image",
+    "title": "Otay River water flows into the newly-breached former salt ponds on the San Diego Bay NWR",
+    "page": "https://www.flickr.com/photos/54430347@N04/6518329383",
+    "license": "Domínio público",
+    "artist": "USFWS Pacific Southwest Region",
+    "source": "flickr",
+    "w": 1024,
+    "h": 683
+   }
+  ]
+ },
+ "s053": {
+  "files": [
+   {
+    "file": "media/s053_0.jpg",
+    "type": "image",
+    "title": "Greek inscription",
+    "page": "https://www.flickr.com/photos/14216380@N05/8691970205",
+    "license": "CC BY-SA 2.0",
+    "artist": "simonjenkins' photos",
+    "source": "flickr",
+    "w": 1024,
+    "h": 768
+   }
+  ]
+ },
+ "s054": {
+  "files": [
+   {
+    "file": "media/s054_0.jpg",
+    "type": "image",
+    "title": "Fishbone Murex Shell (10 cm)",
+    "page": "https://www.flickr.com/photos/31119263@N00/234941311",
+    "license": "CC BY 2.0",
+    "artist": "CybersamX",
+    "source": "flickr",
+    "w": 1024,
+    "h": 768
+   }
+  ]
+ },
+ "s055": {
+  "files": [
+   {
+    "file": "media/s055_0.jpg",
+    "type": "image",
+    "title": "Purple Fabric",
+    "page": "https://www.flickr.com/photos/84617037@N00/20349919",
+    "license": "CC BY 2.0",
+    "artist": "Clearly Ambiguous",
+    "source": "flickr",
+    "w": 1024,
+    "h": 779
+   }
+  ]
+ },
+ "s056": {
+  "files": [
+   {
+    "file": "media/s056_0.jpg",
+    "type": "image",
+    "title": "Roman Collection - Great North Museum: Hancock",
+    "page": "https://www.flickr.com/photos/184393744@N06/51592394338",
+    "license": "CC BY-SA 2.0",
+    "artist": "MumblerJamie",
+    "source": "flickr",
+    "w": 1024,
+    "h": 768
+   },
+   {
+    "file": "media/s056_1.jpg",
+    "type": "image",
+    "title": "Samian Ware Mortarium",
+    "page": "https://www.flickr.com/photos/184393744@N06/51592836749",
+    "license": "CC BY-SA 2.0",
+    "artist": "MumblerJamie",
+    "source": "flickr",
+    "w": 1024,
+    "h": 768
+   }
+  ]
+ },
+ "s059": {
+  "files": [
+   {
+    "file": "media/s059_0.jpg",
+    "type": "image",
+    "title": "A loaf of carbonized bread",
+    "page": "https://www.flickr.com/photos/12680458@N08/51358291690",
+    "license": "CC BY 2.0",
+    "artist": "TyB",
+    "source": "flickr",
+    "w": 1024,
+    "h": 768
+   }
+  ]
+ },
+ "s060": {
+  "files": [
+   {
+    "file": "media/s060_0.jpg",
+    "type": "image",
+    "title": "The 'Mona Lisa of the Galilee' (possibly Venus), part of the Dionysus mosaic floor in Sepphoris (Diocaesarea), Israel",
+    "page": "https://www.flickr.com/photos/41523983@N08/15625394652",
+    "license": "CC BY-SA 2.0",
+    "artist": "Following Hadrian",
+    "source": "flickr",
+    "w": 1024,
+    "h": 678
+   }
+  ]
+ },
+ "s062": {
+  "files": [
+   {
+    "file": "media/s062_0.jpg",
+    "type": "image",
+    "title": "Delphi, Temple of Apollo, looking towards the cliffs",
+    "page": "https://www.flickr.com/photos/79983635@N00/87790560",
+    "license": "CC BY-SA 2.0",
+    "artist": "Alun Salt",
+    "source": "flickr",
+    "w": 1024,
+    "h": 757
+   },
+   {
+    "file": "media/s062_1.jpg",
+    "type": "image",
+    "title": "Delphi, The Temple of Apollo",
+    "page": "https://www.flickr.com/photos/79983635@N00/2731824",
+    "license": "CC BY-SA 2.0",
+    "artist": "Alun Salt",
+    "source": "flickr",
+    "w": 1024,
+    "h": 768
+   }
+  ]
+ },
+ "s065": {
+  "files": [
+   {
+    "file": "media/s065_0.jpg",
+    "type": "image",
+    "title": "The imposing basilica next to the Forum and its gagantic pillars, also known as Basilica B, Philippi",
+    "page": "https://www.flickr.com/photos/41523983@N08/7272621716",
+    "license": "CC BY-SA 2.0",
+    "artist": "Following Hadrian",
+    "source": "flickr",
+    "w": 1024,
+    "h": 767
+   },
+   {
+    "file": "media/s065_1.jpg",
+    "type": "image",
+    "title": "The imposing early Christian Basilica (Basilica B) next to the Forum, Philippi",
+    "page": "https://www.flickr.com/photos/41523983@N08/7272605316",
+    "license": "CC BY-SA 2.0",
+    "artist": "Following Hadrian",
+    "source": "flickr",
+    "w": 1024,
+    "h": 767
+   }
+  ]
+ },
+ "s066": {
+  "files": [
+   {
+    "file": "media/s066_0.jpg",
+    "type": "image",
+    "title": "Studies for 'The Conversion of the Jailer before Saint Paul and Silas'",
+    "page": "https://www.metmuseum.org/art/collection/search/339650",
+    "license": "CC0",
+    "artist": "Nicolas de Plattemontagne",
+    "source": "met",
+    "w": 0,
+    "h": 0
+   },
+   {
+    "file": "media/s066_1.jpg",
+    "type": "image",
+    "title": "Philippian Jail? “Paul and Silas locked in jail, Didn't have no one to go their bail.” Philippi, Greece",
+    "page": "https://www.flickr.com/photos/50141284@N04/32861301017",
+    "license": "CC BY-SA 2.0",
+    "artist": "Andy Montgomery",
+    "source": "flickr",
+    "w": 1024,
+    "h": 685
+   }
+  ]
+ },
+ "s069": {
+  "files": [
+   {
+    "file": "media/s069_0.jpg",
+    "type": "image",
+    "title": "Toppled Civilization",
+    "page": "https://www.flickr.com/photos/28490141@N03/12018119424",
+    "license": "CC BY 2.0",
+    "artist": "rabiem22",
+    "source": "flickr",
+    "w": 1024,
+    "h": 683
+   }
+  ]
+ },
+ "s073": {
+  "files": [
+   {
+    "file": "media/s073_0.jpg",
+    "type": "image",
+    "title": "Philippi, Greece",
+    "page": "https://www.flickr.com/photos/50141284@N04/33548020038",
+    "license": "CC BY-SA 2.0",
+    "artist": "Andy Montgomery",
+    "source": "flickr",
+    "w": 1024,
+    "h": 685
+   },
+   {
+    "file": "media/s073_1.jpg",
+    "type": "image",
+    "title": "Theater at Philippi, Greece",
+    "page": "https://www.flickr.com/photos/50141284@N04/11842704023",
+    "license": "CC BY-SA 2.0",
+    "artist": "Andy Montgomery",
+    "source": "flickr",
+    "w": 1024,
+    "h": 685
+   },
+   {
+    "file": "media/s073_2.jpg",
+    "type": "image",
+    "title": "Cruciform baptismal font near Octagonal Church, Philippi, Greece.",
+    "page": "https://www.flickr.com/photos/50141284@N04/11842733963",
+    "license": "CC BY-SA 2.0",
+    "artist": "Andy Montgomery",
+    "source": "flickr",
+    "w": 1024,
+    "h": 685
+   }
+  ]
+ },
+ "s074": {
+  "files": [
+   {
+    "file": "media/s074_0.jpg",
+    "type": "image",
+    "title": "Hermon Springs, Israel",
+    "page": "https://www.flickr.com/photos/79366282@N00/5418346315",
+    "license": "CC BY 2.0",
+    "artist": "wmrice",
+    "source": "flickr",
+    "w": 1024,
+    "h": 685
+   },
+   {
+    "file": "media/s074_1.jpg",
+    "type": "image",
+    "title": "Geeece Philippi",
+    "page": "https://www.flickr.com/photos/17279863@N05/17142288545",
+    "license": "CC BY 2.0",
+    "artist": "Epsilon68 - Street and Travel Photography",
+    "source": "flickr",
+    "w": 1024,
+    "h": 683
+   }
+  ]
+ },
+ "s076": {
+  "files": [
+   {
+    "file": "media/s076_0.jpg",
+    "type": "image",
+    "title": "Roman Agora (or Forum)",
+    "page": "https://www.flickr.com/photos/64379474@N00/6658559893",
+    "license": "CC BY-SA 2.0",
+    "artist": "Tilemahos Efthimiadis",
+    "source": "flickr",
+    "w": 1024,
+    "h": 683
+   }
+  ]
+ },
+ "s080": {
+  "files": [
+   {
+    "file": "media/s080_0.jpg",
+    "type": "image",
+    "title": "Temple of Apollo, Corinth",
+    "page": "https://www.flickr.com/photos/79983635@N00/2759539",
+    "license": "CC BY-SA 2.0",
+    "artist": "Alun Salt",
+    "source": "flickr",
+    "w": 1024,
+    "h": 768
+   },
+   {
+    "file": "media/s080_1.jpg",
+    "type": "image",
+    "title": "Temple of Apollo, Corinth",
+    "page": "https://www.flickr.com/photos/50141284@N04/24615479763",
+    "license": "CC BY-SA 2.0",
+    "artist": "Andy Montgomery",
+    "source": "flickr",
+    "w": 1024,
+    "h": 685
+   },
+   {
+    "file": "media/s080_2.jpg",
+    "type": "image",
+    "title": "Temple of Apollo, Corinth",
+    "page": "https://www.flickr.com/photos/50141284@N04/49345675392",
+    "license": "CC BY-SA 2.0",
+    "artist": "Andy Montgomery",
+    "source": "flickr",
+    "w": 1024,
+    "h": 683
+   }
+  ]
+ },
+ "s083": {
+  "files": [
+   {
+    "file": "media/s083_0.jpg",
+    "type": "image",
+    "title": "Old Working Hands",
+    "page": "https://www.flickr.com/photos/26116603@N05/4462192533",
+    "license": "CC BY-SA 2.0",
+    "artist": "carmen zuniga",
+    "source": "flickr",
+    "w": 1024,
+    "h": 687
+   },
+   {
+    "file": "media/s083_1.jpg",
+    "type": "image",
+    "title": "241/365 - 6/6/2011",
+    "page": "https://www.flickr.com/photos/45642240@N05/5807104182",
+    "license": "CC BY 2.0",
+    "artist": "GabrielaP93",
+    "source": "flickr",
+    "w": 1024,
+    "h": 664
+   },
+   {
+    "file": "media/s083_2.jpg",
+    "type": "image",
+    "title": "The Sewing Machine Whisperer",
+    "page": "https://www.flickr.com/photos/27526538@N07/4450375198",
+    "license": "CC BY-SA 2.0",
+    "artist": "mynameisharsha",
+    "source": "flickr",
+    "w": 1024,
+    "h": 685
+   }
+  ]
+ },
+ "s084": {
+  "files": [
+   {
+    "file": "media/s084_0.jpg",
+    "type": "image",
+    "title": "Drachma Bahram II",
+    "page": "https://www.flickr.com/photos/25182210@N07/5597131989",
+    "license": "CC BY-SA 2.0",
+    "artist": "dynamosquito",
+    "source": "flickr",
+    "w": 1024,
+    "h": 512
+   }
+  ]
+ },
+ "s085": {
+  "files": [
+   {
+    "file": "media/s085_0.jpg",
+    "type": "image",
+    "title": "Fiat money",
+    "page": "https://www.flickr.com/photos/148598741@N02/51651321277",
+    "license": "CC0",
+    "artist": "₡ґǘșϯγ Ɗᶏ Ⱪᶅṏⱳդ",
+    "source": "flickr",
+    "w": 1024,
+    "h": 650
+   },
+   {
+    "file": "media/s085_1.jpg",
+    "type": "image",
+    "title": "Let my people go",
+    "page": "https://www.flickr.com/photos/148598741@N02/53398057368",
+    "license": "CC0",
+    "artist": "₡ґǘșϯγ Ɗᶏ Ⱪᶅṏⱳդ",
+    "source": "flickr",
+    "w": 1024,
+    "h": 647
+   },
+   {
+    "file": "media/s085_2.jpg",
+    "type": "image",
+    "title": "The land and the hills",
+    "page": "https://www.flickr.com/photos/148598741@N02/53797826411",
+    "license": "CC0",
+    "artist": "₡ґǘșϯγ Ɗᶏ Ⱪᶅṏⱳդ",
+    "source": "flickr",
+    "w": 1024,
+    "h": 647
+   }
+  ]
+ },
+ "s086": {
+  "files": [
+   {
+    "file": "media/s086_0.jpg",
+    "type": "image",
+    "title": "Lightning storm over the tree",
+    "page": "https://www.flickr.com/photos/33284937@N04/8976442461",
+    "license": "CC BY 2.0",
+    "artist": "Nick-K (Nikos Koutoulas)",
+    "source": "flickr",
+    "w": 1024,
+    "h": 681
+   }
+  ]
+ },
+ "s089": {
+  "files": [
+   {
+    "file": "media/s089_0.jpg",
+    "type": "image",
+    "title": "Insula -- A Roman Apartment Block at Ostia",
+    "page": "https://www.flickr.com/photos/50141284@N04/8807037687",
+    "license": "CC BY-SA 2.0",
+    "artist": "Andy Montgomery",
+    "source": "flickr",
+    "w": 1024,
+    "h": 685
+   }
+  ]
+ },
+ "s090": {
+  "files": [
+   {
+    "file": "media/s090_0.jpg",
+    "type": "image",
+    "title": "Italy-3134 - Saint Helen's Sarcophagus",
+    "page": "https://www.flickr.com/photos/22490717@N02/5382570580",
+    "license": "CC BY-SA 2.0",
+    "artist": "archer10 (Dennis)",
+    "source": "flickr",
+    "w": 1024,
+    "h": 709
+   }
+  ]
+ },
+ "s091": {
+  "files": [
+   {
+    "file": "media/s091_0.jpg",
+    "type": "image",
+    "title": "Carbonized bread Ruins Pompeii Italy",
+    "page": "https://www.flickr.com/photos/49399018@N00/52689714475",
+    "license": "Domínio público",
+    "artist": "amanderson2",
+    "source": "flickr",
+    "w": 1024,
+    "h": 1024
+   }
+  ]
+ },
+ "s092": {
+  "files": [
+   {
+    "file": "media/s092_0.jpg",
+    "type": "image",
+    "title": "Roman street, Pompeii",
+    "page": "https://www.flickr.com/photos/21550937@N03/6108859627",
+    "license": "CC BY 2.0",
+    "artist": "roy.luck",
+    "source": "flickr",
+    "w": 1024,
+    "h": 672
+   }
+  ]
+ },
+ "s093": {
+  "files": [
+   {
+    "file": "media/s093_0.jpg",
+    "type": "image",
+    "title": "Oil Lamps: #13 Herodian, #14 Roman, #15 Ancient Moab, Early Byzantine, 5th Century AD; #22 Byzantine",
+    "page": "https://www.flickr.com/photos/101561334@N08/10450339555",
+    "license": "CC0",
+    "artist": "Gary Lee Todd, Ph.D.",
+    "source": "flickr",
+    "w": 1024,
+    "h": 683
+   },
+   {
+    "file": "media/s093_1.jpg",
+    "type": "image",
+    "title": "Oil Lamps, Levant, Roman",
+    "page": "https://www.flickr.com/photos/101561334@N08/10450334485",
+    "license": "CC0",
+    "artist": "Gary Lee Todd, Ph.D.",
+    "source": "flickr",
+    "w": 1024,
+    "h": 683
+   }
+  ]
+ },
+ "s094": {
+  "files": [
+   {
+    "file": "media/s094_0.jpg",
+    "type": "image",
+    "title": "Money",
+    "page": "https://www.flickr.com/photos/7174132@N05/3878618029",
+    "license": "CC BY 2.0",
+    "artist": "Jess Pac",
+    "source": "flickr",
+    "w": 1024,
+    "h": 680
+   }
+  ]
+ },
+ "s095": {
+  "files": [
+   {
+    "file": "media/s095_0.jpg",
+    "type": "image",
+    "title": "Pavement near Octagonal Church, Philippi, Greece",
+    "page": "https://www.flickr.com/photos/50141284@N04/11842825544",
+    "license": "CC BY-SA 2.0",
+    "artist": "Andy Montgomery",
+    "source": "flickr",
+    "w": 1024,
+    "h": 685
+   }
+  ]
+ },
+ "s099": {
+  "files": [
+   {
+    "file": "media/s099_0.jpg",
+    "type": "image",
+    "title": "The Circus of Maxentius on the Via Appia Antica (I)",
+    "page": "https://www.flickr.com/photos/34561917@N04/7556345958",
+    "license": "CC BY 2.0",
+    "artist": "isawnyu",
+    "source": "flickr",
+    "w": 1024,
+    "h": 768
+   },
+   {
+    "file": "media/s099_1.jpg",
+    "type": "image",
+    "title": "La Via Appia Antica (Rome)",
+    "page": "https://www.flickr.com/photos/72746018@N00/5979996417",
+    "license": "CC BY 2.0",
+    "artist": "dalbera",
+    "source": "flickr",
+    "w": 1024,
+    "h": 768
+   }
+  ]
+ },
+ "s101": {
+  "files": [
+   {
+    "file": "media/s101_0.jpg",
+    "type": "image",
+    "title": "Roman Forum Panorama",
+    "page": "https://www.flickr.com/photos/47149893@N07/10190205496",
+    "license": "CC BY 2.0",
+    "artist": "Kelly Hunter",
+    "source": "flickr",
+    "w": 1024,
+    "h": 436
+   }
+  ]
+ },
+ "s103": {
+  "files": [
+   {
+    "file": "media/s103_0.jpg",
+    "type": "image",
+    "title": "Papyrus scroll style columns and the step pyramid of Sakkara - P1020591",
+    "page": "https://www.flickr.com/photos/75062596@N00/127799448",
+    "license": "CC BY-SA 2.0",
+    "artist": "Lars Plougmann",
+    "source": "flickr",
+    "w": 1024,
+    "h": 768
+   }
+  ]
+ },
+ "s106": {
+  "files": [
+   {
+    "file": "media/s106_1.jpg",
+    "type": "image",
+    "title": "Photographic Facsimiles of the Remains of the Epistles of Clement of Rome. Made from the Unique Copy Preserved in the Co",
+    "page": "https://www.metmuseum.org/art/collection/search/290386",
+    "license": "CC0",
+    "artist": "Roger Fenton",
+    "source": "met",
+    "w": 0,
+    "h": 0
+   },
+   {
+    "file": "media/s106_2.jpg",
+    "type": "image",
+    "title": "Photographic Facsimiles of the Remains of the Epistles of Clement of Rome. Made from the Unique Copy Preserved in the Co",
+    "page": "https://www.metmuseum.org/art/collection/search/290386",
+    "license": "CC0",
+    "artist": "Roger Fenton",
+    "source": "met",
+    "w": 0,
+    "h": 0
+   },
+   {
+    "file": "media/s106_3.jpg",
+    "type": "image",
+    "title": "Photographic Facsimiles of the Remains of the Epistles of Clement of Rome. Made from the Unique Copy Preserved in the Co",
+    "page": "https://www.metmuseum.org/art/collection/search/290386",
+    "license": "CC0",
+    "artist": "Roger Fenton",
+    "source": "met",
+    "w": 0,
+    "h": 0
+   }
+  ]
+ },
+ "s107": {
+  "files": [
+   {
+    "file": "media/s107_0.jpg",
+    "type": "image",
+    "title": "Rocky Morning",
+    "page": "https://www.flickr.com/photos/35557234@N07/8042036522",
+    "license": "CC BY 2.0",
+    "artist": "Zach Dischner",
+    "source": "flickr",
+    "w": 1024,
+    "h": 683
+   },
+   {
+    "file": "media/s107_1.jpg",
+    "type": "image",
+    "title": "Sunrise on the High Country",
+    "page": "https://www.flickr.com/photos/35557234@N07/8421203825",
+    "license": "CC BY 2.0",
+    "artist": "Zach Dischner",
+    "source": "flickr",
+    "w": 1024,
+    "h": 681
+   },
+   {
+    "file": "media/s107_2.jpg",
+    "type": "image",
+    "title": "Nepal - Sagamartha Trek - 096 - Gokyo and Ngozumpa Gl in sunrise",
+    "page": "https://www.flickr.com/photos/56796376@N00/497676657",
+    "license": "CC BY 2.0",
+    "artist": "mckaysavage",
+    "source": "flickr",
+    "w": 1024,
+    "h": 768
+   }
+  ]
+ },
+ "s109": {
+  "files": [
+   {
+    "file": "media/s109_0.jpg",
+    "type": "image",
+    "title": "Incense smoke against a black sky",
+    "page": "https://www.flickr.com/photos/25056484@N00/377416299",
+    "license": "CC BY 2.0",
+    "artist": "Vanessa Pike-Russell",
+    "source": "flickr",
+    "w": 1024,
+    "h": 768
+   }
+  ]
+ },
+ "s118": {
+  "files": [
+   {
+    "file": "media/s118_0.jpg",
+    "type": "image",
+    "title": "Perseids, again",
+    "page": "https://www.flickr.com/photos/53986933@N00/9495887487",
+    "license": "CC BY 2.0",
+    "artist": "snowpeak",
+    "source": "flickr",
+    "w": 1024,
+    "h": 683
+   },
+   {
+    "file": "media/s118_1.jpg",
+    "type": "image",
+    "title": "Klöntal ( Creative Commons)",
+    "page": "https://www.flickr.com/photos/91619724@N04/26312216755",
+    "license": "CC0",
+    "artist": "Wendelin Jacober",
+    "source": "flickr",
+    "w": 1024,
+    "h": 682
+   }
+  ]
+ },
+ "s119": {
+  "files": [
+   {
+    "file": "media/s119_0.jpg",
+    "type": "image",
+    "title": "Baskets O Bread",
+    "page": "https://www.flickr.com/photos/8510225@N07/7276193516",
+    "license": "CC BY 2.0",
+    "artist": "John Loo",
+    "source": "flickr",
+    "w": 1024,
+    "h": 683
+   },
+   {
+    "file": "media/s119_1.jpg",
+    "type": "image",
+    "title": "Basket of Bread",
+    "page": "https://www.flickr.com/photos/58109006@N05/5455316307",
+    "license": "CC BY 2.0",
+    "artist": "Arcane_Magazine",
+    "source": "flickr",
+    "w": 1024,
+    "h": 768
+   }
+  ]
+ },
+ "s120": {
+  "files": [
+   {
+    "file": "media/s120_0.jpg",
+    "type": "image",
+    "title": "20180519_Greece_4989 Philippi sRGB",
+    "page": "https://www.flickr.com/photos/9508280@N07/43744824162",
+    "license": "CC BY-SA 2.0",
+    "artist": "Dan Lundberg",
+    "source": "flickr",
+    "w": 1024,
+    "h": 683
+   }
+  ]
+ },
+ "s124": {
+  "files": [
+   {
+    "file": "media/s124_0.jpg",
+    "type": "image",
+    "title": "Seeding by hand - Sandy P.",
+    "page": "https://www.flickr.com/photos/48268815@N02/6241568145",
+    "license": "CC BY 2.0",
+    "artist": "Seattle Parks & Recreation",
+    "source": "flickr",
+    "w": 1024,
+    "h": 768
+   },
+   {
+    "file": "media/s124_1.jpg",
+    "type": "image",
+    "title": "Bean Seeds in Hand",
+    "page": "https://www.flickr.com/photos/184594136@N08/53489472349",
+    "license": "CC0",
+    "artist": "Alabama Extension",
+    "source": "flickr",
+    "w": 1024,
+    "h": 631
+   }
+  ]
+ },
+ "s125": {
+  "files": [
+   {
+    "file": "media/s125_0.jpg",
+    "type": "image",
+    "title": "Farm work",
+    "page": "https://www.flickr.com/photos/7884952@N07/17756852284",
+    "license": "CC BY 2.0",
+    "artist": "Global Justice Now",
+    "source": "flickr",
+    "w": 1024,
+    "h": 683
+   }
+  ]
+ },
+ "s133": {
+  "files": [
+   {
+    "file": "media/s133_0.jpg",
+    "type": "image",
+    "title": "Golden sunrise and fog Big Lake, Oregon",
+    "page": "https://www.flickr.com/photos/66741228@N05/51511926478",
+    "license": "Domínio público",
+    "artist": "Bonnie Moreland (free images)",
+    "source": "flickr",
+    "w": 1024,
+    "h": 681
+   },
+   {
+    "file": "media/s133_1.jpg",
+    "type": "image",
+    "title": "Sunrise on the Dunes",
+    "page": "https://www.flickr.com/photos/50169152@N06/11518763494",
+    "license": "CC BY 2.0",
+    "artist": "BLM Oregon & Washington",
+    "source": "flickr",
+    "w": 1024,
+    "h": 683
+   }
+  ]
+ },
+ "s135": {
+  "files": [
+   {
+    "file": "media/s135_0.jpg",
+    "type": "image",
+    "title": "081214 cash money",
+    "page": "https://www.flickr.com/photos/43264265@N00/3107012743",
+    "license": "CC BY 2.0",
+    "artist": "Dan4th",
+    "source": "flickr",
+    "w": 1024,
+    "h": 768
+   },
+   {
+    "file": "media/s135_1.jpg",
+    "type": "image",
+    "title": "Pile of Euro Notes",
+    "page": "https://www.flickr.com/photos/59937401@N07/5856649637",
+    "license": "CC BY 2.0",
+    "artist": "Images_of_Money",
+    "source": "flickr",
+    "w": 1024,
+    "h": 768
+   }
+  ]
+ },
+ "s139": {
+  "files": [
+   {
+    "file": "media/s139_0.jpg",
+    "type": "image",
+    "title": "The octagonal Basilica, Philippi",
+    "page": "https://www.flickr.com/photos/41523983@N08/7272817614",
+    "license": "CC BY-SA 2.0",
+    "artist": "Following Hadrian",
+    "source": "flickr",
+    "w": 1024,
+    "h": 768
+   },
+   {
+    "file": "media/s139_1.jpg",
+    "type": "image",
+    "title": "The octagonal Basilica, Philippi",
+    "page": "https://www.flickr.com/photos/41523983@N08/7272814622",
+    "license": "CC BY-SA 2.0",
+    "artist": "Following Hadrian",
+    "source": "flickr",
+    "w": 1024,
+    "h": 768
+   }
+  ]
+ },
+ "s140": {
+  "files": [
+   {
+    "file": "media/s140_0.jpg",
+    "type": "image",
+    "title": "Candle flame",
+    "page": "https://www.flickr.com/photos/26079562@N00/534277331",
+    "license": "CC BY-SA 2.0",
+    "artist": "Pitel",
+    "source": "flickr",
+    "w": 1024,
+    "h": 770
+   }
+  ]
+ },
+ "s143": {
+  "files": [
+   {
+    "file": "media/s143_0.jpg",
+    "type": "image",
+    "title": "Family on Christmas Eve",
+    "page": "https://www.flickr.com/photos/47264866@N00/8366231706",
+    "license": "CC BY 2.0",
+    "artist": "OakleyOriginals",
+    "source": "flickr",
+    "w": 1024,
+    "h": 768
+   }
+  ]
+ },
+ "s145": {
+  "files": [
+   {
+    "file": "media/s145_0.jpg",
+    "type": "image",
+    "title": "Ruins of a large three-aisled early christian Basilica (Basilica A), end of 5th century AD, Philippi",
+    "page": "https://www.flickr.com/photos/41523983@N08/7272396478",
+    "license": "CC BY-SA 2.0",
+    "artist": "Following Hadrian",
+    "source": "flickr",
+    "w": 1024,
+    "h": 768
+   },
+   {
+    "file": "media/s145_1.jpg",
+    "type": "image",
+    "title": "Ruins of a large three-aisled early christian Basilica (Basilica A), end of 5th century AD, Philippi",
+    "page": "https://www.flickr.com/photos/41523983@N08/7272389818",
+    "license": "CC BY-SA 2.0",
+    "artist": "Following Hadrian",
+    "source": "flickr",
+    "w": 1024,
+    "h": 768
+   }
+  ]
+ },
+ "s146": {
+  "files": [
+   {
+    "file": "media/s146_0.jpg",
+    "type": "image",
+    "title": "Praying Hands HDR",
+    "page": "https://www.flickr.com/photos/32825651@N05/4492880296",
+    "license": "CC BY 2.0",
+    "artist": "Alejandro Hernandez.",
+    "source": "flickr",
+    "w": 1024,
+    "h": 678
+   },
+   {
+    "file": "media/s146_1.jpg",
+    "type": "image",
+    "title": "Praying hands",
+    "page": "https://www.flickr.com/photos/26085795@N02/4549675065",
+    "license": "CC BY 2.0",
+    "artist": "jemasmith",
+    "source": "flickr",
+    "w": 1024,
+    "h": 870
+   }
+  ]
+ },
+ "s147": {
+  "files": [
+   {
+    "file": "media/s147_0.jpg",
+    "type": "image",
+    "title": "Emerald Bay Sunrise",
+    "page": "https://www.flickr.com/photos/50663863@N02/35300225610",
+    "license": "CC BY 2.0",
+    "artist": "Jaykhuang",
+    "source": "flickr",
+    "w": 1024,
+    "h": 576
+   },
+   {
+    "file": "media/s147_1.jpg",
+    "type": "image",
+    "title": "4:30 am.",
+    "page": "http://www.flickr.com/photos/72791630@N00/18565119729",
+    "license": "CC BY 2.0",
+    "artist": "Ryan Hallock",
+    "source": "flickr",
+    "w": 1024,
+    "h": 683
+   }
+  ]
+ },
+ "s148": {
+  "files": [
+   {
+    "file": "media/s148_0.jpg",
+    "type": "image",
+    "title": "Ancient Theatre, built by Philip II in the 4th century BC and later reconstructed by the Romans, Philippi",
+    "page": "https://www.flickr.com/photos/41523983@N08/7272297822",
+    "license": "CC BY-SA 2.0",
+    "artist": "Following Hadrian",
+    "source": "flickr",
+    "w": 1024,
+    "h": 768
+   }
+  ]
+ },
+ "s150": {
+  "files": [
+   {
+    "file": "media/s150_0.jpg",
+    "type": "image",
+    "title": "The Via Egnatia near Peqin, Albania",
+    "page": "https://www.flickr.com/photos/41523983@N08/27820521359",
+    "license": "CC BY-SA 2.0",
+    "artist": "Following Hadrian",
+    "source": "flickr",
+    "w": 1024,
+    "h": 678
+   }
+  ]
+ },
+ "s155": {
+  "files": [
+   {
+    "file": "media/s155_0.jpg",
+    "type": "image",
+    "title": "Old Wooden Doors",
+    "page": "https://www.flickr.com/photos/155403590@N07/46973051342",
+    "license": "CC BY 2.0",
+    "artist": "dejankrsmanovic",
+    "source": "flickr",
+    "w": 1024,
+    "h": 710
+   }
+  ]
+ },
+ "s001": {
+  "files": [
+   {
+    "file": "media/s001_0r.jpg",
+    "type": "image",
+    "title": "TP145 'Fool's Gold on Fool's Day' :-)",
+    "page": "https://www.flickr.com/photos/56380734@N05/6890459812",
+    "license": "CC BY-SA 2.0",
+    "artist": "Jens Rost",
+    "source": "flickr",
+    "w": 1024,
+    "h": 768
+   }
+  ],
+  "fixed": true
+ },
+ "s002": {
+  "files": [
+   {
+    "file": "media/s002_0r.jpg",
+    "type": "image",
+    "title": "Regina city night lights",
+    "page": "https://www.flickr.com/photos/10154402@N03/7572253262",
+    "license": "CC BY 2.0",
+    "artist": "Bruce Guenter",
+    "source": "flickr",
+    "w": 1024,
+    "h": 683
+   },
+   {
+    "file": "media/s002_1r.jpg",
+    "type": "image",
+    "title": "“往上看 Look Up” / 城市建築夜之形 Urban Architecture Night Forms / SML.20130216.EOSM.02179.BW.P1",
+    "page": "https://www.flickr.com/photos/48973657@N00/8481570294",
+    "license": "CC BY 2.0",
+    "artist": "See-ming Lee (SML)",
+    "source": "flickr",
+    "w": 1024,
+    "h": 683
+   }
+  ],
+  "fixed": true
+ },
+ "s003": {
+  "files": [
+   {
+    "file": "media/s003_0r.jpg",
+    "type": "image",
+    "title": "Sunrise over a mountain range with golden light spreading across a sea of clouds.",
+    "page": "https://wordpress.org/photos/photo/5086a17138/",
+    "license": "CC0",
+    "artist": "Sandip lamichhane",
+    "source": "wordpress",
+    "w": 2048,
+    "h": 1536
+   }
+  ],
+  "fixed": true
+ },
+ "s004": {
+  "files": [
+   {
+    "file": "media/s004_0r.jpg",
+    "type": "image",
+    "title": "Papyrus in Greek regarding tax issues (3rd ca. BC.)",
+    "page": "https://www.flickr.com/photos/64379474@N00/3210586934",
+    "license": "CC BY 2.0",
+    "artist": "Tilemahos Efthimiadis",
+    "source": "flickr",
+    "w": 1024,
+    "h": 633
+   },
+   {
+    "file": "media/s004_1r.jpg",
+    "type": "image",
+    "title": "Cosmographia.",
+    "page": "https://www.flickr.com/photos/24528911@N05/2709976847",
+    "license": "CC BY 2.0",
+    "artist": "Norman B. Leventhal Map Center at the BPL",
+    "source": "flickr",
+    "w": 1024,
+    "h": 719
+   }
+  ],
+  "fixed": true
+ },
+ "s006": {
+  "files": [
+   {
+    "file": "media/s006_0r.jpg",
+    "type": "image",
+    "title": "daisy-iron-chain",
+    "page": "https://www.flickr.com/photos/42741557@N05/4413425552",
+    "license": "CC BY-SA 2.0",
+    "artist": "Vassilis Online",
+    "source": "flickr",
+    "w": 1024,
+    "h": 831
+   }
+  ],
+  "fixed": true
+ },
+ "s009": {
+  "files": [
+   {
+    "file": "media/s009_0r.jpg",
+    "type": "image",
+    "title": "Panorámica de Teotihuacan",
+    "page": "https://www.flickr.com/photos/67475910@N00/249289782",
+    "license": "CC BY 2.0",
+    "artist": "bdebaca",
+    "source": "flickr",
+    "w": 1024,
+    "h": 541
+   }
+  ],
+  "fixed": true
+ },
+ "s011": {
+  "files": [
+   {
+    "file": "media/s011_0r.jpg",
+    "type": "image",
+    "title": "Wine",
+    "page": "https://www.flickr.com/photos/27496606@N08/3020750515",
+    "license": "CC BY 2.0",
+    "artist": "quacktaculous",
+    "source": "flickr",
+    "w": 1024,
+    "h": 768
+   }
+  ],
+  "fixed": true
+ },
+ "s012": {
+  "files": [
+   {
+    "file": "media/s012_0r.jpg",
+    "type": "image",
+    "title": "Stanley Lake Marsh Idaho",
+    "page": "https://www.flickr.com/photos/36224384@N08/48123651221",
+    "license": "CC BY 2.0",
+    "artist": "Knowles Gallery",
+    "source": "flickr",
+    "w": 1024,
+    "h": 576
+   }
+  ],
+  "fixed": true
+ },
+ "s013": {
+  "files": [
+   {
+    "file": "media/s013_0r.jpg",
+    "type": "image",
+    "title": "Musa Praying Hands",
+    "page": "https://www.flickr.com/photos/24495410@N03/5022132236",
+    "license": "CC BY-SA 2.0",
+    "artist": "MeganEHansen",
+    "source": "flickr",
+    "w": 1024,
+    "h": 843
+   },
+   {
+    "file": "media/s013_1r.jpg",
+    "type": "image",
+    "title": "Praying Hands Statue, North West Province",
+    "page": "https://www.flickr.com/photos/25779097@N08/6252706501",
+    "license": "CC BY 2.0",
+    "artist": "South African Tourism",
+    "source": "flickr",
+    "w": 1024,
+    "h": 683
+   }
+  ],
+  "fixed": true
+ },
+ "s015": {
+  "files": [
+   {
+    "file": "media/s015_0r.jpg",
+    "type": "image",
+    "title": "Man, reading Newspaper",
+    "page": "https://www.flickr.com/photos/96323831@N06/15983890292",
+    "license": "CC BY-SA 2.0",
+    "artist": "kohlmann.sascha",
+    "source": "flickr",
+    "w": 1024,
+    "h": 768
+   }
+  ],
+  "fixed": true
+ },
+ "s016": {
+  "files": [
+   {
+    "file": "media/s016_0r.jpg",
+    "type": "image",
+    "title": "Construction Worker, Amsterdam",
+    "page": "https://www.flickr.com/photos/36222964@N08/4381171577",
+    "license": "CC BY-SA 2.0",
+    "artist": "mbrochh",
+    "source": "flickr",
+    "w": 1024,
+    "h": 768
+   }
+  ],
+  "fixed": true
+ },
+ "s017": {
+  "files": [
+   {
+    "file": "media/s017_0r.jpg",
+    "type": "image",
+    "title": "dinner",
+    "page": "https://www.flickr.com/photos/25384802@N08/4903028351",
+    "license": "CC BY-SA 2.0",
+    "artist": "jasleen_kaur",
+    "source": "flickr",
+    "w": 1024,
+    "h": 697
+   }
+  ],
+  "fixed": true
+ },
+ "s028": {
+  "files": [
+   {
+    "file": "media/s028_0r.jpg",
+    "type": "image",
+    "title": "Modern & ancient paving stones_1246",
+    "page": "https://www.flickr.com/photos/62126383@N00/514184006",
+    "license": "CC BY 2.0",
+    "artist": "hoyasmeg",
+    "source": "flickr",
+    "w": 1024,
+    "h": 768
+   },
+   {
+    "file": "media/s028_1r.jpg",
+    "type": "image",
+    "title": "Aerial view of the city of Dion, Ancient Dion",
+    "page": "https://www.flickr.com/photos/41523983@N08/7094436303",
+    "license": "CC BY-SA 2.0",
+    "artist": "Following Hadrian",
+    "source": "flickr",
+    "w": 1024,
+    "h": 533
+   }
+  ],
+  "fixed": true
+ },
+ "s037": {
+  "files": [
+   {
+    "file": "media/s037_0r.jpg",
+    "type": "image",
+    "title": "The Pantheon (VI)",
+    "page": "https://www.flickr.com/photos/34561917@N04/7346274352",
+    "license": "CC BY 2.0",
+    "artist": "isawnyu",
+    "source": "flickr",
+    "w": 1024,
+    "h": 768
+   }
+  ],
+  "fixed": true
+ },
+ "s039": {
+  "files": [
+   {
+    "file": "media/s039_0r.jpg",
+    "type": "image",
+    "title": "Philippi ruins",
+    "page": "https://www.flickr.com/photos/33037982@N04/3753499900",
+    "license": "CC BY-SA 2.0",
+    "artist": "wallygrom",
+    "source": "flickr",
+    "w": 1024,
+    "h": 769
+   }
+  ],
+  "fixed": true
+ },
+ "s041": {
+  "files": [
+   {
+    "file": "media/s041_0r.jpg",
+    "type": "image",
+    "title": "Rushing to work",
+    "page": "https://www.flickr.com/photos/60291025@N05/12341797005",
+    "license": "CC BY-SA 2.0",
+    "artist": "pavlinajane",
+    "source": "flickr",
+    "w": 1024,
+    "h": 684
+   },
+   {
+    "file": "media/s041_1r.jpg",
+    "type": "image",
+    "title": "Day 8 Occupy Wall Street September 24 2011 Shankbone",
+    "page": "https://www.flickr.com/photos/27865228@N06/6179020369",
+    "license": "CC BY 2.0",
+    "artist": "david_shankbone",
+    "source": "flickr",
+    "w": 1024,
+    "h": 766
+   }
+  ],
+  "fixed": true
+ },
+ "s042": {
+  "files": [
+   {
+    "file": "media/s042_0r.jpg",
+    "type": "image",
+    "title": "Synagogue at Capernaum (400 AD)",
+    "page": "https://www.flickr.com/photos/79366282@N00/5418356155",
+    "license": "CC BY 2.0",
+    "artist": "wmrice",
+    "source": "flickr",
+    "w": 1024,
+    "h": 685
+   },
+   {
+    "file": "media/s042_1r.jpg",
+    "type": "image",
+    "title": "Cells b/w church & synagogue_0937",
+    "page": "https://www.flickr.com/photos/62126383@N00/507864245",
+    "license": "CC BY 2.0",
+    "artist": "hoyasmeg",
+    "source": "flickr",
+    "w": 1024,
+    "h": 768
+   },
+   {
+    "file": "media/s042_2r.jpg",
+    "type": "image",
+    "title": "Near the site of the Synagogue Dura Europos",
+    "page": "https://www.flickr.com/photos/58789412@N00/4103178762",
+    "license": "CC BY 2.0",
+    "artist": "Verity Cridland",
+    "source": "flickr",
+    "w": 1024,
+    "h": 766
+   }
+  ],
+  "fixed": true
+ },
+ "s043": {
+  "files": [
+   {
+    "file": "media/s043_0r.jpg",
+    "type": "image",
+    "title": "Waterfall Palenque Mexico one of my favorites",
+    "page": "https://www.flickr.com/photos/24028533@N03/2297190795",
+    "license": "CC BY 2.0",
+    "artist": "zoutedrop",
+    "source": "flickr",
+    "w": 1024,
+    "h": 744
+   }
+  ],
+  "fixed": true
+ },
+ "s044": {
+  "files": [
+   {
+    "file": "media/s044_0r.jpg",
+    "type": "image",
+    "title": "Grand Canyon National Park: Indian Garden 2361",
+    "page": "https://www.flickr.com/photos/50693818@N08/6064261692",
+    "license": "CC BY 2.0",
+    "artist": "Grand Canyon NPS",
+    "source": "flickr",
+    "w": 1024,
+    "h": 681
+   }
+  ],
+  "fixed": true
+ },
+ "s045": {
+  "files": [
+   {
+    "file": "media/s045_0r.jpg",
+    "type": "image",
+    "title": "Italy-3207 - Sistine Chapel",
+    "page": "https://www.flickr.com/photos/22490717@N02/5387280513",
+    "license": "CC BY-SA 2.0",
+    "artist": "archer10 (Dennis)",
+    "source": "flickr",
+    "w": 1024,
+    "h": 680
+   },
+   {
+    "file": "media/s045_1r.jpg",
+    "type": "image",
+    "title": "Italy-3227",
+    "page": "https://www.flickr.com/photos/22490717@N02/5387852246",
+    "license": "CC BY-SA 2.0",
+    "artist": "archer10 (Dennis)",
+    "source": "flickr",
+    "w": 1024,
+    "h": 709
+   }
+  ],
+  "fixed": true
+ },
+ "s046": {
+  "files": [
+   {
+    "file": "media/s046_0r.jpg",
+    "type": "image",
+    "title": "Savanna Army Depot",
+    "page": "https://www.flickr.com/photos/88876166@N00/14928341554",
+    "license": "CC BY 2.0",
+    "artist": "Phil Roeder",
+    "source": "flickr",
+    "w": 1024,
+    "h": 683
+   },
+   {
+    "file": "media/s046_1r.jpg",
+    "type": "image",
+    "title": "2011.05 - 'Street art on an dark-green wooden door', urban collage of tags; geotag free urban picture, in public domain ",
+    "page": "https://www.flickr.com/photos/104736837@N03/11148044485",
+    "license": "CC0",
+    "artist": "Amsterdam free photos & pictures of the Dutch city",
+    "source": "flickr",
+    "w": 1024,
+    "h": 683
+   }
+  ],
+  "fixed": true
+ },
+ "s047": {
+  "files": [
+   {
+    "file": "media/s047_0r.jpg",
+    "type": "image",
+    "title": "Ephesus",
+    "page": "https://www.flickr.com/photos/31873441@N06/7379309702",
+    "license": "CC BY 2.0",
+    "artist": "Nikonic (Lantro Photography)",
+    "source": "flickr",
+    "w": 1024,
+    "h": 660
+   }
+  ],
+  "fixed": true
+ },
+ "s050": {
+  "files": [
+   {
+    "file": "media/s050_0r.jpg",
+    "type": "image",
+    "title": "Mosaics in situ, Archeological site, Philippi, Greece",
+    "page": "https://www.flickr.com/photos/50141284@N04/33927882048",
+    "license": "CC BY-SA 2.0",
+    "artist": "Andy Montgomery",
+    "source": "flickr",
+    "w": 1024,
+    "h": 685
+   }
+  ],
+  "fixed": true
+ },
+ "s052": {
+  "files": [
+   {
+    "file": "media/s052_0r.jpg",
+    "type": "image",
+    "title": "Morning Light",
+    "page": "https://www.flickr.com/photos/56218409@N03/14323302056",
+    "license": "CC BY 2.0",
+    "artist": "mripp",
+    "source": "flickr",
+    "w": 1024,
+    "h": 666
+   }
+  ],
+  "fixed": true
+ },
+ "s057": {
+  "files": [
+   {
+    "file": "media/s057_0r.jpg",
+    "type": "image",
+    "title": "Stream outside of Philippi",
+    "page": "https://www.flickr.com/photos/50141284@N04/8909100582",
+    "license": "CC BY-SA 2.0",
+    "artist": "Andy Montgomery",
+    "source": "flickr",
+    "w": 1024,
+    "h": 686
+   },
+   {
+    "file": "media/s057_1r.jpg",
+    "type": "image",
+    "title": "Cruciform Baptistry: site commemorating the conversion and baptism of Lydia, the first European convert during Paul’s mi",
+    "page": "https://www.flickr.com/photos/50141284@N04/47804765151",
+    "license": "CC BY-SA 2.0",
+    "artist": "Andy Montgomery",
+    "source": "flickr",
+    "w": 1024,
+    "h": 685
+   }
+  ],
+  "fixed": true
+ },
+ "s058": {
+  "files": [
+   {
+    "file": "media/s058_0r.jpg",
+    "type": "image",
+    "title": "Herculaneum - Cardo IV Inferiore - Casa del Salone Nero - courtyard",
+    "page": "https://www.flickr.com/photos/39415781@N06/7632306310",
+    "license": "CC BY 2.0",
+    "artist": "ell brown",
+    "source": "flickr",
+    "w": 1024,
+    "h": 768
+   },
+   {
+    "file": "media/s058_1r.jpg",
+    "type": "image",
+    "title": "Herculaneum - Cardo IV Inferiore - Casa del Salone Nero",
+    "page": "https://www.flickr.com/photos/39415781@N06/7632297682",
+    "license": "CC BY 2.0",
+    "artist": "ell brown",
+    "source": "flickr",
+    "w": 1024,
+    "h": 768
+   }
+  ],
+  "fixed": true
+ },
+ "s061": {
+  "files": [
+   {
+    "file": "media/s061_0r.jpg",
+    "type": "image",
+    "title": "Ancient Agora Ruins",
+    "page": "https://www.flickr.com/photos/38315261@N00/3369484359",
+    "license": "CC BY 2.0",
+    "artist": "Sharon Mollerus",
+    "source": "flickr",
+    "w": 1024,
+    "h": 683
+   }
+  ],
+  "fixed": true
+ },
+ "s063": {
+  "files": [
+   {
+    "file": "media/s063_0r.jpg",
+    "type": "image",
+    "title": "Fruits de Paul Cézanne (Fondation Louis Vuitton, Paris)",
+    "page": "https://www.flickr.com/photos/72746018@N00/31113351353",
+    "license": "CC BY 2.0",
+    "artist": "dalbera",
+    "source": "flickr",
+    "w": 1024,
+    "h": 893
+   },
+   {
+    "file": "media/s063_1r.jpg",
+    "type": "image",
+    "title": "'Montagne Sainte-Victoire' de P. Cézanne (Fondation Vuitton, Paris)",
+    "page": "https://www.flickr.com/photos/72746018@N00/51593495138",
+    "license": "CC BY 2.0",
+    "artist": "dalbera",
+    "source": "flickr",
+    "w": 1024,
+    "h": 801
+   }
+  ],
+  "fixed": true
+ },
+ "s064": {
+  "files": [
+   {
+    "file": "media/s064_0r.jpg",
+    "type": "image",
+    "title": "Roman Silver Coins, 300-400AD",
+    "page": "https://www.flickr.com/photos/68932647@N00/53632096990",
+    "license": "CC BY 2.0",
+    "artist": "Tim Sheerman-Chase",
+    "source": "flickr",
+    "w": 1024,
+    "h": 768
+   },
+   {
+    "file": "media/s064_1r.jpg",
+    "type": "image",
+    "title": "Roman Silver Coins, 300-400AD",
+    "page": "https://www.flickr.com/photos/68932647@N00/53632032325",
+    "license": "CC BY 2.0",
+    "artist": "Tim Sheerman-Chase",
+    "source": "flickr",
+    "w": 1024,
+    "h": 768
+   }
+  ],
+  "fixed": true
+ },
+ "s067": {
+  "files": [
+   {
+    "file": "media/s067_0r.jpg",
+    "type": "image",
+    "title": "why is the sky blue?",
+    "page": "https://www.flickr.com/photos/50206319@N00/112909824",
+    "license": "CC BY-SA 2.0",
+    "artist": "optick",
+    "source": "flickr",
+    "w": 1024,
+    "h": 754
+   },
+   {
+    "file": "media/s067_1r.jpg",
+    "type": "image",
+    "title": "Mývatn, Dimmuborgir",
+    "page": "https://www.flickr.com/photos/67769030@N07/6803376833",
+    "license": "CC BY 2.0",
+    "artist": "Arian Zwegers",
+    "source": "flickr",
+    "w": 1024,
+    "h": 683
+   }
+  ],
+  "fixed": true
+ },
+ "s068": {
+  "files": [
+   {
+    "file": "media/s068_0r.jpg",
+    "type": "image",
+    "title": "Bondage Breaker. Walking with a friend in the dark is better than walking alone in the light. — Helen Keller",
+    "page": "https://www.flickr.com/photos/12203485@N05/34599693350",
+    "license": "CC0",
+    "artist": "J316",
+    "source": "flickr",
+    "w": 1024,
+    "h": 684
+   },
+   {
+    "file": "media/s068_1r.jpg",
+    "type": "image",
+    "title": "Prison Bars",
+    "page": "https://www.flickr.com/photos/26782864@N00/3256155178",
+    "license": "CC BY 2.0",
+    "artist": "wwarby",
+    "source": "flickr",
+    "w": 1024,
+    "h": 768
+   }
+  ],
+  "fixed": true
+ },
+ "s070": {
+  "files": [
+   {
+    "file": "media/s070_0r.jpg",
+    "type": "image",
+    "title": "20180519_Greece_4985 crop Philippi sRGB",
+    "page": "https://www.flickr.com/photos/9508280@N07/42888987245",
+    "license": "CC BY-SA 2.0",
+    "artist": "Dan Lundberg",
+    "source": "flickr",
+    "w": 1024,
+    "h": 683
+   },
+   {
+    "file": "media/s070_1r.jpg",
+    "type": "image",
+    "title": "20180519_Greece_4987 Philippi sRGB",
+    "page": "https://www.flickr.com/photos/9508280@N07/28856383127",
+    "license": "CC BY-SA 2.0",
+    "artist": "Dan Lundberg",
+    "source": "flickr",
+    "w": 1024,
+    "h": 683
+   },
+   {
+    "file": "media/s070_2r.jpg",
+    "type": "image",
+    "title": "20180519_Greece_4990 crop Philippi sRGB",
+    "page": "https://www.flickr.com/photos/9508280@N07/43792471331",
+    "license": "CC BY-SA 2.0",
+    "artist": "Dan Lundberg",
+    "source": "flickr",
+    "w": 1024,
+    "h": 683
+   },
+   {
+    "file": "media/s070_3r.jpg",
+    "type": "image",
+    "title": "Studies for 'The Conversion of the Jailer before Saint Paul and Silas'",
+    "page": "https://www.metmuseum.org/art/collection/search/339650",
+    "license": "CC0",
+    "artist": "Nicolas de Plattemontagne",
+    "source": "met",
+    "w": 0,
+    "h": 0
+   }
+  ],
+  "fixed": true
+ },
+ "s071": {
+  "files": [
+   {
+    "file": "media/s071_0r.jpg",
+    "type": "image",
+    "title": "A detail from part of an early 4th century AD mosaic depicting a basket of snails belonging to the floor of the Theodori",
+    "page": "https://www.flickr.com/photos/41523983@N08/21410819623",
+    "license": "CC BY-SA 2.0",
+    "artist": "Following Hadrian",
+    "source": "flickr",
+    "w": 1024,
+    "h": 678
+   },
+   {
+    "file": "media/s071_1r.jpg",
+    "type": "image",
+    "title": "Scarborough, St Mary's church, interior",
+    "page": "https://www.flickr.com/photos/78914786@N06/42868348692",
+    "license": "CC BY 2.0",
+    "artist": "Jules & Jenny",
+    "source": "flickr",
+    "w": 1024,
+    "h": 667
+   }
+  ],
+  "fixed": true
+ },
+ "s072": {
+  "files": [
+   {
+    "file": "media/s072_0r.jpg",
+    "type": "image",
+    "title": "Bulgaria-0530 - Church of St George",
+    "page": "https://www.flickr.com/photos/22490717@N02/7390197446",
+    "license": "CC BY-SA 2.0",
+    "artist": "archer10 (Dennis)",
+    "source": "flickr",
+    "w": 1024,
+    "h": 680
+   },
+   {
+    "file": "media/s072_1r.jpg",
+    "type": "image",
+    "title": "St. Mercurios Killing King Oleonus (St. Mercurios Killing Emperor Julian the Apostate)",
+    "page": "https://www.flickr.com/photos/40595948@N00/3309043161",
+    "license": "CC BY 2.0",
+    "artist": "A.Davey",
+    "source": "flickr",
+    "w": 1024,
+    "h": 676
+   }
+  ],
+  "fixed": true
+ },
+ "s077": {
+  "files": [
+   {
+    "file": "media/s077_0r.jpg",
+    "type": "image",
+    "title": "Tools of the trade",
+    "page": "https://www.flickr.com/photos/46282282@N00/8541292238",
+    "license": "CC BY 2.0",
+    "artist": "mr.bmonroe",
+    "source": "flickr",
+    "w": 1024,
+    "h": 721
+   },
+   {
+    "file": "media/s077_1r.jpg",
+    "type": "image",
+    "title": "Antique leatherworking hand tools",
+    "page": "https://www.flickr.com/photos/91994044@N00/39626485881",
+    "license": "CC BY 2.0",
+    "artist": "quinet",
+    "source": "flickr",
+    "w": 1024,
+    "h": 683
+   }
+  ],
+  "fixed": true
+ },
+ "s078": {
+  "files": [
+   {
+    "file": "media/s078_0r.jpg",
+    "type": "image",
+    "title": "Mini travels | [Day 9/365]",
+    "page": "https://www.flickr.com/photos/11301657@N02/2936718142",
+    "license": "CC BY 2.0",
+    "artist": "rocknroll_guitar",
+    "source": "flickr",
+    "w": 1024,
+    "h": 854
+   }
+  ],
+  "fixed": true
+ },
+ "s079": {
+  "files": [
+   {
+    "file": "media/s079_0r.jpg",
+    "type": "image",
+    "title": "Portion of an ms. paper leaf written in German (in a postmedieval hand?) used as binder's waste",
+    "page": "https://www.flickr.com/photos/58558794@N07/6786063722",
+    "license": "CC0",
+    "artist": "Provenance Online Project",
+    "source": "flickr",
+    "w": 1024,
+    "h": 830
+   },
+   {
+    "file": "media/s079_1r.jpg",
+    "type": "image",
+    "title": "Scribes. Egyptian artifacts. National Archaeological Museum. Athens, Greece",
+    "page": "https://www.flickr.com/photos/64379474@N00/4334538594",
+    "license": "CC BY 2.0",
+    "artist": "Tilemahos Efthimiadis",
+    "source": "flickr",
+    "w": 1024,
+    "h": 918
+   }
+  ],
+  "fixed": true
+ },
+ "s081": {
+  "files": [
+   {
+    "file": "media/s081_0r.jpg",
+    "type": "image",
+    "title": "LIFE IN A GREEK VILLAGE SQUARE. 2",
+    "page": "https://www.flickr.com/photos/46781500@N00/8598869566",
+    "license": "CC BY-SA 2.0",
+    "artist": "ronsaunders47",
+    "source": "flickr",
+    "w": 1024,
+    "h": 773
+   },
+   {
+    "file": "media/s081_1r.jpg",
+    "type": "image",
+    "title": "LIFE IN A GREEK VILLAGE SQUARE. 3",
+    "page": "https://www.flickr.com/photos/46781500@N00/8598869236",
+    "license": "CC BY-SA 2.0",
+    "artist": "ronsaunders47",
+    "source": "flickr",
+    "w": 1024,
+    "h": 773
+   }
+  ],
+  "fixed": true
+ },
+ "s082": {
+  "files": [
+   {
+    "file": "media/s082_0r.jpg",
+    "type": "image",
+    "title": "Jerusalem Old City Wall",
+    "page": "https://www.flickr.com/photos/101561334@N08/43127797042",
+    "license": "CC0",
+    "artist": "Gary Lee Todd, Ph.D.",
+    "source": "flickr",
+    "w": 1024,
+    "h": 683
+   },
+   {
+    "file": "media/s082_1r.jpg",
+    "type": "image",
+    "title": "Jerusalem Old City Wall Arrow Slit",
+    "page": "https://www.flickr.com/photos/101561334@N08/41384506240",
+    "license": "CC0",
+    "artist": "Gary Lee Todd, Ph.D.",
+    "source": "flickr",
+    "w": 1024,
+    "h": 683
+   }
+  ],
+  "fixed": true
+ },
+ "s088": {
+  "files": [
+   {
+    "file": "media/s088_0r.jpg",
+    "type": "image",
+    "title": "Beach, Barbados",
+    "page": "https://www.flickr.com/photos/9298216@N08/6761361801",
+    "license": "CC BY 2.0",
+    "artist": "Ben124.",
+    "source": "flickr",
+    "w": 1024,
+    "h": 686
+   }
+  ],
+  "fixed": true
+ },
+ "s096": {
+  "files": [
+   {
+    "file": "media/s096_0r.jpg",
+    "type": "image",
+    "title": "Israel-05718 - Eastern Bathhouse",
+    "page": "https://www.flickr.com/photos/22490717@N02/34572439531",
+    "license": "CC BY-SA 2.0",
+    "artist": "archer10 (Dennis)",
+    "source": "flickr",
+    "w": 1024,
+    "h": 683
+   },
+   {
+    "file": "media/s096_1r.jpg",
+    "type": "image",
+    "title": "Ham House and Garden",
+    "page": "https://www.flickr.com/photos/29057345@N04/7867055570",
+    "license": "CC BY 2.0",
+    "artist": "It's No Game",
+    "source": "flickr",
+    "w": 1024,
+    "h": 639
+   }
+  ],
+  "fixed": true
+ },
+ "s098": {
+  "files": [
+   {
+    "file": "media/s098_0r.jpg",
+    "type": "image",
+    "title": "Lake lit up with dark storm clouds approaching",
+    "page": "https://www.flickr.com/photos/19966030@N00/3859963760",
+    "license": "CC BY-SA 2.0",
+    "artist": "jmenard48",
+    "source": "flickr",
+    "w": 1024,
+    "h": 683
+   },
+   {
+    "file": "media/s098_1r.jpg",
+    "type": "image",
+    "title": "Dark storm clouds",
+    "page": "https://www.flickr.com/photos/17367470@N05/15850004423",
+    "license": "CC BY 2.0",
+    "artist": "bluesbby",
+    "source": "flickr",
+    "w": 1024,
+    "h": 683
+   }
+  ],
+  "fixed": true
+ },
+ "s100": {
+  "files": [
+   {
+    "file": "media/s100_0r.jpg",
+    "type": "image",
+    "title": "Sunrise over mountain Monday P1010467",
+    "page": "https://www.flickr.com/photos/60944636@N00/51812697074",
+    "license": "CC BY 2.0",
+    "artist": "el cajon yacht club",
+    "source": "flickr",
+    "w": 1024,
+    "h": 768
+   },
+   {
+    "file": "media/s100_1r.jpg",
+    "type": "image",
+    "title": "Sunrise over mountains",
+    "page": "https://www.flickr.com/photos/7259030@N07/7996657842",
+    "license": "CC BY 2.0",
+    "artist": "dlofink",
+    "source": "flickr",
+    "w": 1024,
+    "h": 683
+   },
+   {
+    "file": "media/s100_2r.jpg",
+    "type": "image",
+    "title": "Dawn over Mount Cook.",
+    "page": "https://www.flickr.com/photos/88123769@N02/14567345074",
+    "license": "CC0",
+    "artist": "Bernard Spragg",
+    "source": "flickr",
+    "w": 1024,
+    "h": 747
+   }
+  ],
+  "fixed": true
+ },
+ "s102": {
+  "files": [
+   {
+    "file": "media/s102_0r.jpg",
+    "type": "image",
+    "title": "Palaiopoli Museum, Ancient ruins, Samothrace, Samothraki",
+    "page": "https://www.flickr.com/photos/62001345@N00/14153201489",
+    "license": "CC BY 2.0",
+    "artist": "dimsis",
+    "source": "flickr",
+    "w": 1024,
+    "h": 768
+   }
+  ],
+  "fixed": true
+ },
+ "s104": {
+  "files": [
+   {
+    "file": "media/s104_0r.jpg",
+    "type": "image",
+    "title": "Texture 99",
+    "page": "https://www.flickr.com/photos/41904174@N06/5987509655",
+    "license": "CC BY 2.0",
+    "artist": "Ellenvd",
+    "source": "flickr",
+    "w": 1024,
+    "h": 768
+   },
+   {
+    "file": "media/s104_1r.jpg",
+    "type": "image",
+    "title": "Texture 97",
+    "page": "https://www.flickr.com/photos/41904174@N06/5979226288",
+    "license": "CC BY 2.0",
+    "artist": "Ellenvd",
+    "source": "flickr",
+    "w": 1024,
+    "h": 1024
+   }
+  ],
+  "fixed": true
+ },
+ "s105": {
+  "files": [
+   {
+    "file": "media/s105_0r.jpg",
+    "type": "image",
+    "title": "chain",
+    "page": "https://www.flickr.com/photos/66884811@N08/8564918761",
+    "license": "CC BY 2.0",
+    "artist": "push 1",
+    "source": "flickr",
+    "w": 1024,
+    "h": 575
+   }
+  ],
+  "fixed": true
+ },
+ "s108": {
+  "files": [
+   {
+    "file": "media/s108_0r.jpg",
+    "type": "image",
+    "title": "Cicero Reproduction of an ancient Roman wax tablet with three styli at the Reiss-Engelhorn-Museen, Mannheim, Germany WM ",
+    "page": "https://www.flickr.com/photos/44124324682@N01/47938070077",
+    "license": "CC BY 2.0",
+    "artist": "mharrsch",
+    "source": "flickr",
+    "w": 1024,
+    "h": 683
+   },
+   {
+    "file": "media/s108_1r.jpg",
+    "type": "image",
+    "title": "Athletes LXV – Paidotribes Trainer",
+    "page": "https://www.flickr.com/photos/69716881@N02/47870009781",
+    "license": "CC BY-SA 2.0",
+    "artist": "Egisto Sani",
+    "source": "flickr",
+    "w": 1024,
+    "h": 683
+   },
+   {
+    "file": "media/s108_2r.jpg",
+    "type": "image",
+    "title": "Portrait of Paquius Proculo, Pompeii",
+    "page": "https://www.flickr.com/photos/25554263@N04/3010698777",
+    "license": "Domínio público",
+    "artist": "Peer.Gynt",
+    "source": "flickr",
+    "w": 935,
+    "h": 1024
+   }
+  ],
+  "fixed": true
+ },
+ "s110": {
+  "files": [
+   {
+    "file": "media/s110_0r.jpg",
+    "type": "image",
+    "title": "Incense at the Altar of Thiên Hâu Temple - Ho Chi Minh City, Vietnam",
+    "page": "https://www.flickr.com/photos/13445173@N06/26564206586",
+    "license": "CC BY 2.0",
+    "artist": "bvi4092",
+    "source": "flickr",
+    "w": 1024,
+    "h": 683
+   },
+   {
+    "file": "media/s110_1r.jpg",
+    "type": "image",
+    "title": "The Altar of Thiên Hâu Temple (BW) - Ho Chi Minh City, Vietnam",
+    "page": "https://www.flickr.com/photos/13445173@N06/26564204366",
+    "license": "CC BY 2.0",
+    "artist": "bvi4092",
+    "source": "flickr",
+    "w": 1024,
+    "h": 768
+   }
+  ],
+  "fixed": true
+ },
+ "s112": {
+  "files": [
+   {
+    "file": "media/s112_0r.jpg",
+    "type": "image",
+    "title": "Texture 111",
+    "page": "https://www.flickr.com/photos/41904174@N06/7801958100",
+    "license": "CC BY 2.0",
+    "artist": "Ellenvd",
+    "source": "flickr",
+    "w": 1024,
+    "h": 684
+   },
+   {
+    "file": "media/s112_1r.jpg",
+    "type": "image",
+    "title": "Baby Love Book",
+    "page": "https://www.flickr.com/photos/82518118@N00/2927789517",
+    "license": "CC BY 2.0",
+    "artist": "'Playingwithbrushes'",
+    "source": "flickr",
+    "w": 1024,
+    "h": 513
+   }
+  ],
+  "fixed": true
+ },
+ "s113": {
+  "files": [
+   {
+    "file": "media/s113_0r.jpg",
+    "type": "image",
+    "title": "Texas Department of Criminal Justice, Huntsville 1405011216",
+    "page": "https://www.flickr.com/photos/32345848@N07/14115308034",
+    "license": "CC BY 2.0",
+    "artist": "Patrick Feller",
+    "source": "flickr",
+    "w": 1024,
+    "h": 743
+   },
+   {
+    "file": "media/s113_1r.jpg",
+    "type": "image",
+    "title": "The Making of Harry Potter 29-05-2012",
+    "page": "https://www.flickr.com/photos/28752865@N08/7388831630",
+    "license": "CC BY 2.0",
+    "artist": "Karen Roe",
+    "source": "flickr",
+    "w": 1024,
+    "h": 683
+   }
+  ],
+  "fixed": true
+ },
+ "s115": {
+  "files": [
+   {
+    "file": "media/s115_0r.jpg",
+    "type": "image",
+    "title": "Giving Hands and Red Pushpin",
+    "page": "https://www.flickr.com/photos/27698646@N04/3713942772",
+    "license": "CC BY 2.0",
+    "artist": "Artotem",
+    "source": "flickr",
+    "w": 1024,
+    "h": 682
+   },
+   {
+    "file": "media/s115_1r.jpg",
+    "type": "image",
+    "title": "Giving hand",
+    "page": "https://www.flickr.com/photos/8022405@N02/537605057",
+    "license": "CC BY 2.0",
+    "artist": "karpidis",
+    "source": "flickr",
+    "w": 1024,
+    "h": 768
+   }
+  ],
+  "fixed": true
+ },
+ "s117": {
+  "files": [
+   {
+    "file": "media/s117_0r.jpg",
+    "type": "image",
+    "title": "Coins",
+    "page": "https://www.flickr.com/photos/28238346@N00/6027050703",
+    "license": "CC BY 2.0",
+    "artist": "IK's World Trip",
+    "source": "flickr",
+    "w": 984,
+    "h": 896
+   },
+   {
+    "file": "media/s117_1r.jpg",
+    "type": "image",
+    "title": "Coins!",
+    "page": "https://www.flickr.com/photos/8978957@N07/2545363497",
+    "license": "CC BY 2.0",
+    "artist": "dichohecho",
+    "source": "flickr",
+    "w": 1024,
+    "h": 768
+   }
+  ],
+  "fixed": true
+ },
+ "s121": {
+  "files": [
+   {
+    "file": "media/s121_0r.jpg",
+    "type": "image",
+    "title": "And to reap that golden land",
+    "page": "https://www.flickr.com/photos/62356799@N06/36245782225",
+    "license": "CC BY 2.0",
+    "artist": "sagesolar",
+    "source": "flickr",
+    "w": 1024,
+    "h": 640
+   },
+   {
+    "file": "media/s121_1r.jpg",
+    "type": "image",
+    "title": "GOC Ashton 009: Field with path",
+    "page": "https://www.flickr.com/photos/58414938@N00/36449658113",
+    "license": "CC BY-SA 2.0",
+    "artist": "Peter O'Connor aka anemoneprojectors",
+    "source": "flickr",
+    "w": 1024,
+    "h": 768
+   },
+   {
+    "file": "media/s121_2r.jpg",
+    "type": "image",
+    "title": "Titicaca from la Isla de Amantani",
+    "page": "https://www.flickr.com/photos/33037982@N04/3400119622",
+    "license": "CC BY-SA 2.0",
+    "artist": "wallygrom",
+    "source": "flickr",
+    "w": 1024,
+    "h": 674
+   }
+  ],
+  "fixed": true
+ },
+ "s126": {
+  "files": [
+   {
+    "file": "media/s126_0r.jpg",
+    "type": "image",
+    "title": "Tauroctony fresco in the mithraeum of Capua, 2nd century, The mithraeum (mitreo), Capua",
+    "page": "https://www.flickr.com/photos/41523983@N08/6778059068",
+    "license": "CC BY-SA 2.0",
+    "artist": "Following Hadrian",
+    "source": "flickr",
+    "w": 1024,
+    "h": 768
+   }
+  ],
+  "fixed": true
+ },
+ "s127": {
+  "files": [
+   {
+    "file": "media/s127_0r.jpg",
+    "type": "image",
+    "title": "Rikki's Refuge Staff/Volunteer of the Week!",
+    "page": "https://www.flickr.com/photos/60109376@N00/14832947948",
+    "license": "CC BY 2.0",
+    "artist": "rikkis_refuge",
+    "source": "flickr",
+    "w": 960,
+    "h": 720
+   },
+   {
+    "file": "media/s127_1r.jpg",
+    "type": "image",
+    "title": "20111031-FNS-LSC-0086",
+    "page": "https://www.flickr.com/photos/41284017@N08/6677153173",
+    "license": "CC BY 2.0",
+    "artist": "USDAgov",
+    "source": "flickr",
+    "w": 1024,
+    "h": 800
+   },
+   {
+    "file": "media/s127_2r.jpg",
+    "type": "image",
+    "title": "20111031-FNS-LSC-0143",
+    "page": "https://www.flickr.com/photos/41284017@N08/6758757633",
+    "license": "CC BY 2.0",
+    "artist": "USDAgov",
+    "source": "flickr",
+    "w": 1024,
+    "h": 855
+   }
+  ],
+  "fixed": true
+ },
+ "s129": {
+  "files": [
+   {
+    "file": "media/s129_0r.jpg",
+    "type": "image",
+    "title": "Desk Diary 2011/02/04",
+    "page": "https://www.flickr.com/photos/88444437@N00/5415198729",
+    "license": "CC BY-SA 2.0",
+    "artist": "Danny Choo",
+    "source": "flickr",
+    "w": 930,
+    "h": 523
+   }
+  ],
+  "fixed": true
+ },
+ "s130": {
+  "files": [
+   {
+    "file": "media/s130_0r.jpg",
+    "type": "image",
+    "title": "dip into savings",
+    "page": "https://www.flickr.com/photos/23307937@N04/5638958705",
+    "license": "CC BY 2.0",
+    "artist": "frankieleon",
+    "source": "flickr",
+    "w": 1024,
+    "h": 802
+   },
+   {
+    "file": "media/s130_1r.jpg",
+    "type": "image",
+    "title": "bottom of the barrel",
+    "page": "https://www.flickr.com/photos/23307937@N04/4110192299",
+    "license": "CC BY 2.0",
+    "artist": "frankieleon",
+    "source": "flickr",
+    "w": 1024,
+    "h": 768
+   }
+  ],
+  "fixed": true
+ },
+ "s132": {
+  "files": [
+   {
+    "file": "media/s132_0r.jpg",
+    "type": "image",
+    "title": "Via Appia ruins",
+    "page": "https://www.flickr.com/photos/70591690@N00/688344822",
+    "license": "CC BY-SA 2.0",
+    "artist": "ZeroOne",
+    "source": "flickr",
+    "w": 1024,
+    "h": 768
+   },
+   {
+    "file": "media/s132_1r.jpg",
+    "type": "image",
+    "title": "The Mausoleum of Romulus (II)",
+    "page": "https://www.flickr.com/photos/34561917@N04/7556345600",
+    "license": "CC BY 2.0",
+    "artist": "isawnyu",
+    "source": "flickr",
+    "w": 1024,
+    "h": 768
+   }
+  ],
+  "fixed": true
+ },
+ "s136": {
+  "files": [
+   {
+    "file": "media/s136_0r.jpg",
+    "type": "image",
+    "title": "Dinner at 'Lorraine' 1922",
+    "page": "https://www.flickr.com/photos/26602074@N06/7892014724",
+    "license": "CC BY-SA 2.0",
+    "artist": "Blue Mountains Library, Local Studies",
+    "source": "flickr",
+    "w": 1024,
+    "h": 683
+   },
+   {
+    "file": "media/s136_1r.jpg",
+    "type": "image",
+    "title": "Bbq steak dinner",
+    "page": "https://www.flickr.com/photos/75062596@N00/6027975310",
+    "license": "CC BY-SA 2.0",
+    "artist": "Lars Plougmann",
+    "source": "flickr",
+    "w": 1024,
+    "h": 676
+   }
+  ],
+  "fixed": true
+ },
+ "s137": {
+  "files": [
+   {
+    "file": "media/s137_0r.jpg",
+    "type": "image",
+    "title": "Happy Ramadhan, Eid Mubarak - عيد فطر مبارك",
+    "page": "https://www.flickr.com/photos/44124425616@N01/277221852",
+    "license": "CC BY 2.0",
+    "artist": "Hamed Saber",
+    "source": "flickr",
+    "w": 1024,
+    "h": 768
+   },
+   {
+    "file": "media/s137_1r.jpg",
+    "type": "image",
+    "title": "Joshua trees - IMG_1274",
+    "page": "https://www.flickr.com/photos/15216811@N06/6062979131",
+    "license": "CC BY 2.0",
+    "artist": "Nicola since 1972",
+    "source": "flickr",
+    "w": 1024,
+    "h": 576
+   }
+  ],
+  "fixed": true
+ },
+ "s141": {
+  "files": [
+   {
+    "file": "media/s141_0r.jpg",
+    "type": "image",
+    "title": "A clear turquoise river flows gently through a lush green forest with smooth rocky banks in Costa Rica.",
+    "page": "https://wordpress.org/photos/photo/49069deda4/",
+    "license": "CC0",
+    "artist": "edwinrc1988",
+    "source": "wordpress",
+    "w": 2048,
+    "h": 1538
+   },
+   {
+    "file": "media/s141_1r.jpg",
+    "type": "image",
+    "title": "A serene river flows gently through a rocky bed, reflecting sunlight on its clear surface.",
+    "page": "https://wordpress.org/photos/photo/86569e5842/",
+    "license": "CC0",
+    "artist": "jasonmb012",
+    "source": "wordpress",
+    "w": 2048,
+    "h": 1536
+   }
+  ],
+  "fixed": true
+ },
+ "s142": {
+  "files": [
+   {
+    "file": "media/s142_0r.jpg",
+    "type": "image",
+    "title": "Behind Bars. Fremantle Prison",
+    "page": "https://www.flickr.com/photos/15181848@N02/3394618767",
+    "license": "CC BY-SA 2.0",
+    "artist": "amandabhslater",
+    "source": "flickr",
+    "w": 1024,
+    "h": 768
+   },
+   {
+    "file": "media/s142_1r.jpg",
+    "type": "image",
+    "title": "Former mill / prison - Little Walsingham",
+    "page": "https://www.flickr.com/photos/39415781@N06/5988503658",
+    "license": "CC BY 2.0",
+    "artist": "ell brown",
+    "source": "flickr",
+    "w": 1024,
+    "h": 768
+   }
+  ],
+  "fixed": true
+ },
+ "s144": {
+  "files": [
+   {
+    "file": "media/s144_0r.jpg",
+    "type": "image",
+    "title": "2006-12-17 12-22 Rom 302 Via Appia Antica",
+    "page": "https://www.flickr.com/photos/28577026@N02/2697193146",
+    "license": "CC BY 2.0",
+    "artist": "Allie_Caulfield",
+    "source": "flickr",
+    "w": 1024,
+    "h": 768
+   },
+   {
+    "file": "media/s144_1r.jpg",
+    "type": "image",
+    "title": "appia antica casal rotondo 1",
+    "page": "https://www.flickr.com/photos/93226994@N00/9083801",
+    "license": "CC BY 2.0",
+    "artist": "antmoose",
+    "source": "flickr",
+    "w": 1024,
+    "h": 768
+   }
+  ],
+  "fixed": true
+ },
+ "s149": {
+  "files": [
+   {
+    "file": "media/s149_0r.jpg",
+    "type": "image",
+    "title": "mirror",
+    "page": "https://www.flickr.com/photos/99771506@N00/7736857930",
+    "license": "CC BY 2.0",
+    "artist": "paul bica",
+    "source": "flickr",
+    "w": 1024,
+    "h": 768
+   }
+  ],
+  "fixed": true
+ },
+ "s151": {
+  "files": [
+   {
+    "file": "media/s151_0r.jpg",
+    "type": "image",
+    "title": "Booked",
+    "page": "https://www.flickr.com/photos/82518118@N00/4315498929",
+    "license": "CC BY 2.0",
+    "artist": "'Playingwithbrushes'",
+    "source": "flickr",
+    "w": 1024,
+    "h": 663
+   },
+   {
+    "file": "media/s151_1r.jpg",
+    "type": "image",
+    "title": "Illuminated Manuscript Map of the World from Book on Navigation, Walters Art Museum Ms. W.658, fol. 41a",
+    "page": "https://www.flickr.com/photos/39699193@N03/3834992792",
+    "license": "CC0",
+    "artist": "Walters Art Museum Illuminated Manuscripts",
+    "source": "flickr",
+    "w": 1024,
+    "h": 687
+   }
+  ],
+  "fixed": true
+ },
+ "s152": {
+  "files": [
+   {
+    "file": "media/s152_0r.jpg",
+    "type": "image",
+    "title": "DSC_0058 - Days Gone By.",
+    "page": "https://www.flickr.com/photos/22490717@N02/2939329735",
+    "license": "CC BY-SA 2.0",
+    "artist": "archer10 (Dennis)",
+    "source": "flickr",
+    "w": 1024,
+    "h": 680
+   },
+   {
+    "file": "media/s152_1r.jpg",
+    "type": "image",
+    "title": "Sailor, Isla Puna, Gayaquil, Ecuador",
+    "page": "https://www.flickr.com/photos/16448758@N03/3801525778",
+    "license": "CC BY 2.0",
+    "artist": "Rinaldo Wurglitsch",
+    "source": "flickr",
+    "w": 1024,
+    "h": 684
+   },
+   {
+    "file": "media/s152_2r.jpg",
+    "type": "image",
+    "title": "Old Port of Marseille with Cathedral and Notre Dame de la Garde, France, ca. 1895",
+    "page": "https://www.flickr.com/photos/76204898@N00/2745491620",
+    "license": "CC BY 2.0",
+    "artist": "trialsanderrors",
+    "source": "flickr",
+    "w": 1024,
+    "h": 753
+   }
+  ],
+  "fixed": true
+ },
+ "s153": {
+  "files": [
+   {
+    "file": "media/s153_0r.jpg",
+    "type": "image",
+    "title": "Reach Skyward",
+    "page": "https://www.flickr.com/photos/86518301@N00/439162600",
+    "license": "CC BY 2.0",
+    "artist": "The Wandering Angel",
+    "source": "flickr",
+    "w": 1024,
+    "h": 734
+   },
+   {
+    "file": "media/s153_1r.jpg",
+    "type": "image",
+    "title": "kelsey and abby climbing",
+    "page": "https://www.flickr.com/photos/55573153@N00/305981925",
+    "license": "CC BY 2.0",
+    "artist": "joguldi",
+    "source": "flickr",
+    "w": 1024,
+    "h": 766
+   }
+  ],
+  "fixed": true
+ },
+ "s154": {
+  "files": [
+   {
+    "file": "media/s154_0r.jpg",
+    "type": "image",
+    "title": "Pain au Levain - Floured towel in bowl",
+    "page": "https://www.flickr.com/photos/70757891@N00/4338609905",
+    "license": "CC BY 2.0",
+    "artist": "grongar",
+    "source": "flickr",
+    "w": 1024,
+    "h": 768
+   }
+  ],
+  "fixed": true
  }
 }

@@ -3,7 +3,8 @@ import json
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-media = json.loads((ROOT / "src" / "media.json").read_text(encoding="utf-8"))
+import sys as _s
+media = json.loads(Path(_s.argv[1]).read_text(encoding="utf-8")) if len(_s.argv) > 1 else json.loads((ROOT / "src" / "media.json").read_text(encoding="utf-8"))
 seen, lines = set(), []
 for sid in sorted(media):
     for f in media[sid]["files"]:
