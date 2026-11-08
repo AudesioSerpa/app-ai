@@ -16,6 +16,7 @@ UA = "DeusProveraDoc/1.0 (https://github.com/AudesioSerpa/app-ai; documentary re
 API = "https://commons.wikimedia.org/w/api.php"
 AI_WORDS = re.compile(r"ai[- ]generated|midjourney|dall[- ]?e|stable diffusion|generative ai|artificial intelligence generated|made with ai|firefly", re.I)
 OK_LIC = re.compile(r"^(public domain|pd|cc0|cc[- ]by(-sa)?( \d\.\d)?|cc by(-sa)? \d\.\d.*|attribution|no restrictions)", re.I)
+BAN = re.compile(r"nazi|swastika|ouija|auschwitz|kolbe|pataphysic|spiritual work|noose|rock ?& ?roll|nude|naked|renoir|judgement of paris|buddha|buddhist|hindu|ganesh|shiva|varanasi|bitcoin|crypto|pizza|cartoon|clip ?art|foursquare|halloween|tarot|occult|witch|skull", re.I)
 PER_IMAGE = 13.0  # segundos por foto antes de trocar
 
 
@@ -55,7 +56,7 @@ def search(query, video=False):
     res = []
     for i, r in enumerate(d.get("results", [])):
         tags = " ".join(t.get("name", "") for t in (r.get("tags") or []))
-        if AI_WORDS.search(r.get("title") or "") or AI_WORDS.search(tags):
+        if AI_WORDS.search(r.get("title") or "") or AI_WORDS.search(tags) or BAN.search(r.get("title") or "") or BAN.search(tags):
             continue
         w, h = r.get("width") or 0, r.get("height") or 0
         src = r.get("source", "")
