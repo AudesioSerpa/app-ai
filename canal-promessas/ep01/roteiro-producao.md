@@ -72,11 +72,11 @@ Cada imagem fica na tela de **8 a 15 segundos**, com movimento lento de câmera 
 1. Rua movimentada; jovem escrava seguida pelos donos contando moedas.
 2. Moedas caindo das mãos dos donos ("a esperança do seu lucro").
 3. Praça pública, multidão agitada, magistrados.
-4. Varas e roupas rasgadas, sem violência explícita (sombras, silhuetas).
+4. Silhuetas e sombras na praça (sem violência na imagem).
 5. Cárcere escuro, pés presos no tronco.
 6. Meia-noite: velas, dois homens cantando, outros presos ouvindo.
 7. Terremoto: poeira caindo, portas se abrindo, correntes no chão.
-8. Carcereiro com a espada, depois de joelhos, com a tocha.
+8. Carcereiro desesperado diante das portas abertas, depois de joelhos, com a tocha.
 9. **Texto na tela:** "Crê no Senhor Jesus Cristo, e serás salvo, tu e a tua casa." — Atos 16:31.
 10. Mesa na casa do carcereiro, família reunida.
 11. **Pedido de inscrição:** só a narração, sem botões na tela. Imagem calma da cidade de Filipos ao amanhecer.
