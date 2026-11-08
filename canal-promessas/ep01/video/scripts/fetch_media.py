@@ -84,6 +84,22 @@ def main():
     scenes = tl["scenes"]
     media = json.loads(OUT.read_text(encoding="utf-8")) if OUT.exists() else {}
     used = {f["title"] for m in media.values() for f in m["files"]}
+    # modo revisão: troca as cenas listadas em overrides.json
+    ov_path = ROOT / "scripts" / "overrides.json"
+    ov = json.loads(ov_path.read_text(encoding="utf-8")) if ov_path.exists() else {}
+    if "--fix" in sys.argv:
+        for fid in ov.get("_drop", []):
+            sid, k = fid.rsplit("_", 1)
+            if sid in media:
+                media[sid]["files"] = [f for f in media[sid]["files"] if not f["file"].endswith(f"{sid}_{k}.jpg")] or media[sid]["files"]
+        for sid, qs in ov.items():
+            if sid.startswith("_") or media.get(sid, {}).get("fixed"):
+                continue
+            media.pop(sid, None)  # os títulos antigos continuam em `used`, então não voltam
+        for sc in scenes:
+            if sc["id"] in ov and not sc["id"].startswith("_"):
+                sc["queries"] = ov[sc["id"]]
+                sc["fix"] = True
     ends = [scenes[i + 1]["t"] for i in range(len(scenes) - 1)] + [tl["total"]]
     for sc, end in zip(scenes, ends):
         if sc["kind"] not in ("img", "vid") or sc["id"] in media:
@@ -121,7 +137,7 @@ def main():
                 finally:
                     tmp.unlink(missing_ok=True)
             else:
-                name = f"{sc['id']}_{k}.jpg"
+                name = f"{sc['id']}_{k}{'r' if sc.get('fix') else ''}.jpg"
                 tmp = MEDIA / f"{sc['id']}_{k}_orig"
                 tmp.write_bytes(data)
                 try:
@@ -134,7 +150,7 @@ def main():
             files.append({"file": f"media/{name}", "type": "video" if video else "image", **{x: c.get(x) for x in ("title", "page", "license", "artist", "source", "w", "h")}})
             print(f"   ✓ {c['title']} [{c['license']}]", flush=True)
         if files:
-            media[sc["id"]] = {"files": files}
+            media[sc["id"]] = {"files": files, **({"fixed": True} if sc.get("fix") else {})}
         else:
             print("   ✗ nada encontrado", flush=True)
         OUT.write_text(json.dumps(media, ensure_ascii=False, indent=1), encoding="utf-8")
