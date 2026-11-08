@@ -136,7 +136,7 @@ Na descrição de todo vídeo, uma seção **"Fontes"** listando o que foi usado
 Isso é proibido no canal: é manipulação espiritual, e o YouTube trata como *engagement bait* (pode reduzir o alcance ou derrubar o vídeo).
 
 ### O que fazer
-1. **Pedir inscrição, like e compartilhamento para ajudar o canal a crescer** — com sinceridade.
+1. **Pedir inscrição, like e compartilhamento para ajudar o canal a crescer** — com sinceridade, **só na narração**. Nenhum botão de inscrição, like ou compartilhamento fica gravado na imagem do vídeo, porque o mesmo arquivo será usado em outras redes sociais. No YouTube, a tela final é adicionada pelo YouTube Studio.
 2. **Copy da multiplicação**: o compartilhamento **multiplica a mensagem**, faz a Palavra chegar a mais pessoas — como os pães que passaram de mão em mão. O que se multiplica é o **alcance da mensagem**, nunca uma "recompensa" para quem compartilha.
 3. **Cada vídeo tem uma copy diferente**, ligada à história do episódio. **Nenhuma pode se repetir.**
 4. **Pergunta para os comentários** relacionada a bênçãos/provisão: pedir que a pessoa **conte** algo da vida dela (um testemunho, uma lembrança, um aprendizado). Cada vídeo tem uma pergunta diferente.

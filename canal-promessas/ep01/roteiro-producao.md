@@ -79,7 +79,7 @@ Cada imagem fica na tela de **8 a 15 segundos**, com movimento lento de câmera 
 8. Carcereiro com a espada, depois de joelhos, com a tocha.
 9. **Texto na tela:** "Crê no Senhor Jesus Cristo, e serás salvo, tu e a tua casa." — Atos 16:31.
 10. Mesa na casa do carcereiro, família reunida.
-11. **Pedido de inscrição:** botão de inscrição e like animados, discretos, no canto da tela.
+11. **Pedido de inscrição:** só a narração, sem botões na tela. Imagem calma da cidade de Filipos ao amanhecer.
 
 ### Bloco 07 — A igreja que dava do que faltava (~15:00)
 1. Estrada para Tessalônica; Paulo trabalhando com couro e tendas.
@@ -138,12 +138,13 @@ Cada atitude abre com um **título grande na tela**:
 
 ### Bloco 13 — Encerramento (~32:50)
 1. Montagem com as cenas principais do episódio.
-2. Oferta atravessando o mar → mão tocando no botão de compartilhar.
-3. Botões de inscrição e like.
-4. **Texto na tela (pergunta):** "Quando alguém te ajudou na hora certa?"
-5. Teaser do próximo episódio: panela vazia, punhado de farinha, porta se abrindo.
-6. **Texto na tela:** "Próximo episódio: A viúva de Sarepta".
-7. Tela final do YouTube (20 segundos) com o vídeo seguinte e o botão de inscrição.
+2. Barco com a oferta atravessando o mar, ao pôr do sol.
+3. **Texto na tela (pergunta):** "Quando alguém te ajudou na hora certa?"
+4. Teaser do próximo episódio: panela vazia, punhado de farinha, porta se abrindo.
+5. **Texto na tela:** "Próximo episódio: A viúva de Sarepta".
+6. 20 segundos finais com imagem calma e música, **sem botões**. No YouTube, a tela final (vídeo seguinte e inscrição) é adicionada pelo YouTube Studio, por cima do vídeo, e não fica gravada no arquivo.
+
+> **Regra:** nenhum botão de inscrição, like ou compartilhamento gravado no vídeo, porque o mesmo arquivo será usado em outras redes sociais.
 
 ---
 
