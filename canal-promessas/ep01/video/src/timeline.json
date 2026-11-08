@@ -1,0 +1,1930 @@
+{
+ "cues": {
+  "versiculo": 1589.818,
+  "das": 1674.019,
+  "segundo": 1678.186,
+  "segundo-fim": 1679.788,
+  "r1": 2021.766,
+  "r2": 2023.538,
+  "r3": 2024.423,
+  "r4": 2027.08,
+  "sarepta": 2290.627
+ },
+ "fps": 30,
+ "total": 2317.102,
+ "blocks": [
+  {
+   "block": 1,
+   "start": 0.0,
+   "duration": 109.113,
+   "src": "audio/bloco-01.mp3"
+  },
+  {
+   "block": 2,
+   "start": 110.313,
+   "duration": 114.051,
+   "src": "audio/bloco-02.mp3"
+  },
+  {
+   "block": 3,
+   "start": 225.564,
+   "duration": 46.472,
+   "src": "audio/bloco-03.mp3",
+   "vinhetaAt": 272.636
+  },
+  {
+   "block": 4,
+   "start": 279.236,
+   "duration": 206.472,
+   "src": "audio/bloco-04.mp3"
+  },
+  {
+   "block": 5,
+   "start": 486.908,
+   "duration": 210.887,
+   "src": "audio/bloco-05.mp3"
+  },
+  {
+   "block": 6,
+   "start": 698.994,
+   "duration": 260.624,
+   "src": "audio/bloco-06.mp3"
+  },
+  {
+   "block": 7,
+   "start": 960.818,
+   "duration": 203.311,
+   "src": "audio/bloco-07.mp3"
+  },
+  {
+   "block": 8,
+   "start": 1165.329,
+   "duration": 248.921,
+   "src": "audio/bloco-08.mp3"
+  },
+  {
+   "block": 9,
+   "start": 1415.45,
+   "duration": 185.469,
+   "src": "audio/bloco-09.mp3"
+  },
+  {
+   "block": 10,
+   "start": 1602.119,
+   "duration": 196.336,
+   "src": "audio/bloco-10.mp3"
+  },
+  {
+   "block": 11,
+   "start": 1799.655,
+   "duration": 246.857,
+   "src": "audio/bloco-11.mp3"
+  },
+  {
+   "block": 12,
+   "start": 2047.712,
+   "duration": 132.571,
+   "src": "audio/bloco-12.mp3"
+  },
+  {
+   "block": 13,
+   "start": 2181.484,
+   "duration": 115.618,
+   "src": "audio/bloco-13.mp3"
+  }
+ ],
+ "scenes": [
+  {
+   "id": "s000",
+   "block": 1,
+   "kind": "img",
+   "queries": [
+    "bills invoices paper desk",
+    "paper money coins table"
+   ],
+   "t": 0.0
+  },
+  {
+   "id": "s001",
+   "block": 1,
+   "kind": "img",
+   "queries": [
+    "Brazilian real banknotes coins",
+    "coins in hand"
+   ],
+   "t": 6.07
+  },
+  {
+   "id": "s002",
+   "block": 1,
+   "kind": "img",
+   "queries": [
+    "city at night window lights",
+    "night city skyline lights"
+   ],
+   "t": 14.698
+  },
+  {
+   "id": "s003",
+   "block": 1,
+   "kind": "vid",
+   "queries": [
+    "sunrise timelapse",
+    "clouds timelapse sky"
+   ],
+   "t": 29.106
+  },
+  {
+   "id": "s004",
+   "block": 1,
+   "kind": "img",
+   "queries": [
+    "Papyrus 46",
+    "Chester Beatty papyrus Pauline epistles"
+   ],
+   "t": 34.957
+  },
+  {
+   "id": "s005",
+   "block": 1,
+   "kind": "img",
+   "queries": [
+    "Palatine Hill palace ruins Rome",
+    "Domus Augustana"
+   ],
+   "t": 53.707
+  },
+  {
+   "id": "s006",
+   "block": 1,
+   "kind": "img",
+   "queries": [
+    "Roman iron shackles chains ancient",
+    "ancient iron chains museum"
+   ],
+   "t": 60.211
+  },
+  {
+   "id": "s007",
+   "block": 1,
+   "kind": "img",
+   "queries": [
+    "Via Egnatia Philippi road",
+    "Via Egnatia"
+   ],
+   "t": 71.515
+  },
+  {
+   "id": "s008",
+   "block": 1,
+   "kind": "img",
+   "queries": [
+    "Tyrian purple dyed wool",
+    "murex purple dye"
+   ],
+   "t": 79.889
+  },
+  {
+   "id": "s009",
+   "block": 1,
+   "kind": "img",
+   "queries": [
+    "Roman road landscape Greece",
+    "ancient Roman road stones"
+   ],
+   "t": 82.533
+  },
+  {
+   "id": "s010",
+   "block": 1,
+   "kind": "img",
+   "queries": [
+    "Codex Sinaiticus Philippians",
+    "Greek New Testament manuscript"
+   ],
+   "t": 90.226
+  },
+  {
+   "id": "s011",
+   "block": 1,
+   "kind": "vid",
+   "queries": [
+    "candle flame",
+    "candle burning dark"
+   ],
+   "t": 105.094
+  },
+  {
+   "id": "s012",
+   "block": 2,
+   "kind": "vid",
+   "queries": [
+    "sunrise over field timelapse",
+    "sunrise timelapse"
+   ],
+   "t": 110.313
+  },
+  {
+   "id": "s013",
+   "block": 2,
+   "kind": "img",
+   "queries": [
+    "praying hands",
+    "hands folded prayer"
+   ],
+   "t": 122.077
+  },
+  {
+   "id": "s014",
+   "block": 2,
+   "kind": "img",
+   "queries": [
+    "family dinner table home",
+    "family meal table"
+   ],
+   "t": 136.716
+  },
+  {
+   "id": "s015",
+   "block": 2,
+   "kind": "img",
+   "queries": [
+    "job seekers queue employment office",
+    "office worker desk paperwork"
+   ],
+   "t": 147.055
+  },
+  {
+   "id": "s016",
+   "block": 2,
+   "kind": "img",
+   "queries": [
+    "construction worker hands",
+    "worker hands tools"
+   ],
+   "t": 154.169
+  },
+  {
+   "id": "s017",
+   "block": 2,
+   "kind": "img",
+   "queries": [
+    "bread loaves on table",
+    "fresh bread"
+   ],
+   "t": 165.528
+  },
+  {
+   "id": "s018",
+   "block": 2,
+   "kind": "img",
+   "queries": [
+    "Sinai desert landscape",
+    "Negev desert"
+   ],
+   "t": 172.731
+  },
+  {
+   "id": "s019",
+   "block": 2,
+   "kind": "img",
+   "queries": [
+    "man sitting alone bench thinking",
+    "lonely man window"
+   ],
+   "t": 179.044
+  },
+  {
+   "id": "s020",
+   "block": 2,
+   "kind": "img",
+   "queries": [
+    "street market vendor fruits stall",
+    "small shop owner"
+   ],
+   "t": 190.227
+  },
+  {
+   "id": "s021",
+   "block": 2,
+   "kind": "vid",
+   "queries": [
+    "sun rays through clouds",
+    "clouds timelapse sunset"
+   ],
+   "t": 197.005
+  },
+  {
+   "id": "s022",
+   "block": 2,
+   "kind": "img",
+   "queries": [
+    "Philippi archaeological site panorama",
+    "Philippi Greece ruins"
+   ],
+   "t": 219.775
+  },
+  {
+   "id": "s023",
+   "block": 3,
+   "kind": "img",
+   "queries": [
+    "open Bible old",
+    "old Bible open pages"
+   ],
+   "t": 225.564
+  },
+  {
+   "id": "s024",
+   "block": 3,
+   "kind": "img",
+   "queries": [
+    "Philippi basilica ruins",
+    "Philippi Basilica B"
+   ],
+   "t": 236.422
+  },
+  {
+   "id": "s025",
+   "block": 3,
+   "kind": "img",
+   "queries": [
+    "cup of coffee table morning",
+    "coffee cup"
+   ],
+   "t": 252.12
+  },
+  {
+   "id": "s026",
+   "block": 3,
+   "kind": "fx:titulo-serie",
+   "queries": [],
+   "t": 264.122
+  },
+  {
+   "id": "s027",
+   "block": 4,
+   "kind": "map:macedonia",
+   "queries": [],
+   "t": 279.236
+  },
+  {
+   "id": "s028",
+   "block": 4,
+   "kind": "img",
+   "queries": [
+    "Via Egnatia Kavala stones",
+    "Via Egnatia ruts"
+   ],
+   "t": 284.679
+  },
+  {
+   "id": "s029",
+   "block": 4,
+   "kind": "img",
+   "queries": [
+    "Roman legionary reenactment",
+    "Roman soldiers reenactment"
+   ],
+   "t": 299.25
+  },
+  {
+   "id": "s030",
+   "block": 4,
+   "kind": "img",
+   "queries": [
+    "Philippi theatre",
+    "Ancient theatre of Philippi"
+   ],
+   "t": 304.611
+  },
+  {
+   "id": "s031",
+   "block": 4,
+   "kind": "img",
+   "queries": [
+    "Philip II of Macedon gold stater coin",
+    "Philip II of Macedon"
+   ],
+   "t": 312.394
+  },
+  {
+   "id": "s032",
+   "block": 4,
+   "kind": "img",
+   "queries": [
+    "Mount Pangaion",
+    "Pangaion Hills"
+   ],
+   "t": 320.59
+  },
+  {
+   "id": "s033",
+   "block": 4,
+   "kind": "img",
+   "queries": [
+    "ancient gold coins hoard",
+    "gold stater coins"
+   ],
+   "t": 331.779
+  },
+  {
+   "id": "s034",
+   "block": 4,
+   "kind": "img",
+   "queries": [
+    "plain of Philippi landscape",
+    "Drama plain Greece"
+   ],
+   "t": 338.96
+  },
+  {
+   "id": "s035",
+   "block": 4,
+   "kind": "img",
+   "queries": [
+    "Augustus of Prima Porta",
+    "Augustus bust"
+   ],
+   "t": 347.156
+  },
+  {
+   "id": "s036",
+   "block": 4,
+   "kind": "img",
+   "queries": [
+    "Philippi forum ruins",
+    "Roman forum Philippi"
+   ],
+   "t": 361.118
+  },
+  {
+   "id": "s037",
+   "block": 4,
+   "kind": "img",
+   "queries": [
+    "Latin inscription Philippi",
+    "Roman inscription stone Latin"
+   ],
+   "t": 371.689
+  },
+  {
+   "id": "s038",
+   "block": 4,
+   "kind": "img",
+   "queries": [
+    "fasces lictors relief",
+    "lictors relief"
+   ],
+   "t": 381.706
+  },
+  {
+   "id": "s039",
+   "block": 4,
+   "kind": "img",
+   "queries": [
+    "Philippi archaeological site",
+    "Philippi ruins columns"
+   ],
+   "t": 394.093
+  },
+  {
+   "id": "s040",
+   "block": 4,
+   "kind": "img",
+   "queries": [
+    "Roman slaves relief",
+    "ancient Roman relief workers"
+   ],
+   "t": 406.934
+  },
+  {
+   "id": "s041",
+   "block": 4,
+   "kind": "img",
+   "queries": [
+    "crowded street people walking city",
+    "people crowd street"
+   ],
+   "t": 425.995
+  },
+  {
+   "id": "s042",
+   "block": 4,
+   "kind": "img",
+   "queries": [
+    "ancient synagogue ruins",
+    "Sardis synagogue"
+   ],
+   "t": 439.438
+  },
+  {
+   "id": "s043",
+   "block": 4,
+   "kind": "vid",
+   "queries": [
+    "river flowing water",
+    "stream flowing forest"
+   ],
+   "t": 465.555
+  },
+  {
+   "id": "s044",
+   "block": 4,
+   "kind": "img",
+   "queries": [
+    "Zygaktis river Philippi",
+    "Krenides river"
+   ],
+   "t": 475.203
+  },
+  {
+   "id": "s045",
+   "block": 5,
+   "kind": "img",
+   "queries": [
+    "Saint Paul icon",
+    "Apostle Paul painting"
+   ],
+   "t": 486.908
+  },
+  {
+   "id": "s046",
+   "block": 5,
+   "kind": "img",
+   "queries": [
+    "old wooden door closed",
+    "ancient door"
+   ],
+   "t": 507.204
+  },
+  {
+   "id": "s047",
+   "block": 5,
+   "kind": "img",
+   "queries": [
+    "Alexandria Troas ruins",
+    "Alexandria Troas"
+   ],
+   "t": 526.913
+  },
+  {
+   "id": "s048",
+   "block": 5,
+   "kind": "img",
+   "queries": [
+    "Vision of Saint Paul Macedonian",
+    "Paul vision Macedonia"
+   ],
+   "t": 536.067
+  },
+  {
+   "id": "s049",
+   "block": 5,
+   "kind": "map:troade-filipos",
+   "queries": [],
+   "t": 544.031
+  },
+  {
+   "id": "s050",
+   "block": 5,
+   "kind": "img",
+   "queries": [
+    "Philippi ruins sunset",
+    "Philippi archaeological site"
+   ],
+   "t": 555.27
+  },
+  {
+   "id": "s051",
+   "block": 5,
+   "kind": "vid",
+   "queries": [
+    "river water flowing",
+    "creek flowing"
+   ],
+   "t": 567.767
+  },
+  {
+   "id": "s052",
+   "block": 5,
+   "kind": "img",
+   "queries": [
+    "Lydia baptistery Philippi",
+    "Baptistery of Lydia"
+   ],
+   "t": 580.01
+  },
+  {
+   "id": "s053",
+   "block": 5,
+   "kind": "img",
+   "queries": [
+    "Thyatira ruins Akhisar",
+    "Akhisar Thyatira"
+   ],
+   "t": 583.454
+  },
+  {
+   "id": "s054",
+   "block": 5,
+   "kind": "img",
+   "queries": [
+    "murex shells",
+    "Bolinus brandaris shells"
+   ],
+   "t": 590.497
+  },
+  {
+   "id": "s055",
+   "block": 5,
+   "kind": "img",
+   "queries": [
+    "purple silk fabric",
+    "Tyrian purple fabric"
+   ],
+   "t": 598.343
+  },
+  {
+   "id": "s056",
+   "block": 5,
+   "kind": "img",
+   "queries": [
+    "Roman merchant relief",
+    "ancient Roman shop relief"
+   ],
+   "t": 610.822
+  },
+  {
+   "id": "s057",
+   "block": 5,
+   "kind": "img",
+   "queries": [
+    "Saint Lydia icon",
+    "Lydia of Thyatira"
+   ],
+   "t": 627.515
+  },
+  {
+   "id": "s058",
+   "block": 5,
+   "kind": "img",
+   "queries": [
+    "Roman house atrium",
+    "Roman villa atrium"
+   ],
+   "t": 642.038
+  },
+  {
+   "id": "s059",
+   "block": 5,
+   "kind": "img",
+   "queries": [
+    "ancient Roman table bread fresco",
+    "Roman fresco bread"
+   ],
+   "t": 664.34
+  },
+  {
+   "id": "s060",
+   "block": 5,
+   "kind": "img",
+   "queries": [
+    "Roman villa mosaic floor",
+    "Roman mosaic"
+   ],
+   "t": 686.925
+  },
+  {
+   "id": "s061",
+   "block": 6,
+   "kind": "img",
+   "queries": [
+    "Philippi agora ruins",
+    "Philippi market ruins"
+   ],
+   "t": 698.994
+  },
+  {
+   "id": "s062",
+   "block": 6,
+   "kind": "img",
+   "queries": [
+    "Pythia Delphi",
+    "ancient Greek oracle painting"
+   ],
+   "t": 703.996
+  },
+  {
+   "id": "s063",
+   "block": 6,
+   "kind": "img",
+   "queries": [
+    "Paul exorcism Philippi",
+    "Saint Paul Philippi painting"
+   ],
+   "t": 728.967
+  },
+  {
+   "id": "s064",
+   "block": 6,
+   "kind": "img",
+   "queries": [
+    "Roman denarius coins",
+    "Roman silver coins"
+   ],
+   "t": 742.801
+  },
+  {
+   "id": "s065",
+   "block": 6,
+   "kind": "img",
+   "queries": [
+    "Philippi forum",
+    "Roman forum ruins"
+   ],
+   "t": 758.173
+  },
+  {
+   "id": "s066",
+   "block": 6,
+   "kind": "img",
+   "queries": [
+    "Paul and Silas beaten Philippi",
+    "Paul and Silas"
+   ],
+   "t": 775.45
+  },
+  {
+   "id": "s067",
+   "block": 6,
+   "kind": "img",
+   "queries": [
+    "dark dungeon stone",
+    "prison cell stone ancient"
+   ],
+   "t": 790.242
+  },
+  {
+   "id": "s068",
+   "block": 6,
+   "kind": "img",
+   "queries": [
+    "Paul and Silas in prison",
+    "Paul Silas prison painting"
+   ],
+   "t": 807.107
+  },
+  {
+   "id": "s069",
+   "block": 6,
+   "kind": "img",
+   "queries": [
+    "fallen columns earthquake ruins",
+    "toppled columns ruins"
+   ],
+   "t": 829.869
+  },
+  {
+   "id": "s070",
+   "block": 6,
+   "kind": "img",
+   "queries": [
+    "Paul and Silas jailer",
+    "conversion of the jailer Philippi"
+   ],
+   "t": 840.432
+  },
+  {
+   "id": "s071",
+   "block": 6,
+   "kind": "img",
+   "queries": [
+    "ancient baptismal font",
+    "early christian baptistery"
+   ],
+   "t": 881.366
+  },
+  {
+   "id": "s072",
+   "block": 6,
+   "kind": "img",
+   "queries": [
+    "early Christian fresco catacomb meal",
+    "agape feast fresco"
+   ],
+   "t": 898.19
+  },
+  {
+   "id": "s073",
+   "block": 6,
+   "kind": "img",
+   "queries": [
+    "Philippi ruins morning",
+    "Philippi Greece"
+   ],
+   "t": 915.054
+  },
+  {
+   "id": "s074",
+   "block": 6,
+   "kind": "img",
+   "queries": [
+    "Philippi landscape",
+    "Kavala Greece landscape"
+   ],
+   "t": 943.4
+  },
+  {
+   "id": "s075",
+   "block": 7,
+   "kind": "map:filipos-corinto",
+   "queries": [],
+   "t": 960.818
+  },
+  {
+   "id": "s076",
+   "block": 7,
+   "kind": "img",
+   "queries": [
+    "Roman Forum Thessaloniki",
+    "Ancient Agora Thessaloniki"
+   ],
+   "t": 972.575
+  },
+  {
+   "id": "s077",
+   "block": 7,
+   "kind": "img",
+   "queries": [
+    "leather craftsman tools",
+    "leatherworking hands"
+   ],
+   "t": 978.193
+  },
+  {
+   "id": "s078",
+   "block": 7,
+   "kind": "img",
+   "queries": [
+    "ancient Roman purse coins",
+    "leather pouch coins"
+   ],
+   "t": 992.495
+  },
+  {
+   "id": "s079",
+   "block": 7,
+   "kind": "img",
+   "queries": [
+    "old letter scroll",
+    "papyrus letter ancient"
+   ],
+   "t": 1004.594
+  },
+  {
+   "id": "s080",
+   "block": 7,
+   "kind": "img",
+   "queries": [
+    "Temple of Apollo Corinth",
+    "Ancient Corinth"
+   ],
+   "t": 1018.616
+  },
+  {
+   "id": "s081",
+   "block": 7,
+   "kind": "img",
+   "queries": [
+    "Macedonia village Greece old houses",
+    "Greek village stone houses"
+   ],
+   "t": 1047.696
+  },
+  {
+   "id": "s082",
+   "block": 7,
+   "kind": "img",
+   "queries": [
+    "Jerusalem old city",
+    "Jerusalem view"
+   ],
+   "t": 1063.45
+  },
+  {
+   "id": "s083",
+   "block": 7,
+   "kind": "img",
+   "queries": [
+    "old wrinkled hands",
+    "elderly hands"
+   ],
+   "t": 1085.043
+  },
+  {
+   "id": "s084",
+   "block": 7,
+   "kind": "img",
+   "queries": [
+    "hands giving coins",
+    "giving hands"
+   ],
+   "t": 1114.301
+  },
+  {
+   "id": "s085",
+   "block": 7,
+   "kind": "img",
+   "queries": [
+    "barley bread loaves",
+    "rustic bread"
+   ],
+   "t": 1122.67
+  },
+  {
+   "id": "s086",
+   "block": 7,
+   "kind": "img",
+   "queries": [
+    "sunset over fields Greece",
+    "wheat field sunset"
+   ],
+   "t": 1148.87
+  },
+  {
+   "id": "s087",
+   "block": 8,
+   "kind": "map:jerusalem-roma",
+   "queries": [],
+   "t": 1165.329
+  },
+  {
+   "id": "s088",
+   "block": 8,
+   "kind": "img",
+   "queries": [
+    "Shipwreck of Saint Paul painting",
+    "Saint Paul shipwreck Malta"
+   ],
+   "t": 1175.869
+  },
+  {
+   "id": "s089",
+   "block": 8,
+   "kind": "img",
+   "queries": [
+    "Roman insula Ostia",
+    "Ostia Antica insula"
+   ],
+   "t": 1182.205
+  },
+  {
+   "id": "s090",
+   "block": 8,
+   "kind": "img",
+   "queries": [
+    "Roman soldier relief",
+    "Trajan column soldiers"
+   ],
+   "t": 1201.354
+  },
+  {
+   "id": "s091",
+   "block": 8,
+   "kind": "img",
+   "queries": [
+    "Roman bread loaf Pompeii",
+    "carbonized bread Pompeii"
+   ],
+   "t": 1209.359
+  },
+  {
+   "id": "s092",
+   "block": 8,
+   "kind": "img",
+   "queries": [
+    "Roman street Pompeii",
+    "Pompeii street"
+   ],
+   "t": 1237.102
+  },
+  {
+   "id": "s093",
+   "block": 8,
+   "kind": "img",
+   "queries": [
+    "oil lamp ancient Roman",
+    "Roman oil lamp"
+   ],
+   "t": 1249.991
+  },
+  {
+   "id": "s094",
+   "block": 8,
+   "kind": "img",
+   "queries": [
+    "hands holding coins",
+    "coins in palm"
+   ],
+   "t": 1263.233
+  },
+  {
+   "id": "s095",
+   "block": 8,
+   "kind": "img",
+   "queries": [
+    "Philippi ruins dawn",
+    "Philippi Greece"
+   ],
+   "t": 1273.436
+  },
+  {
+   "id": "s096",
+   "block": 8,
+   "kind": "img",
+   "queries": [
+    "Aphrodite statue",
+    "Venus de Milo"
+   ],
+   "t": 1275.429
+  },
+  {
+   "id": "s097",
+   "block": 8,
+   "kind": "map:filipos-roma",
+   "queries": [],
+   "t": 1298.646
+  },
+  {
+   "id": "s098",
+   "block": 8,
+   "kind": "vid",
+   "queries": [
+    "rain falling",
+    "rain on road"
+   ],
+   "t": 1318.907
+  },
+  {
+   "id": "s099",
+   "block": 8,
+   "kind": "img",
+   "queries": [
+    "Via Appia Antica",
+    "Appian Way"
+   ],
+   "t": 1335.772
+  },
+  {
+   "id": "s100",
+   "block": 8,
+   "kind": "vid",
+   "queries": [
+    "sunrise timelapse",
+    "sunrise clouds"
+   ],
+   "t": 1351.7
+  },
+  {
+   "id": "s101",
+   "block": 8,
+   "kind": "img",
+   "queries": [
+    "Roman Forum panorama",
+    "Forum Romanum"
+   ],
+   "t": 1386.641
+  },
+  {
+   "id": "s102",
+   "block": 8,
+   "kind": "img",
+   "queries": [
+    "Saint Paul writing epistles painting",
+    "Paul writing letter painting"
+   ],
+   "t": 1398.008
+  },
+  {
+   "id": "s103",
+   "block": 8,
+   "kind": "img",
+   "queries": [
+    "papyrus scroll",
+    "ancient scroll"
+   ],
+   "t": 1404.401
+  },
+  {
+   "id": "s104",
+   "block": 9,
+   "kind": "img",
+   "queries": [
+    "Papyrus 46 folio",
+    "P46 papyrus"
+   ],
+   "t": 1415.45
+  },
+  {
+   "id": "s105",
+   "block": 9,
+   "kind": "img",
+   "queries": [
+    "iron chain closeup",
+    "old chain"
+   ],
+   "t": 1440.931
+  },
+  {
+   "id": "s106",
+   "block": 9,
+   "kind": "img",
+   "queries": [
+    "Codex Alexandrinus",
+    "Greek uncial manuscript"
+   ],
+   "t": 1444.597
+  },
+  {
+   "id": "s107",
+   "block": 9,
+   "kind": "img",
+   "queries": [
+    "mountain summit sunrise",
+    "mountain sunrise"
+   ],
+   "t": 1494.569
+  },
+  {
+   "id": "s108",
+   "block": 9,
+   "kind": "img",
+   "queries": [
+    "ancient account tablet",
+    "wax tablet Roman"
+   ],
+   "t": 1523.485
+  },
+  {
+   "id": "s109",
+   "block": 9,
+   "kind": "vid",
+   "queries": [
+    "incense smoke",
+    "smoke rising"
+   ],
+   "t": 1554.141
+  },
+  {
+   "id": "s110",
+   "block": 9,
+   "kind": "img",
+   "queries": [
+    "ancient altar incense",
+    "Roman altar"
+   ],
+   "t": 1566.503
+  },
+  {
+   "id": "s111",
+   "block": 9,
+   "kind": "fx:versiculo",
+   "queries": [],
+   "t": 1581.649
+  },
+  {
+   "id": "s112",
+   "block": 10,
+   "kind": "img",
+   "queries": [
+    "Papyrus 46",
+    "Chester Beatty Library papyrus"
+   ],
+   "t": 1602.119
+  },
+  {
+   "id": "s113",
+   "block": 10,
+   "kind": "img",
+   "queries": [
+    "Paul and Silas in prison",
+    "Saint Paul prison"
+   ],
+   "t": 1619.245
+  },
+  {
+   "id": "s114",
+   "block": 10,
+   "kind": "fx:pleroo",
+   "queries": [],
+   "t": 1640.753
+  },
+  {
+   "id": "s115",
+   "block": 10,
+   "kind": "img",
+   "queries": [
+    "water pouring jug",
+    "water jar pouring"
+   ],
+   "t": 1651.227
+  },
+  {
+   "id": "s116",
+   "block": 10,
+   "kind": "fx:das-segundo",
+   "queries": [],
+   "t": 1666.294
+  },
+  {
+   "id": "s117",
+   "block": 10,
+   "kind": "img",
+   "queries": [
+    "gold coins treasure",
+    "coin hoard gold"
+   ],
+   "t": 1683.278
+  },
+  {
+   "id": "s118",
+   "block": 10,
+   "kind": "vid",
+   "queries": [
+    "clouds timelapse",
+    "sky clouds"
+   ],
+   "t": 1704.111
+  },
+  {
+   "id": "s119",
+   "block": 10,
+   "kind": "img",
+   "queries": [
+    "basket of bread",
+    "bread basket"
+   ],
+   "t": 1728.036
+  },
+  {
+   "id": "s120",
+   "block": 10,
+   "kind": "img",
+   "queries": [
+    "Philippi basilica",
+    "Philippi ruins"
+   ],
+   "t": 1744.051
+  },
+  {
+   "id": "s121",
+   "block": 10,
+   "kind": "img",
+   "queries": [
+    "road through fields",
+    "country road"
+   ],
+   "t": 1753.815
+  },
+  {
+   "id": "s122",
+   "block": 10,
+   "kind": "fx:quatro-atitudes",
+   "queries": [],
+   "t": 1786.622
+  },
+  {
+   "id": "s123",
+   "block": 11,
+   "kind": "fx:atitude-1",
+   "queries": [],
+   "t": 1799.655
+  },
+  {
+   "id": "s124",
+   "block": 11,
+   "kind": "img",
+   "queries": [
+    "seeds in hand",
+    "hand holding seeds"
+   ],
+   "t": 1803.88
+  },
+  {
+   "id": "s125",
+   "block": 11,
+   "kind": "img",
+   "queries": [
+    "sowing seeds field farmer",
+    "farmer sowing"
+   ],
+   "t": 1828.395
+  },
+  {
+   "id": "s126",
+   "block": 11,
+   "kind": "img",
+   "queries": [
+    "wheat ears",
+    "wheat field"
+   ],
+   "t": 1840.35
+  },
+  {
+   "id": "s127",
+   "block": 11,
+   "kind": "img",
+   "queries": [
+    "food donation groceries",
+    "food bank volunteers"
+   ],
+   "t": 1850.714
+  },
+  {
+   "id": "s128",
+   "block": 11,
+   "kind": "fx:atitude-2",
+   "queries": [],
+   "t": 1882.015
+  },
+  {
+   "id": "s129",
+   "block": 11,
+   "kind": "img",
+   "queries": [
+    "calendar wall",
+    "old calendar"
+   ],
+   "t": 1893.654
+  },
+  {
+   "id": "s130",
+   "block": 11,
+   "kind": "img",
+   "queries": [
+    "envelopes money savings",
+    "coin jar savings"
+   ],
+   "t": 1899.08
+  },
+  {
+   "id": "s131",
+   "block": 11,
+   "kind": "fx:atitude-3",
+   "queries": [],
+   "t": 1919.537
+  },
+  {
+   "id": "s132",
+   "block": 11,
+   "kind": "img",
+   "queries": [
+    "ancient Roman road",
+    "Via Egnatia"
+   ],
+   "t": 1924.819
+  },
+  {
+   "id": "s133",
+   "block": 11,
+   "kind": "img",
+   "queries": [
+    "sunrise over road",
+    "road sunrise"
+   ],
+   "t": 1946.922
+  },
+  {
+   "id": "s134",
+   "block": 11,
+   "kind": "fx:atitude-4",
+   "queries": [],
+   "t": 1960.327
+  },
+  {
+   "id": "s135",
+   "block": 11,
+   "kind": "img",
+   "queries": [
+    "pile of money banknotes",
+    "banknotes"
+   ],
+   "t": 1975.374
+  },
+  {
+   "id": "s136",
+   "block": 11,
+   "kind": "img",
+   "queries": [
+    "family table thanksgiving meal",
+    "family dinner"
+   ],
+   "t": 1990.864
+  },
+  {
+   "id": "s137",
+   "block": 11,
+   "kind": "img",
+   "queries": [
+    "open hands",
+    "hands open palms"
+   ],
+   "t": 2005.479
+  },
+  {
+   "id": "s138",
+   "block": 11,
+   "kind": "fx:resumo-atitudes",
+   "queries": [],
+   "t": 2020.188
+  },
+  {
+   "id": "s139",
+   "block": 11,
+   "kind": "img",
+   "queries": [
+    "Philippi ruins sunset",
+    "Philippi archaeological site"
+   ],
+   "t": 2028.956
+  },
+  {
+   "id": "s140",
+   "block": 12,
+   "kind": "vid",
+   "queries": [
+    "candle flame",
+    "candle"
+   ],
+   "t": 2047.712
+  },
+  {
+   "id": "s141",
+   "block": 12,
+   "kind": "vid",
+   "queries": [
+    "river flowing",
+    "stream water"
+   ],
+   "t": 2060.326
+  },
+  {
+   "id": "s142",
+   "block": 12,
+   "kind": "img",
+   "queries": [
+    "Paul and Silas in prison",
+    "prison stone dark"
+   ],
+   "t": 2082.417
+  },
+  {
+   "id": "s143",
+   "block": 12,
+   "kind": "img",
+   "queries": [
+    "family dinner table",
+    "bread table"
+   ],
+   "t": 2101.421
+  },
+  {
+   "id": "s144",
+   "block": 12,
+   "kind": "img",
+   "queries": [
+    "Via Appia Antica",
+    "Roman road"
+   ],
+   "t": 2113.211
+  },
+  {
+   "id": "s145",
+   "block": 12,
+   "kind": "img",
+   "queries": [
+    "Philippi basilica ruins",
+    "Philippi ruins"
+   ],
+   "t": 2127.595
+  },
+  {
+   "id": "s146",
+   "block": 12,
+   "kind": "img",
+   "queries": [
+    "praying hands",
+    "prayer hands"
+   ],
+   "t": 2146.952
+  },
+  {
+   "id": "s147",
+   "block": 12,
+   "kind": "vid",
+   "queries": [
+    "sunrise timelapse",
+    "sun rays clouds"
+   ],
+   "t": 2161.743
+  },
+  {
+   "id": "s148",
+   "block": 13,
+   "kind": "img",
+   "queries": [
+    "Philippi theatre",
+    "Philippi ruins"
+   ],
+   "t": 2181.484
+  },
+  {
+   "id": "s149",
+   "block": 13,
+   "kind": "img",
+   "queries": [
+    "Lydia baptistery Philippi",
+    "river Philippi"
+   ],
+   "t": 2184.355
+  },
+  {
+   "id": "s150",
+   "block": 13,
+   "kind": "img",
+   "queries": [
+    "Via Egnatia",
+    "Roman road"
+   ],
+   "t": 2190.298
+  },
+  {
+   "id": "s151",
+   "block": 13,
+   "kind": "img",
+   "queries": [
+    "Papyrus 46",
+    "papyrus"
+   ],
+   "t": 2199.256
+  },
+  {
+   "id": "s152",
+   "block": 13,
+   "kind": "img",
+   "queries": [
+    "sailing ship sunset sea",
+    "Adriatic sea sunset"
+   ],
+   "t": 2221.558
+  },
+  {
+   "id": "s153",
+   "block": 13,
+   "kind": "img",
+   "queries": [
+    "hands helping",
+    "helping hand"
+   ],
+   "t": 2260.051
+  },
+  {
+   "id": "s154",
+   "block": 13,
+   "kind": "img",
+   "queries": [
+    "flour in bowl",
+    "flour"
+   ],
+   "t": 2274.54
+  },
+  {
+   "id": "s155",
+   "block": 13,
+   "kind": "img",
+   "queries": [
+    "old wooden door",
+    "ancient door"
+   ],
+   "t": 2286.85
+  },
+  {
+   "id": "s156",
+   "block": 13,
+   "kind": "fx:proximo",
+   "queries": [],
+   "t": 2290.377
+  }
+ ],
+ "overlays": [
+  {
+   "block": 1,
+   "type": "ref",
+   "text": "Filipenses 4:19",
+   "t": 35.607,
+   "d": 7
+  },
+  {
+   "block": 1,
+   "type": "credit",
+   "text": "Papiro 46 · c. 200 d.C. · um dos manuscritos mais antigos das cartas de Paulo",
+   "t": 35.607,
+   "d": 7
+  },
+  {
+   "block": 4,
+   "type": "title",
+   "text": "O mundo da época",
+   "t": 279.786,
+   "d": 5
+  },
+  {
+   "block": 4,
+   "type": "place",
+   "text": "Filipos · Macedônia",
+   "t": 305.261,
+   "d": 6
+  },
+  {
+   "block": 4,
+   "type": "place",
+   "text": "Batalha de Filipos · 42 a.C.",
+   "t": 347.806,
+   "d": 6
+  },
+  {
+   "block": 4,
+   "type": "ref",
+   "text": "Atos 16:12",
+   "t": 394.743,
+   "d": 7
+  },
+  {
+   "block": 5,
+   "type": "title",
+   "text": "Paulo chega à Macedônia",
+   "t": 487.458,
+   "d": 5
+  },
+  {
+   "block": 5,
+   "type": "ref",
+   "text": "Atos 16:9",
+   "t": 536.717,
+   "d": 7
+  },
+  {
+   "block": 5,
+   "type": "place",
+   "text": "Tiatira · Ásia Menor",
+   "t": 584.104,
+   "d": 6
+  },
+  {
+   "block": 5,
+   "type": "ref",
+   "text": "Atos 16:14-15",
+   "t": 628.165,
+   "d": 7
+  },
+  {
+   "block": 6,
+   "type": "title",
+   "text": "A prisão à meia-noite",
+   "t": 699.544,
+   "d": 5
+  },
+  {
+   "block": 6,
+   "type": "ref",
+   "text": "Atos 16:16-19",
+   "t": 704.646,
+   "d": 7
+  },
+  {
+   "block": 6,
+   "type": "ref",
+   "text": "Atos 16:25",
+   "t": 807.757,
+   "d": 7
+  },
+  {
+   "block": 6,
+   "type": "ref",
+   "text": "Atos 16:31",
+   "t": 873.309,
+   "d": 7
+  },
+  {
+   "block": 7,
+   "type": "title",
+   "text": "A igreja que dava do que faltava",
+   "t": 961.368,
+   "d": 5
+  },
+  {
+   "block": 7,
+   "type": "ref",
+   "text": "1 Tessalonicenses 2:9",
+   "t": 978.843,
+   "d": 7
+  },
+  {
+   "block": 7,
+   "type": "ref",
+   "text": "Filipenses 4:16",
+   "t": 1001.499,
+   "d": 7
+  },
+  {
+   "block": 7,
+   "type": "ref",
+   "text": "2 Coríntios 11:9",
+   "t": 1019.266,
+   "d": 7
+  },
+  {
+   "block": 7,
+   "type": "ref",
+   "text": "Filipenses 4:15",
+   "t": 1032.654,
+   "d": 7
+  },
+  {
+   "block": 7,
+   "type": "ref",
+   "text": "2 Coríntios 8:2-3",
+   "t": 1079.608,
+   "d": 9
+  },
+  {
+   "block": 8,
+   "type": "title",
+   "text": "Acorrentado em Roma",
+   "t": 1165.879,
+   "d": 5
+  },
+  {
+   "block": 8,
+   "type": "ref",
+   "text": "Atos 28:16, 20 · Efésios 6:20",
+   "t": 1182.855,
+   "d": 8
+  },
+  {
+   "block": 8,
+   "type": "credit",
+   "text": "Luciano de Samósata, A Morte de Peregrino, 12-13",
+   "t": 1224.949,
+   "d": 7
+  },
+  {
+   "block": 8,
+   "type": "ref",
+   "text": "Filipenses 2:25",
+   "t": 1292.83,
+   "d": 7
+  },
+  {
+   "block": 8,
+   "type": "ref",
+   "text": "Filipenses 2:27-30",
+   "t": 1319.557,
+   "d": 8
+  },
+  {
+   "block": 9,
+   "type": "title",
+   "text": "A carta e a promessa",
+   "t": 1416.0,
+   "d": 5
+  },
+  {
+   "block": 9,
+   "type": "ref",
+   "text": "Filipenses 4:4",
+   "t": 1436.604,
+   "d": 7
+  },
+  {
+   "block": 9,
+   "type": "ref",
+   "text": "Filipenses 4:10",
+   "t": 1449.826,
+   "d": 7
+  },
+  {
+   "block": 9,
+   "type": "ref",
+   "text": "Filipenses 4:11-13",
+   "t": 1469.826,
+   "d": 9
+  },
+  {
+   "block": 9,
+   "type": "ref",
+   "text": "Filipenses 4:14",
+   "t": 1517.514,
+   "d": 6
+  },
+  {
+   "block": 9,
+   "type": "ref",
+   "text": "Filipenses 4:17",
+   "t": 1528.256,
+   "d": 7
+  },
+  {
+   "block": 9,
+   "type": "ref",
+   "text": "Filipenses 4:18",
+   "t": 1554.791,
+   "d": 8
+  },
+  {
+   "block": 10,
+   "type": "credit",
+   "text": "Concordância de Strong · G4137",
+   "t": 1641.403,
+   "d": 8
+  },
+  {
+   "block": 11,
+   "type": "ref",
+   "text": "Lucas 6:38",
+   "t": 1811.737,
+   "d": 7
+  },
+  {
+   "block": 11,
+   "type": "ref",
+   "text": "2 Coríntios 9:10",
+   "t": 1829.045,
+   "d": 7
+  },
+  {
+   "block": 11,
+   "type": "ref",
+   "text": "2 Coríntios 9:7",
+   "t": 1875.924,
+   "d": 6
+  },
+  {
+   "block": 11,
+   "type": "ref",
+   "text": "Lucas 16:10",
+   "t": 1894.304,
+   "d": 7
+  },
+  {
+   "block": 11,
+   "type": "ref",
+   "text": "Mateus 6:33",
+   "t": 1937.522,
+   "d": 7
+  },
+  {
+   "block": 11,
+   "type": "ref",
+   "text": "Filipenses 4:11",
+   "t": 1966.013,
+   "d": 6
+  },
+  {
+   "block": 11,
+   "type": "ref",
+   "text": "1 Timóteo 6:10",
+   "t": 1976.024,
+   "d": 7
+  },
+  {
+   "block": 12,
+   "type": "title",
+   "text": "Oração",
+   "t": 2048.262,
+   "d": 5
+  },
+  {
+   "block": 12,
+   "type": "ref",
+   "text": "Filipenses 4:19",
+   "t": 2162.393,
+   "d": 10
+  },
+  {
+   "block": 6,
+   "type": "cta",
+   "text": "Curta  ·  Inscreva-se",
+   "t": 950.352,
+   "d": 6
+  },
+  {
+   "block": 13,
+   "type": "cta",
+   "text": "Curta  ·  Inscreva-se",
+   "t": 2252.966,
+   "d": 6
+  }
+ ]
+}

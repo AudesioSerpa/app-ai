@@ -1,0 +1,103 @@
+{
+ "s000": {
+  "files": [
+   {
+    "file": "media/s000_0.jpg",
+    "type": "image",
+    "title": "Soviet money",
+    "page": "https://www.flickr.com/photos/41872041@N03/14439740465",
+    "license": "CC BY-SA 2.0",
+    "artist": "kryshen",
+    "source": "flickr",
+    "w": 1024,
+    "h": 683
+   }
+  ]
+ },
+ "s001": {
+  "files": [
+   {
+    "file": "media/s001_0.jpg",
+    "type": "image",
+    "title": "Holding Bitcoin cryptocurrency coin in hand",
+    "page": "https://www.flickr.com/photos/96149081@N03/52687909661",
+    "license": "CC BY 2.0",
+    "artist": "satheeshsankaran.com",
+    "source": "flickr",
+    "w": 1024,
+    "h": 693
+   }
+  ]
+ },
+ "s002": {
+  "files": [
+   {
+    "file": "media/s002_0.jpg",
+    "type": "image",
+    "title": "Night falls over New York",
+    "page": "https://www.flickr.com/photos/73014677@N05/15376038351",
+    "license": "CC BY 2.0",
+    "artist": "Fraser Mummery",
+    "source": "flickr",
+    "w": 1024,
+    "h": 768
+   },
+   {
+    "file": "media/s002_1.jpg",
+    "type": "image",
+    "title": "Kilmainham Gaol (Jail)",
+    "page": "https://www.flickr.com/photos/83413148@N00/91181864",
+    "license": "CC BY-SA 2.0",
+    "artist": "Sean Munson",
+    "source": "flickr",
+    "w": 1024,
+    "h": 768
+   }
+  ]
+ },
+ "s003": {
+  "files": [
+   {
+    "file": "media/s003_0.jpg",
+    "type": "image",
+    "title": "Shooting sunrise timelapse",
+    "page": "https://www.flickr.com/photos/55128416@N05/15243247410",
+    "license": "CC0",
+    "artist": "brenkee",
+    "source": "flickr",
+    "w": 1024,
+    "h": 672
+   }
+  ]
+ },
+ "s005": {
+  "files": [
+   {
+    "file": "media/s005_0.jpg",
+    "type": "image",
+    "title": "forum: view of palatine",
+    "page": "https://www.flickr.com/photos/93226994@N00/11478659",
+    "license": "CC BY 2.0",
+    "artist": "antmoose",
+    "source": "flickr",
+    "w": 1024,
+    "h": 768
+   }
+  ]
+ },
+ "s006": {
+  "files": [
+   {
+    "file": "media/s006_0.jpg",
+    "type": "image",
+    "title": "Clockwork",
+    "page": "https://www.flickr.com/photos/26782864@N00/11271766325",
+    "license": "CC BY 2.0",
+    "artist": "wwarby",
+    "source": "flickr",
+    "w": 1024,
+    "h": 768
+   }
+  ]
+ }
+}

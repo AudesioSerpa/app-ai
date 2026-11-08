@@ -1,0 +1,24 @@
+{
+  "name": "deus-provera-ep01",
+  "private": true,
+  "scripts": {
+    "studio": "remotion studio",
+    "render": "remotion render src/index.ts Episodio01 out/episodio-01.mp4"
+  },
+  "dependencies": {
+    "@fontsource/cinzel": "^5.1.0",
+    "@fontsource/cormorant-garamond": "^5.1.0",
+    "@fontsource/inter": "^5.1.0",
+    "@remotion/cli": "^4.0.380",
+    "@types/d3-geo": "^3.1.0",
+    "@types/react": "^18.3.12",
+    "@types/topojson-client": "^3.1.5",
+    "d3-geo": "^3.1.1",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "remotion": "^4.0.380",
+    "topojson-client": "^3.1.0",
+    "typescript": "^5.6.3",
+    "world-atlas": "^2.0.2"
+  }
+}
