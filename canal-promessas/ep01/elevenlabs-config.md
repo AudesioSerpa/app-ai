@@ -12,15 +12,15 @@ A narração está dividida em **13 blocos**, na pasta `narracao/`. Gere **um á
 | bloco-05 | Paulo chega e Lídia | 475 | 2.785 |
 | bloco-06 | A escrava, a prisão e o carcereiro + pedido de inscrição | 578 | 3.515 |
 | bloco-07 | A igreja que dava do que faltava | 425 | 2.633 |
-| bloco-08 | Paulo preso em Roma e Epafrodito | 435 | 2.688 |
+| bloco-08 | Paulo preso em Roma e Epafrodito | 535 | 3.294 |
 | bloco-09 | A carta e a promessa | 385 | 2.425 |
 | bloco-10 | O significado e o detalhe escondido | 443 | 2.640 |
 | bloco-11 | As quatro atitudes | 531 | 3.269 |
 | bloco-12 | Oração final | 280 | 1.677 |
 | bloco-13 | Encerramento | 261 | 1.534 |
-| **Total** | | **4.857** | **~29.500** |
+| **Total** | | **4.957** | **~30.000** |
 
-**Duração estimada:** de 34 a 38 minutos de áudio (depende da voz e da velocidade). Com as pausas entre blocos, o vídeo passa de 35 minutos.
+**Duração estimada:** de 35 a 39 minutos de áudio (depende da voz e da velocidade). Com as pausas entre blocos, o vídeo passa de 35 minutos.
 
 Salve os áudios como `bloco-01.mp3`, `bloco-02.mp3`… e me envie todos. Eu monto o vídeo encaixando cada bloco nas suas cenas.
 

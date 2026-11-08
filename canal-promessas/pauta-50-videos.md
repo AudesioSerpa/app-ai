@@ -1,6 +1,6 @@
 # Pauta — Primeiros 50 Documentários: Promessas de Provisão
 
-> Todos os episódios seguem o [Guia de Produção](guia-de-producao.md): **mínimo de 30 minutos**, gancho forte, oração de bênção após o gancho, `[CONEXÃO]` a cada 30 segundos, nada inventado, cânon protestante, nada sobre cura, copy da multiplicação e pergunta de comentário **inéditas** em cada vídeo.
+> Todos os episódios seguem o [Guia de Produção](guia-de-producao.md): **mínimo de 30 minutos**, gancho forte, oração de bênção após o gancho, `[CONEXÃO]` a cada 30 segundos, nada inventado, cânon protestante, foco em prosperidade financeira e espiritual (nenhum episódio centrado em cura), copy da multiplicação e pergunta de comentário **inéditas** em cada vídeo.
 >
 > Citações bíblicas: Almeida Revista e Corrigida (ARC) ou Almeida Corrigida Fiel (ACF).
 > Fontes gerais de apoio (citar as usadas na descrição): Concordância de Strong; Flávio Josefo; Easton's e Smith's Bible Dictionary; comentários de Matthew Henry, Adam Clarke e John Gill.
@@ -33,7 +33,7 @@
 ### EP 02 — A farinha que não acabou: a viúva de Sarepta
 - **Base:** 1 Reis 17:8-16; Lucas 4:25-26
 - **Gancho:** *"Ela tinha um punhado de farinha, um pouco de azeite e um plano: fazer o último pão e esperar a morte. Então um estrangeiro bateu à porta e pediu exatamente aquele pão."*
-- **A história real:** Seca de três anos e meio no tempo de Acabe. Deus envia Elias a Sarepta, território de Sidom — terra de Jezabel e de Baal. A viúva faz primeiro o pão do profeta, e a farinha e o azeite não acabam até a chuva voltar. *(Encerrar no v. 16 — não entrar nos vv. 17-24.)*
+- **A história real:** Seca de três anos e meio no tempo de Acabe. Deus envia Elias a Sarepta, território de Sidom — terra de Jezabel e de Baal. A viúva faz primeiro o pão do profeta, e a farinha e o azeite não acabam até a chuva voltar. *(O foco é a provisão dos vv. 8-16; os vv. 17-24 podem ser citados brevemente no final como mais um cuidado de Deus com aquela casa.)*
 - **Como alcançar:** obedecer antes de ver; colocar Deus primeiro com o pouco que se tem; crer na Palavra mais do que no medo ("não temas", v. 13).
 - **Fontes:** Josefo, *Antiguidades* VIII.13; Easton's — "Zarephath"; Lucas 4:25-26.
 - **Copy da multiplicação:** *"A farinha dela se multiplicou dia após dia na panela. Esta história pode se multiplicar de celular em celular. Manda para uma mãe que está fazendo as contas do mercado hoje — e se inscreva para ajudar o canal a crescer."*
@@ -196,7 +196,7 @@
 ### EP 19 — Enquanto buscou o Senhor, prosperou: o rei Uzias
 - **Base:** 2 Crônicas 26:1-16
 - **Gancho:** *"Ele virou rei com dezesseis anos e reinou cinquenta e dois. Cavou poços, plantou vinhas, construiu torres. E a Bíblia resume o segredo em uma frase — e o erro em outra."*
-- **A história real:** Uzias, rei de Judá, buscou a Deus nos dias de Zacarias e prosperou: agricultura, defesa, fama. Mas, fortalecido, seu coração se exaltou (v. 16). *(Mostrar a queda pelo orgulho sem detalhar a enfermidade.)*
+- **A história real:** Uzias, rei de Judá, buscou a Deus nos dias de Zacarias e prosperou: agricultura, defesa, fama. Mas, fortalecido, seu coração se exaltou (v. 16). *(O foco é a prosperidade e o alerta contra o orgulho; a consequência dos vv. 19-21 pode ser contada como parte da história.)*
 - **Como alcançar:** buscar a Deus de forma contínua; ter mentores espirituais; vigiar o orgulho no sucesso.
 - **Fontes:** Easton's — "Uzziah"; Josefo, *Antiguidades* IX.10.
 - **Copy da multiplicação:** *"Uzias cavou muitos poços para o povo beber. Este vídeo pode ser um poço para alguém com sede de esperança. Compartilhe, curta e se inscreva."*
@@ -440,7 +440,7 @@
 ### EP 45 — Jó: o homem que perdeu tudo e recebeu o dobro
 - **Base:** Jó 1:1-22; 42:7-17
 - **Gancho:** *"Num único dia, quatro mensageiros. Os bois, os jumentos, as ovelhas, os camelos e os servos — tudo perdido. E a virada só começou quando ele orou por quem o tinha ferido."*
-- **A história real:** Jó, o homem mais rico do Oriente, perde seus bens e seus filhos. Depois de longo sofrimento, Deus o restaura quando ele ora pelos amigos (42:10) e lhe dá o dobro de tudo o que tinha. *(Focar em bens e restauração; não detalhar enfermidade.)*
+- **A história real:** Jó, o homem mais rico do Oriente, perde seus bens e seus filhos. Depois de longo sofrimento, Deus o restaura quando ele ora pelos amigos (42:10) e lhe dá o dobro de tudo o que tinha. *(O foco é a restauração dos bens e da vida; o sofrimento de Jó pode ser contado como parte da história.)*
 - **Como alcançar:** integridade na perda ("o Senhor o deu, o Senhor o tomou", 1:21); perdoar e interceder; a restauração vem no tempo de Deus.
 - **Fontes:** Easton's — "Job", "Uz"; Matthew Henry, Jó 42.
 - **Copy da multiplicação:** *"Deus devolveu a Jó o dobro. Dobre o alcance desta mensagem: mande para duas pessoas que estão recomeçando. Curta e se inscreva."*

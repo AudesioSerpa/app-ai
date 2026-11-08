@@ -12,8 +12,11 @@ A pessoa deve terminar o vídeo:
 - com a sensação de **mudança** — tocada, encorajada, com um passo prático para dar;
 - **conhecedora** da Escritura — sabendo contar a história, o contexto e o princípio.
 
-**Tema atual:** somente provisão, finanças, trabalho, generosidade e prosperidade.
-**Fora do tema por enquanto:** cura, saúde, milagres físicos (diretrizes do YouTube sobre informação médica). Se a história original tiver uma parte de cura, ela **não entra** no roteiro.
+**Tema do canal:** promessas de **prosperidade financeira e espiritual**: provisão, finanças, trabalho, generosidade, fidelidade, paz e crescimento na fé.
+
+**O que não fazemos por enquanto:** episódios **inteiros** sobre cura (por exemplo, "a cura da depressão", "promessas de cura para doenças"), por causa das diretrizes do YouTube sobre informação médica.
+
+**O que pode:** se a história bíblica tiver uma parte em que Deus cura ou tem misericórdia de alguém, ela **pode ser contada** como bênção de Deus dentro da narrativa (ex.: Epafrodito em Filipenses 2:27). O foco do episódio continua sendo a promessa de prosperidade. Nunca apresentar a fé como substituta de tratamento médico.
 
 ---
 
@@ -159,7 +162,7 @@ Isso é proibido no canal: é manipulação espiritual, e o YouTube trata como *
 
 - **Conteúdo inautêntico / repetitivo** (política de monetização): vídeos em massa, quase iguais, podem perder a monetização. Cada episódio precisa ser **único** — história, roteiro, imagens, copy e pergunta diferentes. De preferência, use **narração humana** ou uma voz consistente com roteiro original.
 - **Engagement bait**: ver seção 7.
-- **Informação médica**: nada de cura por enquanto (seção 1).
+- **Informação médica**: nenhum episódio centrado em cura; menções dentro da história são permitidas (seção 1).
 - **Direitos autorais**: imagens, músicas e vídeos de banco livre ou gerados por você. Citar a tradução bíblica.
 - **Divulgação de IA**: se usar imagens ou voz realistas geradas por IA, marcar a opção de "conteúdo alterado ou sintético" no upload quando aplicável.
 
@@ -173,7 +176,7 @@ Isso é proibido no canal: é manipulação espiritual, e o YouTube trata como *
 - [ ] `[CONEXÃO]` marcada a cada 30 segundos no roteiro
 - [ ] Nenhum fato inventado; deduções sinalizadas
 - [ ] Só livros do cânon protestante; tradução indicada
-- [ ] Nada sobre cura
+- [ ] O episódio é sobre prosperidade financeira ou espiritual, não centrado em cura
 - [ ] Seção "Fontes" na descrição
 - [ ] Capítulos na descrição
 - [ ] Copy da multiplicação **inédita**

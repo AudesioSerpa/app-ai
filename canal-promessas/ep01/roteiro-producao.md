@@ -1,7 +1,7 @@
 # Episódio 01 — A promessa escrita de dentro de uma prisão
 
 Série **Deus Proverá** · Base: Filipenses 4:10-20; Atos 16; 2 Coríntios 8:1-5; Filipenses 2:25-30
-Duração estimada: **34 a 38 min** · Formato: 16:9, 4K ou 1080p
+Duração estimada: **35 a 39 min** · Formato: 16:9, 4K ou 1080p
 
 O texto que a IA vai ler está em `narracao/bloco-01.txt` a `bloco-13.txt`. Este arquivo tem o que **vai na tela** de cada bloco e o material para publicar.
 
@@ -98,9 +98,10 @@ Cada imagem fica na tela de **8 a 15 segundos**, com movimento lento de câmera 
 5. Reunião na casa de Lídia; rostos preocupados.
 6. Epafrodito recebendo a bolsa e partindo ao amanhecer.
 7. Mapa da viagem: Via Egnácia, mar Adriático, Roma ("mais de mil quilômetros").
-8. Viajante cansado na estrada, chuva, febre (sem detalhes médicos).
+8. Viajante cansado na estrada, chuva, febre.
 9. Encontro: Epafrodito entregando a oferta a Paulo.
-10. Pergaminho e pena; Paulo ditando.
+10. Epafrodito recuperado, de pé, à luz da manhã; Paulo o abraçando na despedida.
+11. Pergaminho e pena; Paulo ditando.
 
 ### Bloco 09 — A carta e a promessa (~21:10)
 1. Pergaminho com a palavra "alegria" brilhando.
@@ -192,13 +193,13 @@ Cada atitude abre com um **título grande na tela**:
 ---
 
 ## Checklist do episódio (Guia de Produção)
-- [x] Mais de 30 minutos (4.857 palavras, ~34-38 min)
+- [x] Mais de 30 minutos (4.957 palavras, ~35-39 min)
 - [x] Gancho com dor, choque, promessa do vídeo e laço aberto ("uma única palavra") — **pago no bloco 10** ("segundo")
 - [x] Oração de bênção depois do gancho + oração final ligada à história
 - [x] Conexão direta com o espectador ao longo de todo o texto
 - [x] Fatos tirados do texto bíblico e de fontes públicas; deduções sinalizadas ("imagina", "provavelmente", "ao que tudo indica")
 - [x] Só cânon protestante; tradução ARC indicada
-- [x] Nada sobre cura (a doença de Epafrodito aparece só como risco da viagem)
+- [x] Foco em prosperidade (a misericórdia de Deus com Epafrodito é contada como parte da história)
 - [x] Copy da multiplicação inédita e pergunta de comentário inédita
 - [x] Nenhum "comente para receber bênção"
 - [ ] Conferir as citações na ARC impressa antes de publicar
