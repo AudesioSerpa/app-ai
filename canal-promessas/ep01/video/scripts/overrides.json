@@ -274,5 +274,19 @@
  "s102": [
   "Saint Paul writing",
   "Apostle Paul painting"
+ ],
+ "_skip": [
+  "s006",
+  "s009",
+  "s011",
+  "s044",
+  "s045",
+  "s063"
+ ],
+ "_dropfiles": [
+  "s013_0r",
+  "s041_1r",
+  "s046_1r",
+  "s067_0r"
  ]
 }

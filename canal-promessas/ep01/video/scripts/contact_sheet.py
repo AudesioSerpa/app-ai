@@ -17,6 +17,8 @@ items = []
 for sc in tl["scenes"]:
     if not (b0 <= sc["block"] <= b1) or sc["id"] not in media:
         continue
+    if "--fixed" in sys.argv and not media[sc["id"]].get("fixed"):
+        continue
     for k, f in enumerate(media[sc["id"]]["files"]):
         if f["type"] == "image":
             items.append((f"{sc['id']}_{k}", anchors[sc["id"]], ROOT / "public" / f["file"], f["title"]))
@@ -35,7 +37,7 @@ for n, (sid, anchor, path, title) in enumerate(items):
         pass
     d.text((x + 4, y + H + 2), f"{sid}: {anchor[:44]}", fill="yellow", font=font)
     d.text((x + 4, y + H + 22), title[:52], fill="white", font=font)
-out = ROOT / "out" / f"revisao-b{b0:02d}-b{b1:02d}.jpg"
+out = ROOT / "out" / f"revisao-b{b0:02d}-b{b1:02d}{'-trocas' if '--fixed' in sys.argv else ''}.jpg"
 out.parent.mkdir(exist_ok=True)
 sheet.save(out, quality=80)
 print(out, len(items))

@@ -6,18 +6,27 @@ import { SceneView, SceneData } from "./Scene";
 import { Overlay, OverlayData } from "./Overlay";
 import { Vinheta } from "./Vinheta";
 import { INK } from "./theme";
+import overrides from "../scripts/overrides.json";
+
+const SKIP = new Set<string>((overrides as any)._skip ?? []);
+const DROP = new Set<string>((overrides as any)._dropfiles ?? []);
 
 export type EpisodeProps = { showCta: boolean };
 
 type MediaMap = Record<string, { files: { file: string; type: "image" | "video"; w?: number; h?: number }[] }>;
-const media = mediaJson as unknown as MediaMap;
+const rawMedia = mediaJson as unknown as MediaMap;
+// remove fotos descartadas na revisão
+const media: MediaMap = Object.fromEntries(
+  Object.entries(rawMedia).map(([k, v]) => [k, { files: v.files.filter((f) => !DROP.has(f.file.replace(/^media\//, "").replace(/\.\w+$/, ""))) }])
+);
 
 const DISSOLVE = 0.9; // segundos
 
 export const Episode: React.FC<EpisodeProps> = ({ showCta }) => {
   const { fps } = useVideoConfig();
   const f = (s: number) => Math.round(s * fps);
-  const scenes = timeline.scenes as unknown as SceneData[];
+  // cenas puladas na revisão: a cena anterior continua na tela
+  const scenes = (timeline.scenes as unknown as SceneData[]).filter((s) => !SKIP.has(s.id));
   const blocks = timeline.blocks as { block: number; start: number; duration: number; src: string; vinhetaAt?: number }[];
   const vinheta = blocks.find((b) => b.vinhetaAt !== undefined)!.vinhetaAt!;
   const VIN = 6;
