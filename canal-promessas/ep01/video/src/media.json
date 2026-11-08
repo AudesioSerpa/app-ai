@@ -99,5 +99,132 @@
     "h": 768
    }
   ]
+ },
+ "s007": {
+  "files": [
+   {
+    "file": "media/s007_0.jpg",
+    "type": "image",
+    "title": "Via Egnatia, Philippi",
+    "page": "https://www.flickr.com/photos/41523983@N08/7272787450",
+    "license": "CC BY-SA 2.0",
+    "artist": "Following Hadrian",
+    "source": "flickr",
+    "w": 1024,
+    "h": 768
+   }
+  ]
+ },
+ "s008": {
+  "files": [
+   {
+    "file": "media/s008_0.jpg",
+    "type": "image",
+    "title": "Murexes",
+    "page": "https://www.flickr.com/photos/53255320@N07/6834688269",
+    "license": "CC BY 2.0",
+    "artist": "16:9clue",
+    "source": "flickr",
+    "w": 1024,
+    "h": 576
+   }
+  ]
+ },
+ "s009": {
+  "files": [
+   {
+    "file": "media/s009_0.jpg",
+    "type": "image",
+    "title": "Chora from Mykonos Lookout Point, Mykonos, Greece",
+    "page": "https://www.flickr.com/photos/59081381@N03/53500088942",
+    "license": "CC BY-SA 2.0",
+    "artist": "w_lemay",
+    "source": "flickr",
+    "w": 1024,
+    "h": 768
+   }
+  ]
+ },
+ "s010": {
+  "files": [
+   {
+    "file": "media/s010_0.jpg",
+    "type": "image",
+    "title": "Gospel Lectionary, The feeding of the five thousand, Walters Manuscript W.535, fol. 107r",
+    "page": "https://www.flickr.com/photos/39699193@N03/7167262403",
+    "license": "CC0",
+    "artist": "Walters Art Museum Illuminated Manuscripts",
+    "source": "flickr",
+    "w": 1024,
+    "h": 1018
+   },
+   {
+    "file": "media/s010_1.jpg",
+    "type": "image",
+    "title": "Gospel Lectionary, Ornamented headpiece and initial letter 'Pi' with Herod's feast, Walters Manuscript W.535, fol. 159r",
+    "page": "https://www.flickr.com/photos/39699193@N03/7167261831",
+    "license": "CC0",
+    "artist": "Walters Art Museum Illuminated Manuscripts",
+    "source": "flickr",
+    "w": 934,
+    "h": 1024
+   }
+  ]
+ },
+ "s011": {
+  "files": [
+   {
+    "file": "media/s011_0.jpg",
+    "type": "image",
+    "title": "A Pair of Candle Flames",
+    "page": "https://www.flickr.com/photos/29968788@N00/1793613381",
+    "license": "CC BY 2.0",
+    "artist": "DrGBB",
+    "source": "flickr",
+    "w": 1024,
+    "h": 683
+   }
+  ]
+ },
+ "s012": {
+  "files": [
+   {
+    "file": "media/s012_0.jpg",
+    "type": "image",
+    "title": "Sunrise Timelapses",
+    "page": "https://www.flickr.com/photos/124865019@N04/14788082794",
+    "license": "CC BY 2.0",
+    "artist": "peter.valpiani",
+    "source": "flickr",
+    "w": 1024,
+    "h": 683
+   }
+  ]
+ },
+ "s013": {
+  "files": [
+   {
+    "file": "media/s013_0.jpg",
+    "type": "image",
+    "title": "Praying Hands",
+    "page": "https://www.flickr.com/photos/10710442@N08/6117657027",
+    "license": "CC BY 2.0",
+    "artist": "Steve Snodgrass",
+    "source": "flickr",
+    "w": 1024,
+    "h": 624
+   },
+   {
+    "file": "media/s013_1.jpg",
+    "type": "image",
+    "title": "Praying Hands",
+    "page": "https://www.flickr.com/photos/16446663@N03/4074213268",
+    "license": "CC BY-SA 2.0",
+    "artist": "xomiele",
+    "source": "flickr",
+    "w": 1024,
+    "h": 768
+   }
+  ]
  }
 }
