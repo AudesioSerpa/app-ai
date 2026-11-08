@@ -15,8 +15,13 @@ for sid in sorted(media):
         lines.append(f"• \"{f['title']}\" — {f.get('artist') or 'Desconhecido'} · {f.get('license')} · {f.get('page') or ''}".strip())
 out = ROOT / "out" / "creditos-imagens.txt"
 out.parent.mkdir(exist_ok=True)
-header = ("Imagens: fotos reais com licença livre (CC0, domínio público, CC BY e CC BY-SA), obtidas pelo Openverse "
+header = ("Imagens: vídeos reais do Mixkit e fotos reais com licença livre (CC0, domínio público, CC BY e CC BY-SA), obtidas pelo Openverse "
           "(WordPress Photo Directory, Metropolitan Museum of Art e Flickr). Mapas e artes gráficas: produção do canal. "
           "Paisagens e ruínas ilustram a narração e não são, necessariamente, o local exato dos fatos narrados.\n\n")
+mx = ROOT / "src" / "mixkit.json"
+if mx.exists():
+    vids = json.loads(mx.read_text(encoding="utf-8"))
+    lines.append("\nVídeos: Mixkit (Mixkit Stock Video Free License, uso comercial liberado, sem atribuição obrigatória):")
+    lines += [f"• \"{v['title']}\" · {v['page']}" for _, v in sorted(vids.items())]
 out.write_text(header + "\n".join(lines) + "\n", encoding="utf-8")
 print(f"{len(lines)} créditos → {out}")

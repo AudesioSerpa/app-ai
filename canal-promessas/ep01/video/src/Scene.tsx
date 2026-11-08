@@ -4,7 +4,7 @@ import { MapScene } from "./MapScene";
 import { Fx } from "./Fx";
 
 export type SceneData = { id: string; block: number; kind: string; t: number };
-type File = { file: string; type: "image" | "video"; w?: number; h?: number };
+type File = { file: string; type: "image" | "video"; w?: number; h?: number; dur?: number };
 
 // movimentos lentos de câmera (zoom e panorâmica), alternados por cena
 const MOVES = [
@@ -48,6 +48,22 @@ const VideoClip: React.FC<{ src: string; dur: number }> = ({ src, dur }) => {
   );
 };
 
+// trecho de vídeo: se a cena for mais longa que o clipe, desacelera um pouco e repete
+const VideoPart: React.FC<{ src: string; clip: number; dur: number }> = ({ src, clip, dur }) => {
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+  const rate = Math.max(0.6, Math.min(1, clip / dur));
+  const loopFrames = Math.max(1, Math.floor((clip / rate) * fps));
+  const s = interpolate(frame, [0, Math.max(1, dur * fps)], [1.0, 1.05], { extrapolateRight: "clamp" });
+  return (
+    <AbsoluteFill style={{ overflow: "hidden", backgroundColor: "#000" }}>
+      <Loop durationInFrames={loopFrames}>
+        <OffthreadVideo src={staticFile(src)} muted playbackRate={rate} style={{ width: "100%", height: "100%", objectFit: "cover", transform: `scale(${s})` }} />
+      </Loop>
+    </AbsoluteFill>
+  );
+};
+
 const Vignette: React.FC = () => (
   <AbsoluteFill style={{ background: "radial-gradient(ellipse at center, rgba(0,0,0,0) 55%, rgba(0,0,0,0.55) 100%)" }} />
 );
@@ -64,23 +80,25 @@ export const SceneView: React.FC<{ scene: SceneData; files: File[]; fadeIn: numb
     content = <Fx name={scene.kind.slice(3)} dur={sceneDur} start={scene.t - fadeIn} bg={bg} />;
   } else if (files.length === 0) {
     content = <Fx name="fallback" dur={sceneDur} bg={bg} />;
-  } else if (files[0].type === "video") {
-    content = <VideoClip src={files[0].file} dur={sceneDur} />;
   } else {
-    // fotos divididas em partes iguais, com corte seco entre elas
-    const part = sceneDur / files.length;
-    const k = Math.min(files.length - 1, Math.floor(frame / fps / part));
-    content = (
-      <AbsoluteFill>
-        {files.map((fl, j) =>
-          j === k ? (
-            <AbsoluteFill key={j}>
-              <ShiftedKB src={fl.file} startSec={j * part} dur={part + 1} seed={index * 3 + j} portrait={!!fl.w && !!fl.h && fl.w < fl.h * 1.25} />
-            </AbsoluteFill>
-          ) : null
-        )}
-      </AbsoluteFill>
-    );
+    // vídeo real (se houver) primeiro, depois as fotos em partes iguais, com corte seco
+    const vid = files[0].type === "video" ? files[0] : null;
+    const imgs = files.filter((x) => x.type === "image");
+    const clip = vid ? Math.max(2, (vid.dur ?? 10) - 0.3) : 0;
+    const vPart = vid ? (imgs.length ? Math.min(clip, Math.max(sceneDur * 0.5, sceneDur / (imgs.length + 1))) : sceneDur) : 0;
+    const part = imgs.length ? (sceneDur - vPart) / imgs.length : 0;
+    const t = frame / fps;
+    if (vid && (t < vPart || imgs.length === 0)) {
+      content = <VideoPart src={vid.file} clip={clip} dur={vPart} />;
+    } else {
+      const k = Math.min(imgs.length - 1, Math.floor((t - vPart) / part));
+      const fl = imgs[k];
+      content = (
+        <AbsoluteFill>
+          <ShiftedKB src={fl.file} startSec={vPart + k * part} dur={part + 1} seed={index * 3 + k} portrait={!!fl.w && !!fl.h && fl.w < fl.h * 1.25} />
+        </AbsoluteFill>
+      );
+    }
   }
   return (
     <AbsoluteFill style={{ opacity }}>

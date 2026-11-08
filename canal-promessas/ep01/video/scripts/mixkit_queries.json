@@ -1,0 +1,254 @@
+{
+ "_comment": "Buscas no Mixkit (vídeos reais) por cena. Lugares antigos específicos continuam com fotos.",
+ "s000": [
+  "bills",
+  "paperwork desk",
+  "calculator"
+ ],
+ "s001": [
+  "wallet",
+  "counting coins",
+  "coins"
+ ],
+ "s002": [
+  "city night window",
+  "city at night",
+  "night city"
+ ],
+ "s003": [
+  "sunrise mountains",
+  "sunrise"
+ ],
+ "s012": [
+  "sunrise field",
+  "sunrise meadow"
+ ],
+ "s015": [
+  "job search",
+  "newspaper",
+  "laptop job"
+ ],
+ "s016": [
+  "construction worker",
+  "worker"
+ ],
+ "s017": [
+  "bread",
+  "baking bread"
+ ],
+ "s019": [
+  "man sitting alone",
+  "sad man"
+ ],
+ "s020": [
+  "market vendor",
+  "fruit market",
+  "street market"
+ ],
+ "s021": [
+  "sun rays clouds",
+  "sunbeams"
+ ],
+ "s023": [
+  "bible",
+  "reading book"
+ ],
+ "s043": [
+  "river stones",
+  "river flowing",
+  "river"
+ ],
+ "s044": [
+  "small river",
+  "stream"
+ ],
+ "s046": [
+  "closed door",
+  "old door"
+ ],
+ "s051": [
+  "river water",
+  "river flowing"
+ ],
+ "s055": [
+  "purple cloth",
+  "fabric texture"
+ ],
+ "s068": [
+  "jail cell",
+  "prison"
+ ],
+ "s079": [
+  "old letter",
+  "letter paper"
+ ],
+ "s084": [
+  "giving money",
+  "hands coins"
+ ],
+ "s086": [
+  "sunset fields",
+  "sunset field"
+ ],
+ "s088": [
+  "stormy sea",
+  "sea waves storm",
+  "rough sea"
+ ],
+ "s093": [
+  "fire flame",
+  "campfire"
+ ],
+ "s094": [
+  "hands holding coins",
+  "coins in hand"
+ ],
+ "s098": [
+  "storm",
+  "thunderstorm"
+ ],
+ "s100": [
+  "sunrise mountains",
+  "mountain sunrise"
+ ],
+ "s103": [
+  "writing quill",
+  "writing"
+ ],
+ "s105": [
+  "chain",
+  "metal chain"
+ ],
+ "s117": [
+  "gold coins",
+  "gold"
+ ],
+ "s118": [
+  "clouds timelapse",
+  "clouds"
+ ],
+ "s121": [
+  "wheat field path",
+  "wheat field"
+ ],
+ "s124": [
+  "planting seed",
+  "seedling"
+ ],
+ "s125": [
+  "sowing seeds",
+  "planting seeds",
+  "farmer field"
+ ],
+ "s126": [
+  "wheat ears",
+  "wheat"
+ ],
+ "s127": [
+  "food donation",
+  "volunteers food"
+ ],
+ "s130": [
+  "coins stack",
+  "stack of coins"
+ ],
+ "s135": [
+  "money banknotes",
+  "money"
+ ],
+ "s140": [
+  "candle flame",
+  "candles"
+ ],
+ "s141": [
+  "river flowing",
+  "forest stream"
+ ],
+ "s142": [
+  "window bars",
+  "jail window"
+ ],
+ "s147": [
+  "sunrise clouds",
+  "sky sunrise"
+ ],
+ "s149": [
+  "calm river",
+  "river trees"
+ ],
+ "s152": [
+  "sailing ship",
+  "sailboat sunset"
+ ],
+ "s154": [
+  "olive oil",
+  "pouring oil"
+ ],
+ "_rejeitados": [
+  "s041",
+  "s052",
+  "s067",
+  "s077",
+  "s115",
+  "s129",
+  "s133",
+  "s137"
+ ],
+ "_badids": [],
+ "s011": [
+  "candle burning",
+  "burning candle"
+ ],
+ "s013": [
+  "hands praying bible",
+  "praying bible"
+ ],
+ "s014": [
+  "family meal home",
+  "family eating"
+ ],
+ "s018": [
+  "sand dunes",
+  "dunes"
+ ],
+ "s025": [
+  "coffee morning",
+  "morning coffee"
+ ],
+ "s083": [
+  "elderly hands",
+  "old woman hands"
+ ],
+ "s085": [
+  "bread loaf",
+  "bakery bread"
+ ],
+ "s107": [
+  "mountain peak",
+  "mountain landscape"
+ ],
+ "s109": [
+  "incense",
+  "incense stick"
+ ],
+ "s119": [
+  "fresh bread",
+  "bread loaves"
+ ],
+ "s136": [
+  "family dinner home",
+  "family lunch"
+ ],
+ "s143": [
+  "family hug",
+  "happy family"
+ ],
+ "s146": [
+  "praying",
+  "prayer"
+ ],
+ "s153": [
+  "holding hands",
+  "hands holding"
+ ]
+}

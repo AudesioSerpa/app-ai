@@ -7,8 +7,12 @@ import { Overlay, OverlayData } from "./Overlay";
 import { Vinheta } from "./Vinheta";
 import { INK } from "./theme";
 import overrides from "../scripts/overrides.json";
+import mixkit from "./mixkit.json";
 
-const SKIP = new Set<string>((overrides as any)._skip ?? []);
+// vídeos reais do Mixkit (entram antes das fotos da cena)
+const MIX = mixkit as unknown as Record<string, { file: string; dur: number; w: number; h: number }>;
+// cenas puladas na revisão, a não ser que agora tenham vídeo
+const SKIP = new Set<string>(((overrides as any)._skip ?? []).filter((id: string) => !MIX[id]));
 const DROP = new Set<string>((overrides as any)._dropfiles ?? []);
 
 export type EpisodeProps = { showCta: boolean };
@@ -19,6 +23,10 @@ const rawMedia = mediaJson as unknown as MediaMap;
 const media: MediaMap = Object.fromEntries(
   Object.entries(rawMedia).map(([k, v]) => [k, { files: v.files.filter((f) => !DROP.has(f.file.replace(/^media\//, "").replace(/\.\w+$/, ""))) }])
 );
+for (const [k, v] of Object.entries(MIX)) {
+  const imgs = SKIP.has(k) || (overrides as any)._skip?.includes(k) ? [] : media[k]?.files ?? [];
+  media[k] = { files: [{ file: v.file, type: "video", w: v.w, h: v.h, dur: v.dur } as any, ...imgs] };
+}
 
 const DISSOLVE = 0.9; // segundos
 
