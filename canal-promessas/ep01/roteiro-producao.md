@@ -162,7 +162,7 @@ Cada atitude abre com um **título grande na tela**:
 >
 > Neste documentário, você vai conhecer a história real por trás de Filipenses 4:19: a cidade romana de Filipos, a empresária Lídia, o carcereiro, a igreja que dava do que faltava, e Epafrodito, que arriscou a vida para levar uma oferta até Paulo, preso em Roma. E vai descobrir as quatro atitudes daquela igreja que podem transformar a sua vida financeira hoje.
 >
-> **Capítulos** *(ajustar depois que o áudio estiver pronto)*
+> **Capítulos** — versão final com os tempos reais em `youtube-publicacao.txt`
 > 00:00 A frase que todo mundo conhece
 > 01:45 Oração por você
 > 03:40 O que você vai descobrir
